@@ -12,8 +12,8 @@ install() {
         pipenv --python 3
     fi
     pipenv install
-    pipenv run ansible-galaxy collection install -r "$HERE/requirements.yaml"
-    pipenv run ansible-galaxy role install -r "$HERE/requirements.yaml"
+    pipenv run ansible-galaxy collection install -f -r "$HERE/requirements.yaml"
+    pipenv run ansible-galaxy role install -f -r "$HERE/requirements.yaml"
 }
 
 [ "$#" -eq "0" ] && install || true
