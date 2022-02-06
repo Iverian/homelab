@@ -1,0 +1,4 @@
+---
+ansible_password: "{{ sops.connect.ansible_password }}"
+ansible_private_key_file: "{{ local_dir }}/id_rsa.ansible"
+ansible_become_pass: "{{ sops.connect.ansible_password }}"

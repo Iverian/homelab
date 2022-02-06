@@ -18,4 +18,5 @@ install() {
 
 [ "$#" -eq "0" ] && install || true
 
+# env EDITOR="$(which code) --wait"
 pipenv shell
