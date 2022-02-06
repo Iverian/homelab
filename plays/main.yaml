@@ -1,2 +1,5 @@
 ---
-- import_playbook: connect.main.yaml
+- tags: [connect, always]
+  import_playbook: connect.main.yaml
+- tags: [k8s]
+  import_playbook: k8s.main.yaml

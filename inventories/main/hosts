@@ -1,2 +1,19 @@
 [all]
 homelab ansible_host=homelab.local ansible_port=8022
+
+[kube_control_plane]
+homelab
+
+[etcd]
+homelab
+
+[kube_node]
+homelab
+
+[k8s_cluster:children]
+kube_node
+kube_control_plane
+
+[k8s:children]
+k8s_cluster
+etcd

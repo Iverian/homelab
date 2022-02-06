@@ -1,6 +1,7 @@
 ---
-root_dir: "{{ playbook_dir | dirname }}"
+root_dir: "{{ lookup('env', 'ANSIBLE_ROOT') }}"
 inventory_name: "{{ inventory_dir | basename }}"
 local_dir: "{{ [root_dir, '.local'] | join('/') }}"
-secrets_dir: "{{ [root_dir, 'secrets', inventory_name] | join('/') }}"
+secrets_dir: "{{ [root_dir, 'secrets'] | join('/') }}"
 sops: "{% set result = {} %}{% for i in query('fileglob', [secrets_dir, '*.sops.yaml'] | join('/')) %}{{ result.update({(i | basename).split('.', 1)[0]: lookup('community.sops.sops', i) | from_yaml}) }}{% endfor %}{{ result }}"
+

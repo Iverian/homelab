@@ -1,0 +1,10 @@
+---
+crio_registries:
+  - prefix: docker.io
+    insecure: false
+    blocked: false
+    location: registry-1.docker.io
+    unqualified: false
+    mirrors:
+      - location: mirror.gcr.io
+        insecure: false

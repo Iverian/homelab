@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.sops.yaml": "yaml",
+        "*.sops.yml": "yaml",
+        "*.yaml": "ansible",
+        "*.yml": "ansible"
+    },
+    "ansible.ansible.path": "${workspaceFolder}/.venv/bin/ansible",
+    "ansible.ansibleLint.path": "${workspaceFolder}/.venv/bin/ansible-lint",
+    "ansible.ansibleNavigator.path": "${workspaceFolder}/.venv/bin/ansible-navigator",
+    "ansible.ansibleLint.enabled": true,
+}

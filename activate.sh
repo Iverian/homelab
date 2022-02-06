@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-HERE=$(dirname -- "${0}")
+HERE=$(readlink -f $(dirname -- "${0}"))
 VENV_DIR="${HERE}/.venv"
 
 export PIPENV_VENV_IN_PROJECT="1"
@@ -18,5 +18,5 @@ install() {
 
 [ "$#" -eq "0" ] && install || true
 
-# env EDITOR="$(which code) --wait"
-pipenv shell
+echo "root = ${HERE}"
+env ANSIBLE_ROOT="${HERE}" pipenv shell

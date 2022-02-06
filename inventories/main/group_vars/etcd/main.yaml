@@ -1,0 +1,3 @@
+---
+etcd_memory_limit: "256M"
+etcd_deployment_type: host

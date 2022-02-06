@@ -1,0 +1,5 @@
+---
+- name: install k8s cluster
+  import_playbook: "{{ playbook_dir | dirname }}/3d/kubespray/cluster.yml"
+  vars:
+    ansible_become: true
