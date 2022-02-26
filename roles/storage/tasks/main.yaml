@@ -1,0 +1,22 @@
+---
+- tags: [storage]
+  become: true
+  block:
+    - name: create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        mode: 0700
+        owner: root
+        group: root
+        state: directory
+      loop:
+        - /data
+        - /data/ssd
+        - /data/hdd
+        - /etc/vault
+    - name: create xfs file system on ssd
+      tags: [storage.ssd]
+      ansible.builtin.import_tasks: ssd.yaml
+    - name: create zfs file system on hdd
+      tags: [storage.hdd]
+      ansible.builtin.import_tasks: hdd.yaml

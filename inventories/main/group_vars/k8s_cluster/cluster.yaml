@@ -63,7 +63,7 @@ credentials_dir: "{{ inventory_dir }}/credentials"
 
 # Choose network plugin (cilium, calico, weave or flannel. Use cni for generic cni plugin)
 # Can also be set to 'cloud', which lets the cloud provider setup appropriate routing
-kube_network_plugin: calico
+kube_network_plugin: flannel
 
 # Setting multi_networking to true will install Multus: https://github.com/intel/multus-cni
 kube_network_plugin_multus: false
@@ -191,7 +191,7 @@ coredns_k8s_external_zone: k8s_external.local
 enable_coredns_k8s_endpoint_pod_names: false
 
 # Can be docker_dns, host_resolvconf or none
-resolvconf_mode: host_resolvconf
+resolvconf_mode: docker_dns #host_resolvconf
 # Deploy netchecker app to verify DNS resolve as an HTTP service
 deploy_netchecker: false
 # Ip address of the kubernetes skydns service
@@ -223,7 +223,7 @@ default_kubelet_config_dir: "{{ kube_config_dir }}/dynamic_kubelet_dir"
 dynamic_kubelet_configuration_dir: "{{ kubelet_config_dir | default(default_kubelet_config_dir) }}"
 
 # pod security policy (RBAC must be enabled either by having 'RBAC' in authorization_modes or kubeadm enabled)
-podsecuritypolicy_enabled: true
+podsecuritypolicy_enabled: false
 
 # Custom PodSecurityPolicySpec for restricted policy
 # podsecuritypolicy_restricted_spec: {}
@@ -241,13 +241,13 @@ podsecuritypolicy_enabled: true
 # kubelet_enforce_node_allocatable: pods
 
 ## Optionally reserve resources for OS system daemons.
-# system_reserved: true
+system_reserved: true
 ## Uncomment to override default values
-# system_memory_reserved: 512Mi
-# system_cpu_reserved: 500m
+system_memory_reserved: 256Mi
+system_cpu_reserved: 100m
 ## Reservation for master hosts
-# system_master_memory_reserved: 256Mi
-# system_master_cpu_reserved: 250m
+system_master_memory_reserved: 256Mi
+system_master_cpu_reserved: 100m
 
 ## Eviction Thresholds to avoid system OOMs
 # https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#eviction-thresholds
@@ -319,6 +319,6 @@ persistent_volumes_enabled: false
 event_ttl_duration: "1h0m0s"
 
 ## Automatically renew K8S control plane certificates on first Monday of each month
-auto_renew_certificates: false
+auto_renew_certificates: true
 # First Monday of each month
 # auto_renew_certificates_systemd_calendar: "Mon *-*-1,2,3,4,5,6,7 03:{{ groups['kube_control_plane'].index(inventory_hostname) }}0:00"

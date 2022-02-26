@@ -1,0 +1,13 @@
+---
+ssh_fs_key: ""
+hdd_fs_key: ""
+
+ssd_partition: ""
+
+zfs_pool_name: hdd
+zfs_fs_name: "main"
+zfs_pool_mountpoint: "none"
+zfs_pool_mode: ""
+zfs_pool_devices: []
+zfs_pool_options:
+  autotrim: "on"

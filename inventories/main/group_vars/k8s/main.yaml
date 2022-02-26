@@ -3,9 +3,6 @@ etcd_data_dir: /var/lib/etcd
 bin_dir: /usr/local/bin
 loadbalancer_apiserver_port: 6443
 loadbalancer_apiserver_healthcheck_port: 8081
-upstream_dns_servers:
-  - 1.1.1.1
-  - 1.0.0.1
 cert_management: script
 download_container: false
 skip_downloads: false

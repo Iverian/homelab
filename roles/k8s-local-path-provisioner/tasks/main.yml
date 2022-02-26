@@ -1,0 +1,20 @@
+---
+- tags: [k8s, k8s.local-path-provisioner]
+  block:
+    - name: clone helm chart
+      ansible.builtin.git:
+        repo: https://github.com/rancher/local-path-provisioner.git
+        version: v0.0.21
+        dest: /tmp/local-path-provisioner
+        clone: true
+        depth: 1
+    - name: install helm chart
+      community.kubernetes.helm:
+        chart_ref: /tmp/local-path-provisioner/deploy/chart
+        release_name: "release-{{ k8s_lpp_namespace }}"
+        release_namespace: "{{ k8s_lpp_namespace }}"
+        create_namespace: true
+        release_values: "{{ values }}"
+        release_state: present
+  become: true
+  run_once: true

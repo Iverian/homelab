@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tags: [bootstrap]
+  become: true
+  any_errors_fatal: true
+  roles:
+    - storage
+  tasks:
+    - name: install host dependencies
+      ansible.builtin.apt:
+        name:
+          - git
+          - python3-yaml
+        state: present

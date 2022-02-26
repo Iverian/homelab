@@ -1,0 +1,5 @@
+---
+k8s_lpp_namespace: ""
+k8s_lpp_sc_default: false
+k8s_lpp_sc_name: ""
+k8s_lpp_host_path: ""

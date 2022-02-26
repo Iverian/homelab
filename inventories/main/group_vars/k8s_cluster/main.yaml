@@ -1,2 +1,1 @@
 ---
-kubeadm_certificate_key: "{{ sops.k8s.kubeadm_certificate_key }}"

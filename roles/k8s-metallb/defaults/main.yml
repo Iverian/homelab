@@ -1,0 +1,4 @@
+---
+k8s_metallb_name: metallb
+k8s_metallb_namespace: metallb-system
+k8s_metallb_pool: ""

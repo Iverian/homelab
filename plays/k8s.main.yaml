@@ -1,5 +1,37 @@
----
 - name: install k8s cluster
-  import_playbook: "{{ playbook_dir | dirname }}/3d/kubespray/cluster.yml"
+  tags: [k8s]
+  become: true
+  ansible.builtin.import_playbook: "{{ playbook_dir | dirname }}/3d/kubespray/cluster.yml"
   vars:
     ansible_become: true
+- name: install k8s local path provisioner
+  hosts: all
+  tags: [k8s, k8s.platform, k8s.lpp]
+  any_errors_fatal: true
+  run_once: true
+  tasks:
+    - name: install storage class for ssd
+      ansible.builtin.import_role:
+        name: k8s-local-path-provisioner
+      vars:
+        k8s_lpp_namespace: lpp-ssd
+        k8s_lpp_sc_default: true
+        k8s_lpp_sc_name: ssd
+        k8s_lpp_host_path: /data/ssd
+    - name: install storage class for hdd
+      ansible.builtin.import_role:
+        name: k8s-local-path-provisioner
+      vars:
+        k8s_lpp_namespace: lpp-hdd
+        k8s_lpp_sc_default: false
+        k8s_lpp_sc_name: hdd
+        k8s_lpp_host_path: /data/hdd
+- name: install k8s platform resources
+  hosts: all
+  tags: [k8s, k8s.platform]
+  any_errors_fatal: true
+  run_once: true
+  become: true
+  roles:
+    - k8s-metallb
+    - k8s-ingress-nginx

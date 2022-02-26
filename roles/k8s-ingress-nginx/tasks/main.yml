@@ -1,0 +1,13 @@
+---
+- tags: [k8s, k8s.ingress-nginx]
+  block:
+    - name: install ingress-nginx
+      kubernetes.core.helm:
+        release_name: "{{ k8s_nginx_name }}"
+        release_namespace: "{{ k8s_nginx_namespace }}"
+        release_state: present
+        release_values: "{{ values }}"
+        chart_repo_url: https://helm.nginx.com/stable
+        chart_ref: nginx-ingress
+        chart_version: '0.12.1'
+        create_namespace: true

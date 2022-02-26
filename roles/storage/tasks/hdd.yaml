@@ -1,0 +1,37 @@
+---
+- name: create zfs key
+  ansible.builtin.copy:
+    content: "{{ hdd_fs_key | b64decode }}"
+    dest: /etc/vault/hdd-key
+    owner: root
+    group: root
+    mode: 0400
+- name: check zfs pool existance
+  ansible.builtin.command: >-
+    zpool list -Ho name "{{ zfs_pool_name }}"
+  register: result_pool_list
+  ignore_errors: true
+  changed_when: false
+- name: create zfs pool
+  ansible.builtin.command: >-
+    zpool create
+    {% for k, v in (zfs_pool_options | default({})).items() %}-o {{ k }}={{ v }} {% endfor %}
+    {{ zfs_pool_mountpoint | bool | ternary('-m {}'.format(zfs_pool_mountpoint), '-m none') }}
+    {{ zfs_pool_name }}
+    {{ zfs_pool_mode | default('') }}
+    {{ zfs_pool_devices | default([]) | join(' ') }}
+  when:
+    - zfs_pool_state | default('present') == 'present'
+    - result_pool_list.rc == 1
+  changed_when: true
+- name: create zfs filesystem
+  community.general.zfs:
+    name: "{{ zfs_pool_name }}/{{ zfs_fs_name }}"
+    extra_zfs_properties:
+      mountpoint: /data/hdd
+      atime: "off"
+      encryption: "on"
+      keyformat: raw
+      keylocation: file:///etc/vault/hdd-key
+    state: present
+  ignore_errors: true

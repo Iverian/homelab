@@ -1,0 +1,33 @@
+---
+- name: create ssd key
+  ansible.builtin.copy:
+    content: "{{ ssd_fs_key | b64decode }}"
+    dest: /etc/vault/ssd-key
+    owner: root
+    group: root
+    mode: 0400
+- name: create luks device
+  community.crypto.luks_device:
+    name: cryptssd
+    device: "{{ ssd_partition }}"
+    keyfile: /etc/vault/ssd-key
+    state: opened
+- name: create crypttab entry
+  community.general.crypttab:
+    name: cryptssd
+    backing_device: "{{ ssd_partition }}"
+    password: /etc/vault/ssd-key
+    opts: discard
+    state: present
+- name: create fs on ssd
+  community.general.filesystem:
+    dev: /dev/mapper/cryptssd
+    fstype: xfs
+    state: present
+- name: mount fs on ssd
+  ansible.posix.mount:
+    path: /data/ssd
+    src: /dev/mapper/cryptssd
+    opts: rw,nodev,noatime,inode64
+    fstype: xfs
+    state: mounted

@@ -15,6 +15,7 @@ jmespath = "~=0.9"
 "ruamel.yaml.clib" = "~=0.2"
 MarkupSafe = "~=1.1"
 kubernetes = "~=21.7"
+docker = ">=5.0.0"
 
 [dev-packages]
 ansible-navigator = "~=1.1"

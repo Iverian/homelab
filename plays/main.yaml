@@ -1,5 +1,7 @@
 ---
 - tags: [connect, always]
-  import_playbook: connect.main.yaml
+  ansible.builtin.import_playbook: connect.main.yaml
+- tags: [bootstrap]
+  ansible.builtin.import_playbook: bootstrap.main.yaml
 - tags: [k8s]
-  import_playbook: k8s.main.yaml
+  ansible.builtin.import_playbook: k8s.main.yaml

@@ -3,6 +3,7 @@
 # RBAC required. see docs/getting-started.md for access details.
 dashboard_enabled: true
 
+helm_enabled: true
 # Registry deployment
 registry_enabled: false
 # registry_namespace: kube-system
@@ -16,34 +17,12 @@ metrics_server_enabled: true
 # metrics_server_metric_resolution: 15s
 # metrics_server_kubelet_preferred_address_types: "InternalIP,ExternalIP,Hostname"
 
-# Local volume provisioner deployment
-local_volume_provisioner_enabled: false
-# local_volume_provisioner_namespace: kube-system
-# local_volume_provisioner_nodelabels:
-#   - kubernetes.io/hostname
-#   - topology.kubernetes.io/region
-#   - topology.kubernetes.io/zone
-# local_volume_provisioner_storage_classes:
-#   local-storage:
-#     host_dir: /mnt/disks
-#     mount_dir: /mnt/disks
-#     volume_mode: Filesystem
-#     fs_type: ext4
-#   fast-disks:
-#     host_dir: /mnt/fast-disks
-#     mount_dir: /mnt/fast-disks
-#     block_cleaner_command:
-#       - "/scripts/shred.sh"
-#       - "2"
-#     volume_mode: Filesystem
-#     fs_type: ext4
-
 # CSI Volume Snapshot Controller deployment, set this to true if your CSI is able to manage snapshots
 # currently, setting cinder_csi_enabled=true would automatically enable the snapshot controller
 # Longhorn is an extenal CSI that would also require setting this to true but it is not included in kubespray
-# csi_snapshot_controller_enabled: false
+csi_snapshot_controller_enabled: true
 # csi snapshot namespace
-# snapshot_controller_namespace: kube-system
+snapshot_controller_namespace: kube-system
 
 # Nginx ingress controller deployment
 ingress_nginx_enabled: false
@@ -77,7 +56,7 @@ ingress_publish_status_address: ""
 
 # Cert manager deployment
 cert_manager_enabled: true
-# cert_manager_namespace: "cert-manager"
+cert_manager_namespace: "cert-manager"
 # cert_manager_tolerations:
 #   - key: node-role.kubernetes.io/master
 #     effect: NoSchedule
@@ -101,54 +80,6 @@ cert_manager_enabled: true
 #   [REPLACE with your CA certificate]
 #   -----END CERTIFICATE-----
 # cert_manager_leader_election_namespace: kube-system
-
-# MetalLB deployment
-metallb_enabled: false
-metallb_speaker_enabled: true
-# metallb_ip_range:
-#   - "10.5.0.50-10.5.0.99"
-# metallb_pool_name: "loadbalanced"
-# matallb_auto_assign: true
-# metallb_speaker_nodeselector:
-#   kubernetes.io/os: "linux"
-# metallb_controller_nodeselector:
-#   kubernetes.io/os: "linux"
-# metallb_speaker_tolerations:
-#   - key: "node-role.kubernetes.io/master"
-#     operator: "Equal"
-#     value: ""
-#     effect: "NoSchedule"
-#   - key: "node-role.kubernetes.io/control-plane"
-#     operator: "Equal"
-#     value: ""
-#     effect: "NoSchedule"
-# metallb_controller_tolerations:
-#   - key: "node-role.kubernetes.io/master"
-#     operator: "Equal"
-#     value: ""
-#     effect: "NoSchedule"
-#   - key: "node-role.kubernetes.io/control-plane"
-#     operator: "Equal"
-#     value: ""
-#     effect: "NoSchedule"
-# metallb_version: v0.11.0
-# metallb_protocol: "layer2"
-# metallb_port: "7472"
-# metallb_memberlist_port: "7946"
-# metallb_additional_address_pools:
-#   kube_service_pool:
-#     ip_range:
-#       - "10.5.1.50-10.5.1.99"
-#     protocol: "layer2"
-#     auto_assign: false
-# metallb_protocol: "bgp"
-# metallb_peers:
-#   - peer_address: 192.0.2.1
-#     peer_asn: 64512
-#     my_asn: 4200000000
-#   - peer_address: 192.0.2.2
-#     peer_asn: 64513
-#     my_asn: 4200000000
 
 argocd_enabled: false
 # argocd_version: v2.1.6

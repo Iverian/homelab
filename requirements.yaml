@@ -1,6 +1,6 @@
 ---
 roles: []
 collections:
-  - community.sops
+  - community.general
   - community.docker
   - kubernetes.core
