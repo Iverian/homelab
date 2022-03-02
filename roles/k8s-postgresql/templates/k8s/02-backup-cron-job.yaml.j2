@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: CronJob
+metadata:
+  name: postgresql-backup
+  namespace: "{{ k8s_postgresql_namespace }}"
+spec:
+  schedule: "{{ k8s_postgresql_dump_schedule }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      completions: 1
+      parallelism: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          volumes:
+            - name: src
+              configMap:
+                name: postgresql-backup-script
+            - name: target
+              hostPath:
+                path: "{{ k8s_postgresql_dump_path }}"
+                type: Directory
+          containers:
+            - name: main
+              image: "{{ __image }}"
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - /src/dump.sh
+              env:
+                - name: PGPASSWORD
+                  secretKeyRef:
+                    key: postgres-password
+                    name: postgresql
+                - name: PGHOST
+                  value: postgresql.{{ k8s_postgresql_namespace }}.svc
+                - name: PGPORT
+                  value: "5432"
+                - name: PGUSER
+                  value: postgres
+                - name: TARGET_PATH
+                  value: /backup
+              volumeMounts:
+                - name: src
+                  mountPath: /src
+                  readOnly: true

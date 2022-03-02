@@ -1,0 +1,3 @@
+---
+rclone_mount_path: /mnt/backup
+rclone_cache_path: /data/ssd/rclone-cache

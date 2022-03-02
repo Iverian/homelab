@@ -1,0 +1,1 @@
+k8s_postgresql_dump_path: "/mnt/backup/postgresql"

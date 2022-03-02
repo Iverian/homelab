@@ -11,3 +11,5 @@
         chart_ref: metallb
         chart_version: '0.12.1'
         create_namespace: true
+  run_once: true
+  become: true

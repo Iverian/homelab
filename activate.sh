@@ -12,13 +12,6 @@ SUBCOMMANDS:
 export PIPENV_VENV_IN_PROJECT="1"
 export PIPENV_VERBOSITY="-1"
 
-export ANSIBLE_ROOT="${HERE}"
-export ANSIBLE_CONFIG="${HERE}/ansible.cfg"
-export ANSIBLE_ROLES_PATH="${HERE}/roles:${HERE}/3d/kubespray/roles"
-export ANSIBLE_LIBRARY="${HERE}/library:${HERE}/3d/kubespray/library"
-export ANSIBLE_CACHE_PLUGIN_CONNECTION="${HERE}/.cache"
-export ANSIBLE_VAULT_PASSWORD_FILE="${HERE}/.vault-pass"
-
 install() {
   if [ ! -d "${VENV_DIR}" ]; then
     pipenv --python 3
@@ -29,6 +22,13 @@ install() {
 }
 
 if [ "$#" -eq 0 ]; then
+  export ANSIBLE_ROOT="${HERE}"
+  export ANSIBLE_CONFIG="${HERE}/ansible.cfg"
+  export ANSIBLE_ROLES_PATH="${HERE}/roles:${HERE}/3d/kubespray/roles"
+  export ANSIBLE_LIBRARY="${HERE}/library:${HERE}/3d/kubespray/library"
+  export ANSIBLE_CACHE_PLUGIN_CONNECTION="${HERE}/.cache"
+  export ANSIBLE_VAULT_PASSWORD_FILE="${HERE}/.vault-pass"
+
   mkdir -p "${ANSIBLE_CACHE_PLUGIN_CONNECTION}"
   . "${VENV_DIR}/bin/activate"
 else

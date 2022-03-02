@@ -5,10 +5,29 @@
   any_errors_fatal: true
   roles:
     - storage
+    - rclone
   tasks:
+    - name: create backup directories
+      tags: [bootstrap.backup_directories]
+      ansible.builtin.file:
+        path: "/mnt/backup/{{ item }}"
+        mode: 0777
+        owner: root
+        group: root
+        state: directory
+      loop: "{{ backup_directories }}"
     - name: install host dependencies
-      ansible.builtin.apt:
-        name:
-          - git
-          - python3-yaml
-        state: present
+      tags: [bootstrap.dependencies]
+      block:
+        - name: install apt dependencies
+          ansible.builtin.apt:
+            name:
+              - git
+              - python3-yaml
+              - python3-pip
+            state: present
+        - name: install pip dependencies
+          ansible.builtin.pip:
+            name:
+              - openshift
+            state: present

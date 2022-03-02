@@ -8,8 +8,19 @@
   hosts: all
   tags: [k8s, k8s.platform, k8s.lpp]
   any_errors_fatal: true
+  become: true
   run_once: true
   tasks:
+    - name: create local path provisioner directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      loop:
+        - /data/ssd/pv
+        - /data/hdd/pv
     - name: install storage class for ssd
       ansible.builtin.import_role:
         name: k8s-local-path-provisioner
@@ -17,7 +28,7 @@
         k8s_lpp_namespace: lpp-ssd
         k8s_lpp_sc_default: true
         k8s_lpp_sc_name: ssd
-        k8s_lpp_host_path: /data/ssd
+        k8s_lpp_host_path: /data/ssd/pv
     - name: install storage class for hdd
       ansible.builtin.import_role:
         name: k8s-local-path-provisioner
@@ -25,7 +36,7 @@
         k8s_lpp_namespace: lpp-hdd
         k8s_lpp_sc_default: false
         k8s_lpp_sc_name: hdd
-        k8s_lpp_host_path: /data/hdd
+        k8s_lpp_host_path: /data/hdd/pv
 - name: install k8s platform resources
   hosts: all
   tags: [k8s, k8s.platform]
@@ -35,3 +46,4 @@
   roles:
     - k8s-metallb
     - k8s-ingress-nginx
+    - k8s-postgresql

@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: "{{ k8s_postgresql_namespace }}"
+  name: postgresql-backup-script
+data:
+  dump.sh: |-
+    {{ lookup('file', role_path + '/files/dump.sh') | indent(4) }}

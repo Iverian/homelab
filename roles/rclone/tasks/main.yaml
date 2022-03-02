@@ -1,0 +1,82 @@
+---
+- tags: [rclone]
+  block:
+    - block:
+        - name: create download dir
+          ansible.builtin.file:
+            path: "{{ local_dir }}/rclone"
+            mode: 0755
+            state: directory
+        - name: download rclone package
+          ansible.builtin.unarchive:
+            src: "https://downloads.rclone.org/v{{ rclone_version }}/rclone-v{{ rclone_version }}-linux-amd64.zip"
+            dest: "{{ local_dir }}/rclone"
+            remote_src: true
+            creates: "{{ local_dir }}/rclone/rclone-v{{ rclone_version }}-linux-amd64/rclone"
+      become: false
+      run_once: true
+      delegate_to: localhost
+    - name: copy rclone package to hosts
+      ansible.builtin.copy:
+        src: "{{ local_dir }}/rclone/rclone-v{{ rclone_version }}-linux-amd64/rclone"
+        dest: /usr/local/bin/rclone
+        mode: 0755
+        owner: root
+        group: root
+    - name: create rclone mount symlink
+      ansible.builtin.file:
+        path: "{{ item }}"
+        src: /usr/local/bin/rclone
+        state: link
+      loop:
+        - /sbin/mount.rclone
+    - name: create directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        mode: "{{ item.mode }}"
+        owner: root
+        group: root
+        state: directory
+      loop:
+        - path: "{{ rclone_mount_path }}"
+          mode: "0777"
+        - path: "{{ rclone_cache_path }}"
+          mode: "0700"
+      loop_control:
+        label: "{{ item.path }}"
+    - name: copy rclone config
+      ansible.builtin.copy:
+        content: "{{ rclone_config }}"
+        dest: /etc/rclone.conf
+        owner: root
+        group: root
+        mode: 0600
+    - name: mount rclone directory
+      ansible.posix.mount:
+        path: "{{ rclone_mount_path }}"
+        src: "{{ rclone_remote }}"
+        fstype: rclone
+        opts: "{{ opts_list | join(',') }}"
+        state: mounted
+      vars:
+        opts_list:
+          - rw
+          - noauto
+          - nofail
+          - args2env
+          - fast_list
+          - vfs_cache_mode="writes"
+          - vfs_cache_max_size="1G"
+          - vfs_read_chunk_size="128M"
+          - vfs_read_chunk_size_limit="off"
+          - config="/etc/rclone.conf"
+          - cache-dir="{{ rclone_cache_path }}"
+  rescue:
+    - name: remove temporary dir
+      ansible.builtin.file:
+        path: "{{ local_dir }}/rclone"
+        state: absent
+      become: false
+      run_once: true
+      delegate_to: localhost
+  become: true

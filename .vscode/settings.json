@@ -1,7 +1,9 @@
 {
     "files.associations": {
         "*.yaml": "ansible",
-        "*.yml": "ansible"
+        "*.yml": "ansible",
+        "*.yaml.j2": "jinja-yaml",
+        "*.yml.j2": "jinja-yaml",
     },
     "ansible.ansibleLint.enabled": true,
     "python.terminal.activateEnvironment": false,
