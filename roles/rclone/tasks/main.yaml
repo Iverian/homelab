@@ -23,27 +23,6 @@
         mode: 0755
         owner: root
         group: root
-    - name: create rclone mount symlink
-      ansible.builtin.file:
-        path: "{{ item }}"
-        src: /usr/local/bin/rclone
-        state: link
-      loop:
-        - /sbin/mount.rclone
-    - name: create directories
-      ansible.builtin.file:
-        path: "{{ item.path }}"
-        mode: "{{ item.mode }}"
-        owner: root
-        group: root
-        state: directory
-      loop:
-        - path: "{{ rclone_mount_path }}"
-          mode: "0777"
-        - path: "{{ rclone_cache_path }}"
-          mode: "0700"
-      loop_control:
-        label: "{{ item.path }}"
     - name: copy rclone config
       ansible.builtin.copy:
         content: "{{ rclone_config }}"
@@ -51,26 +30,36 @@
         owner: root
         group: root
         mode: 0600
-    - name: mount rclone directory
-      ansible.posix.mount:
-        path: "{{ rclone_mount_path }}"
-        src: "{{ rclone_remote }}"
-        fstype: rclone
-        opts: "{{ opts_list | join(',') }}"
-        state: mounted
-      vars:
-        opts_list:
-          - rw
-          - noauto
-          - nofail
-          - args2env
-          - fast_list
-          - vfs_cache_mode="writes"
-          - vfs_cache_max_size="1G"
-          - vfs_read_chunk_size="128M"
-          - vfs_read_chunk_size_limit="off"
-          - config="/etc/rclone.conf"
-          - cache-dir="{{ rclone_cache_path }}"
+    - name: create rclone backup dir
+      ansible.builtin.file:
+        path: "{{ rclone_backup_path }}"
+        owner: root
+        group: root
+        mode: 0777
+        state: directory
+    - name: copy rclone-backup script
+      ansible.builtin.template:
+        src: rclone-backup.j2
+        dest: /usr/local/bin/rclone-backup
+        mode: 0700
+        owner: root
+        group: root
+    - name: copy systemd services
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "/etc/systemd/system/{{ item.rsplit('.', 1)[0] }}"
+        mode: 0644
+        owner: root
+        group: root
+      loop:
+       - rclone-backup.service.j2
+       - rclone-backup.timer.j2
+    - name: enable rclone-backup timer
+      ansible.builtin.systemd:
+        name: rclone-backup.timer
+        enabled: true
+        daemon_reload: true
+        state: started
   rescue:
     - name: remove temporary dir
       ansible.builtin.file:

@@ -1,22 +1,23 @@
-#!/bin/sh
-set -euo pipefail
+#!/bin/bash
+set -e
 IFS=$'\n\t'
 
-Q_LIST_DATABASES="SELECT datname FROM pg_catalog.pg_databases WHERE datname NOT LIKE 'template%'"
+Q_LIST_DATABASES="SELECT datname FROM pg_database WHERE datname NOT LIKE 'template%'"
 DATE_FORMAT="%Y%m%dT%H%M%S"
 RETENTION_DAYS="7"
 DUMP_EXTENSION="dump"
 
-function dump {
+dump() {
   ctime=$(date "+${DATE_FORMAT}")
   databases=$(psql -Atqd postgres -c "${Q_LIST_DATABASES}")
   for db in ${databases}; do
+    echo "[*] dumping database ${db}"
     path="${TARGET_PATH}/${db}-${ctime}.${DUMP_EXTENSION}"
-    pg_dump -cC -Fc -Z9 -d "${db}" -f "${path}"
+    pg_dump -vcC -Fc -Z9 -d "${db}" -f "${path}"
   done
 }
 
-function cleanup {
+cleanup() {
   find "${TARGET_PATH}" -maxdepth 1 -name "*.${DUMP_EXTENSION}" -ctime "+${RETENTION_DAYS}"
 }
 

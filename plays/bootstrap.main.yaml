@@ -7,15 +7,6 @@
     - storage
     - rclone
   tasks:
-    - name: create backup directories
-      tags: [bootstrap.backup_directories]
-      ansible.builtin.file:
-        path: "/mnt/backup/{{ item }}"
-        mode: 0777
-        owner: root
-        group: root
-        state: directory
-      loop: "{{ backup_directories }}"
     - name: install host dependencies
       tags: [bootstrap.dependencies]
       block:

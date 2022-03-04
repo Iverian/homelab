@@ -1,6 +1,5 @@
 ---
 rclone_version: "1.57.0"
-rclone_mount_path: /mnt/backup
-rclone_cache_path: /data/ssd/rclone-cache
+rclone_backup_path: /data/ssd/backup
 rclone_config: ""
 rclone_remote: ""

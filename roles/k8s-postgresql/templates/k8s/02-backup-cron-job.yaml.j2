@@ -21,22 +21,23 @@ spec:
             - name: src
               configMap:
                 name: postgresql-backup-script
-            - name: target
+            - name: backup
               hostPath:
-                path: "{{ k8s_postgresql_dump_path }}"
+                path: "{{ k8s_postgresql_backup_host_path }}"
                 type: Directory
           containers:
             - name: main
               image: "{{ __image }}"
               imagePullPolicy: IfNotPresent
               command:
-                - /bin/sh
+                - /bin/bash
                 - /src/dump.sh
               env:
                 - name: PGPASSWORD
-                  secretKeyRef:
-                    key: postgres-password
-                    name: postgresql
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: postgres-password
                 - name: PGHOST
                   value: postgresql.{{ k8s_postgresql_namespace }}.svc
                 - name: PGPORT
@@ -49,3 +50,5 @@ spec:
                 - name: src
                   mountPath: /src
                   readOnly: true
+                - name: backup
+                  mountPath: /backup

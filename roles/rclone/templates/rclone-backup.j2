@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+rclone --verbose --config="/etc/rclone.conf" sync "{{ rclone_backup_path }}" "{{ rclone_remote }}"
