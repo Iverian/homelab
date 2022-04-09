@@ -36,6 +36,10 @@ install() {
   log_info "installing ansible roles"
   pipenv run ansible-galaxy role install -f -r "${REQUIREMENTS_FILE}" || return $?
 
+  log_info "installing git submodules"
+  git submodule init || return $?
+  git submodule update || return $?
+
   return 0
 }
 
