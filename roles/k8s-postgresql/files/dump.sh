@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 Q_LIST_DATABASES="SELECT datname FROM pg_database WHERE datname NOT LIKE 'template%'"
 DATE_FORMAT="%Y%m%dT%H%M%S"
-RETENTION_DAYS="7"
+RETENTION_DAYS="3"
 DUMP_EXTENSION="dump"
 
 dump() {
