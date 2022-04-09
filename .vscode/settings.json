@@ -9,4 +9,6 @@
     "ansible.ansibleLint.enabled": true,
     "python.terminal.activateEnvironment": false,
     "ansible.python.activationScript": "activate.sh",
+    "ansible.ansibleNavigator.path": "ansible-navigator",
+    "ansible.python.interpreterPath": "python3"
 }
