@@ -10,5 +10,7 @@
     "python.terminal.activateEnvironment": false,
     "ansible.python.activationScript": "activate.sh",
     "ansible.ansibleNavigator.path": "ansible-navigator",
-    "ansible.python.interpreterPath": "python3"
+    "ansible.python.interpreterPath": "python3",
+    "ansibleServer.trace.server": "off",
+    "ansibleVault.keyfile": ".vault-pass"
 }

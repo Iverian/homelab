@@ -30,7 +30,7 @@ install() {
   fi
 
   log_info "installing python dependencies"
-  pipenv install || return $?
+  pipenv install --dev || return $?
   log_info "installing ansible collections"
   pipenv run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}" || return $?
   log_info "installing ansible roles"

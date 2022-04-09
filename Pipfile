@@ -16,7 +16,6 @@ jmespath = "~=0.9"
 MarkupSafe = "~=1.1"
 kubernetes = "~=21.7"
 docker = ">=5.0.0"
-ansible-navigator = "~=1.1"
 
 [dev-packages]
 ansible-navigator = "~=1.1"

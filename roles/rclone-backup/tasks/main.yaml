@@ -1,5 +1,5 @@
 ---
-- tags: [rclone]
+- tags: [rclone-backup]
   block:
     - name: check constraints
       ansible.builtin.assert:
@@ -53,6 +53,7 @@
             {{ k | upper }}={{ v | to_json }}
             {% endfor %}
           dest: "{{ rclone_backup_config_path }}"
+      no_log: true
     - name: create rclone backup dir
       ansible.builtin.file:
         path: "{{ rclone_backup_path }}"
