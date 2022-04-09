@@ -13,8 +13,8 @@ values:
       loadBalancerIP: "{{ k8s_nginx_external_ip }}"
     resources:
       limits:
-        cpu: 100m
-        memory: 64Mi
+        cpu: 200m
+        memory: 128Mi
       requests:
         cpu: 100m
         memory: 64Mi

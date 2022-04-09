@@ -1,0 +1,4 @@
+---
+ufw__allowed_apps: []
+ufw__allowed_tcp_ports: []
+ufw__allowed_udp_ports: []

@@ -2,5 +2,4 @@
 roles: []
 collections:
   - community.general
-  - community.docker
   - kubernetes.core

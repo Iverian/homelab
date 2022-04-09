@@ -1,0 +1,40 @@
+---
+- tags: [ufw-rules]
+  block:
+    - name: gather facts
+      ansible.builtin.setup:
+        filter:
+          - ansible_default_ipv4
+    - name: install ufw
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+    - name: enable ufw service
+      ansible.builtin.systemd:
+        name: ufw.service
+        enabled: true
+        state: started
+    - name: allow apps
+      community.general.ufw:
+        name: "{{ item }}"
+        rule: allow
+      loop: "{{ ufw__allowed_apps }}"
+    - name: create tcp rules
+      ansible.builtin.include_tasks:
+        file: rules.yaml
+        apply:
+          vars:
+            __proto: tcp
+            __ports: "{{ allowed_tcp_ports }}"
+    - name: create udp rules
+      ansible.builtin.include_tasks:
+        file: rules.yaml
+        apply:
+          vars:
+            __proto: udp
+            __ports: "{{ allowed_udp_ports }}"
+    - name: enable ufw
+      community.general.ufw:
+        logging: "on"
+        policy: deny
+        state: enabled

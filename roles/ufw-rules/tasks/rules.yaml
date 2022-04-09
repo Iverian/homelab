@@ -1,0 +1,11 @@
+---
+- tags: [ufw-rules]
+  block:
+    - name: allow connections
+      community.general.ufw:
+        rule: allow
+        to_port: "{{ item }}"
+        proto: "{{ __proto }}"
+        log: false
+      loop: "{{ __ports }}"
+  become: true

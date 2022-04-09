@@ -4,6 +4,7 @@
   become: true
   any_errors_fatal: true
   roles:
+    - ufw-rules
     - storage
     - rclone-backup
   tasks:

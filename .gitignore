@@ -153,3 +153,4 @@ cython_debug/
 .local/
 .vault-pass
 credentials/
+test.yaml

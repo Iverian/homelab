@@ -1,0 +1,10 @@
+---
+ufw__allowed_tcp_ports:
+  - 80
+  - 443
+ufw__allowed_udp_ports: []
+ufw__allowed_apps:
+  - DNS
+  - Bonjour
+  - CIFS
+  - qBittorrent
