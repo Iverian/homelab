@@ -1,4 +1,7 @@
-HERE=$(readlink -f $(dirname -- "${0}"))
+FILE=$([ -f "${BASH_SOURCE}" ] && echo "${BASH_SOURCE}" || echo "${0}")
+FILE=$(readlink -f "${FILE}")
+
+HERE=$(readlink -f $(dirname -- "${FILE}"))
 VENV_DIR="${HERE}/.venv"
 REQUIREMENTS_FILE="${HERE}/requirements.yaml"
 USAGE="USAGE: . activate.sh [help|install]
@@ -12,16 +15,36 @@ SUBCOMMANDS:
 export PIPENV_VENV_IN_PROJECT="1"
 export PIPENV_VERBOSITY="-1"
 
-install() {
-  if [ ! -d "${VENV_DIR}" ]; then
-    pipenv --python 3
-  fi
-  pipenv install
-  pipenv run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}"
-  pipenv run ansible-galaxy role install -f -r "${REQUIREMENTS_FILE}"
+log_info() {
+  echo "[*] $@"
 }
 
-if [ "$#" -eq 0 ]; then
+log_error() {
+  echo "[x] $@"
+}
+
+install() {
+  if [ ! -d "${VENV_DIR}" ]; then
+    log_info "creating virtualenv at '${VENV_DIR}'"
+    pipenv --python 3 || return $?
+  fi
+
+  log_info "installing python dependencies"
+  pipenv install || return $?
+  log_info "installing ansible collections"
+  pipenv run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}" || return $?
+  log_info "installing ansible roles"
+  pipenv run ansible-galaxy role install -f -r "${REQUIREMENTS_FILE}" || return $?
+
+  return 0
+}
+
+activate_env() {
+  if [ ! -d "${VENV_DIR}" ]; then
+    log_error "virtualenv directory does not exist, install dependencies first with '. activate.sh install'"
+    return 1
+  fi
+
   export ANSIBLE_ROOT="${HERE}"
   export ANSIBLE_CONFIG="${HERE}/ansible.cfg"
   export ANSIBLE_ROLES_PATH="${HERE}/roles:${HERE}/3d/kubespray/roles"
@@ -31,17 +54,29 @@ if [ "$#" -eq 0 ]; then
 
   mkdir -p "${ANSIBLE_CACHE_PLUGIN_CONNECTION}"
   . "${VENV_DIR}/bin/activate"
-else
-  arg="$1"
-  case ${arg} in
-  help)
+
+  return 0
+}
+
+main() {
+  if [ "$#" -eq 0 ]; then
+    activate_env || return $?
+    return 0
+  fi
+
+  command="$1"
+  case ${command} in
+  "help")
     echo "${USAGE}"
     ;;
-  install)
-    install
+  "install")
+    install || return $?
     ;;
   *)
-    echo -e "Invalid argument ${arg}\n${USAGE}"
+    log_error "invalid command ${command}
+${USAGE}"
     ;;
   esac
-fi
+}
+
+main "$@"
