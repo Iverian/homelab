@@ -1,0 +1,4 @@
+{{ ansible_managed | comment }}
+server:
+  local-zone: "{{ unbound__local_domain }}." redirect
+  local-data: "{{ unbound__local_domain }}. A {{ unbound__local_ip }}"

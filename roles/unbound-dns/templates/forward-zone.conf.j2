@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+forward-zone:
+  name: "."
+  forward-tls-upstream: {{ unbound__forward_tls | bool | ternary('yes', 'no') }}
+{% for i in unbound__forward_address %}
+  forward-addr: "{{ i }}"
+{% endfor %}

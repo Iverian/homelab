@@ -1,0 +1,6 @@
+---
+external_domain: "iverian.io"
+internal_domain: "home.{{ external_domain }}"
+
+unbound__local_domain: "{{ internal_domain }}"
+unbound__local_ip: "10.90.0.200"

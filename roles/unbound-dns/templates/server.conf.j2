@@ -1,0 +1,47 @@
+{{ ansible_managed | comment }}
+server:
+  interface: "{{ '{}@{}'.format(ansible_default_ipv4.address, unbound__port) }}"
+  username: unbound
+  tls-cert-bundle: "/etc/ssl/certs/ca-certificates.crt"
+  access-control: {{ local_subnet }} allow_snoop
+  private-address: {{ local_subnet }}
+  num-threads: {{ (ansible_processor_vcpus / 2) | int }}
+  ratelimit: 1000
+  unwanted-reply-threshold: 10000
+  use-syslog: yes
+  log-local-actions: no
+  log-queries: no
+  log-replies: no
+  log-servfail: no
+  verbosity: 0
+  rrset-roundrobin: yes
+  aggressive-nsec: yes
+  delay-close: 10000
+  do-not-query-localhost: no
+  neg-cache-size: 4M
+  qname-minimisation: yes
+  deny-any: yes
+  harden-algo-downgrade: yes
+  harden-below-nxdomain: yes
+  harden-dnssec-stripped: yes
+  harden-glue: yes
+  harden-large-queries: yes
+  harden-referral-path: no
+  harden-short-bufsize: yes
+  hide-identity: yes
+  hide-version: yes
+  use-caps-for-id: yes
+  identity: "DNS"
+  infra-cache-slabs: 4
+  key-cache-slabs: 4
+  msg-cache-size: 128525653
+  msg-cache-slabs: 4
+  num-queries-per-thread: 4096
+  outgoing-range: 8192
+  rrset-cache-size: 257051306
+  rrset-cache-slabs: 4
+  minimal-responses: yes
+  prefetch: yes
+  prefetch-key: yes
+  serve-expired: yes
+  so-reuseport: yes

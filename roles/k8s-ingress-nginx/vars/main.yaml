@@ -11,6 +11,10 @@ values:
       type: LoadBalancer
       externalTrafficPolicy: Local
       loadBalancerIP: "{{ k8s_nginx_external_ip }}"
+    ingressClassResource:
+      enabled: true
+      name: "{{ k8s_nginx_ingress_class }}"
+      default: "{{ k8s_nginx_default }}"
     resources:
       limits:
         cpu: 200m

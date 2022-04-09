@@ -48,5 +48,23 @@
   become: true
   roles:
     - k8s-metallb
-    - k8s-ingress-nginx
     - k8s-postgresql
+  tasks:
+    - name: create internal nginx controller
+      ansible.builtin.import_role:
+        name: k8s-ingress-nginx
+      vars:
+        k8s_nginx_namespace: ingress-nginx-internal
+        k8s_nginx_name: nginx-internal
+        k8s_nginx_ingress_class: nginx-internal
+        k8s_nginx_default: true
+        k8s_nginx_external_ip: "{{ k8s_ingress__internal_ip }}"
+    - name: create external nginx controller
+      ansible.builtin.import_role:
+        name: k8s-ingress-nginx
+      vars:
+        k8s_nginx_namespace: ingress-nginx-external
+        k8s_nginx_name: nginx-external
+        k8s_nginx_ingress_class: nginx-external
+        k8s_nginx_default: false
+        k8s_nginx_external_ip: "{{ k8s_ingress__external_ip }}"

@@ -1,0 +1,5 @@
+---
+k8s_duckdns__namespace: duckdns
+k8s_duckdns__domain: ""
+k8s_duckdns__token: ""
+k8s_duckdns__cron_schedule: "@hourly"

@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ k8s_duckdns__namespace }}"
+  labels:
+    app: duckdns
+    name: "{{ k8s_duckdns__namespace }}"

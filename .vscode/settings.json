@@ -12,5 +12,6 @@
     "ansible.ansibleNavigator.path": "ansible-navigator",
     "ansible.python.interpreterPath": "python3",
     "ansibleServer.trace.server": "off",
-    "ansibleVault.keyfile": ".vault-pass"
+    "ansibleVault.keyfile": ".vault-pass",
+    "editor.tabSize": 2
 }

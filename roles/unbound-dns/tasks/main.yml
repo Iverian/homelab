@@ -1,0 +1,34 @@
+---
+- tags: [unbound-dns]
+  block:
+    - name: check constraints
+      ansible.builtin.assert:
+        that:
+          - unbound__local_domain is defined and unbound__local_domain | length > 0
+          - unbound__local_ip is defined and unbound__local_ip | length > 0
+    - name: gather facts
+      ansible.builtin.setup:
+        filter:
+          - ansible_default_ipv4
+          - ansible_processor_vcpus
+    - name: install unbound dns
+      ansible.builtin.apt:
+        name: unbound
+        state: present
+    - name: configure unbound forwarding
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ [config_dir, item | basename | splitext | first] | join('/') }}"
+        mode: 0600
+        owner: root
+        group: root
+      loop: "{{ query('fileglob', role_path + '/templates/*.conf.j2') }}"
+      notify:
+        - reload unbound
+    - name: enable unbound
+      ansible.builtin.systemd:
+        name: unbound.service
+        enabled: true
+        state: started
+    - name: flush handlers
+      ansible.builtin.meta: flush_handlers

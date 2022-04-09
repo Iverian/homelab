@@ -1,6 +1,11 @@
 ---
 - tags: [k8s, k8s.ingress-nginx]
   block:
+    - name: check constraints
+      ansible.builtin.assert:
+        that:
+          - k8s_nginx_external_ip is defined
+          - k8s_nginx_external_ip | ansible.netcommon.ipaddr
     - name: install ingress-nginx
       kubernetes.core.helm:
         release_name: "{{ k8s_nginx_name }}"
@@ -9,5 +14,5 @@
         release_values: "{{ values }}"
         chart_repo_url: https://helm.nginx.com/stable
         chart_ref: nginx-ingress
-        chart_version: '0.12.1'
+        chart_version: "0.12.1"
         create_namespace: true

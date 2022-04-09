@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: CronJob
+metadata:
+  namespace: "{{ k8s_duckdns__namespace }}"
+  name: duckdns-cronjob
+  labels:
+    app: duckdns
+spec:
+  schedule: "{{ k8s_duckdns__cron_schedule }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      completions: 1
+      parallelism: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          volumes:
+            - name: src
+              configMap:
+                name: duckdns-script
+          containers:
+            - name: main
+              image: oraclelinux:8-slim
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - /src/sync.sh
+              envFrom:
+                - secretRef:
+                    name: duckdns-secret
+              volumeMounts:
+                - name: src
+                  mountPath: /src
+                  readOnly: true

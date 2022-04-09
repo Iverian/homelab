@@ -7,3 +7,5 @@
   ansible.builtin.import_playbook: k8s.main.yaml
 - tags: [k8s, k8s.platform]
   ansible.builtin.import_playbook: k8s-platform.main.yaml
+- tags: [k8s, k8s.apps]
+  ansible.builtin.import_playbook: k8s-apps.main.yaml

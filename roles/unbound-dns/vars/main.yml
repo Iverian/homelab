@@ -1,0 +1,3 @@
+---
+local_subnet: "{{ [ansible_default_ipv4.network, ansible_default_ipv4.netmask] | join('/') | ansible.netcommon.ipaddr('net') }}"
+config_dir: /etc/unbound/unbound.conf.d
