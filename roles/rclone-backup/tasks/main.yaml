@@ -50,7 +50,7 @@
           dest: "{{ rclone_config_path }}"
         - content: |
             {% for k, v in rclone_backup_config.items() %}
-            {{ k }}={{ v | to_json }}
+            {{ k | upper }}={{ v | to_json }}
             {% endfor %}
           dest: "{{ rclone_backup_config_path }}"
     - name: create rclone backup dir
