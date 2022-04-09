@@ -1,5 +1,0 @@
----
-rclone_version: "1.57.0"
-rclone_backup_path: /data/ssd/backup
-rclone_config: ""
-rclone_remote: ""

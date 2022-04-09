@@ -1,14 +1,4 @@
 ---
-# tasks file for roles/k8s-postgresql
-- tags: [k8s, k8s.postgresql]
-  block:
-    - name: create backup host path
-      ansible.builtin.file:
-        path: "{{ k8s_postgresql_backup_host_path }}"
-        mode: 0777
-        owner: root
-        group: root
-        state: directory
 - tags: [k8s, k8s.postgresql]
   block:
     - name: deploy postgresql helm chart

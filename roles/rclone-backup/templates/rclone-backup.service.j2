@@ -1,0 +1,11 @@
+[Unit]
+Description=rclone backup
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile={{ rclone_backup_config_path }}
+ExecStart={{ [rclone_binary_dir, 'rclone'] | join('/') }}
+Restart=on-failure
+RestartSec=30

@@ -1,0 +1,7 @@
+---
+rclone_version: "1.57.0"
+rclone_backup_path: ""
+rclone_config: ""
+rclone_remote: ""
+rclone_retention_days: 3
+rclone_binary_dir: /usr/local/bin

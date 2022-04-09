@@ -1,6 +1,14 @@
 ---
 - tags: [rclone]
   block:
+    - name: check constraints
+      ansible.builtin.assert:
+        that:
+          - rclone_backup_path is defined and rclone_backup_path is abs
+          - rclone_config is defined and rclone_config | length > 0
+          - rclone_remote is defined and rclone_remote | length > 0
+          - rclone_retention_days is defined and rclone_retention_days > 0
+          - rclone_binary_dir is defined and rclone_binary_dir is abs
     - block:
         - name: create download dir
           ansible.builtin.file:
@@ -19,17 +27,32 @@
     - name: copy rclone package to hosts
       ansible.builtin.copy:
         src: "{{ local_dir }}/rclone/rclone-v{{ rclone_version }}-linux-amd64/rclone"
-        dest: /usr/local/bin/rclone
+        dest: "{{ [rclone_binary_dir, 'rclone'] | join('/') }}"
         mode: 0755
         owner: root
         group: root
-    - name: copy rclone config
+    - name: create rclone config dir
+      ansible.builtin.file:
+        path: "{{ rclone_config_dir }}"
+        mode: 0700
+        owner: root
+        group: root
+        state: directory
+    - name: copy rclone configs
       ansible.builtin.copy:
-        content: "{{ rclone_config }}"
-        dest: /etc/rclone.conf
+        content: "{{ item.content }}"
+        dest: "{{ item.dest }}"
         owner: root
         group: root
         mode: 0600
+      loop:
+        - content: "{{ rclone_config }}"
+          dest: "{{ rclone_config_path }}"
+        - content: |
+            {% for k, v in rclone_backup_config.items() %}
+            {{ k }}={{ v | to_json }}
+            {% endfor %}
+          dest: "{{ rclone_backup_config_path }}"
     - name: create rclone backup dir
       ansible.builtin.file:
         path: "{{ rclone_backup_path }}"
@@ -38,9 +61,9 @@
         mode: 0777
         state: directory
     - name: copy rclone-backup script
-      ansible.builtin.template:
-        src: rclone-backup.j2
-        dest: /usr/local/bin/rclone-backup
+      ansible.builtin.copy:
+        src: rclone-backup.sh
+        dest: "{{ [rclone_binary_dir, 'rclone-backup.sh'] | join('/') }}"
         mode: 0700
         owner: root
         group: root
@@ -52,8 +75,8 @@
         owner: root
         group: root
       loop:
-       - rclone-backup.service.j2
-       - rclone-backup.timer.j2
+        - rclone-backup.service.j2
+        - rclone-backup.timer.j2
     - name: enable rclone-backup timer
       ansible.builtin.systemd:
         name: rclone-backup.timer

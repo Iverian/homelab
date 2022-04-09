@@ -1,0 +1,52 @@
+---
+- name: install k8s local path provisioner
+  hosts: all
+  tags: [k8s.lpp]
+  any_errors_fatal: true
+  become: true
+  run_once: true
+  tasks:
+    - name: create local path provisioner directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      loop:
+        - /data/ssd/pv
+        - /data/hdd/pv
+        - /data/hdd/backup
+    - name: install storage class for ssd
+      ansible.builtin.import_role:
+        name: k8s-local-path-provisioner
+      vars:
+        k8s_lpp_namespace: lpp-ssd
+        k8s_lpp_sc_default: true
+        k8s_lpp_sc_name: ssd
+        k8s_lpp_host_path: /data/ssd/pv
+    - name: install storage class for hdd
+      ansible.builtin.import_role:
+        name: k8s-local-path-provisioner
+      vars:
+        k8s_lpp_namespace: lpp-hdd
+        k8s_lpp_sc_default: false
+        k8s_lpp_sc_name: hdd
+        k8s_lpp_host_path: /data/hdd/pv
+    - name: install storage class for backups
+      ansible.builtin.import_role:
+        name: k8s-local-path-provisioner
+      vars:
+        k8s_lpp_namespace: lpp-hdd-backup
+        k8s_lpp_sc_default: false
+        k8s_lpp_sc_name: hdd-backup
+        k8s_lpp_host_path: /data/hdd/backup
+- name: install k8s platform resources
+  hosts: all
+  any_errors_fatal: true
+  run_once: true
+  become: true
+  roles:
+    - k8s-metallb
+    - k8s-ingress-nginx
+    - k8s-postgresql

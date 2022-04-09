@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: "{{ k8s_postgresql_namespace }}"
+  name: postgresql-backup-temp
+spec:
+  storageClassName: "{{ k8s_postgresql_backup_temp_sc }}"
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce

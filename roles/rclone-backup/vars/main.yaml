@@ -1,0 +1,9 @@
+---
+rclone_config_dir: /etc/rclone
+rclone_config_path: "{{ [rclone_config_dir, 'rclone.conf'] | join('/') }}"
+rclone_backup_config_path: "{{ [rclone_config_dir, 'rclone-backup.conf'] | join('/') }}"
+rclone_backup_config:
+  rclone_config: "{{ rclone_backup_path }}"
+  rclone_remote: "{{ rclone_remote }}"
+  rclone_backup_path: "{{ rclone_backup_path }}"
+  rclone_retention_days: "{{ rclone_retention_days }}"

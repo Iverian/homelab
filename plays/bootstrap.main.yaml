@@ -5,7 +5,7 @@
   any_errors_fatal: true
   roles:
     - storage
-    - rclone
+    - rclone-backup
   tasks:
     - name: install host dependencies
       tags: [bootstrap.dependencies]

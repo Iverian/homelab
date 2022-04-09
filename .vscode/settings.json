@@ -4,6 +4,7 @@
         "*.yml": "ansible",
         "*.yaml.j2": "jinja-yaml",
         "*.yml.j2": "jinja-yaml",
+        "hosts": "ini"
     },
     "ansible.ansibleLint.enabled": true,
     "python.terminal.activateEnvironment": false,

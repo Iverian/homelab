@@ -6,6 +6,7 @@
     owner: root
     group: root
     mode: 0400
+  no_log: true
 - name: create luks device
   community.crypto.luks_device:
     name: cryptssd

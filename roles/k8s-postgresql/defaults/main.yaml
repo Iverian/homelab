@@ -3,6 +3,6 @@ k8s_postgresql_version: "11.1.3"
 k8s_postgresql_namespace: postgresql
 k8s_postgresql_password: ""
 k8s_postgresql_dump_schedule: "@daily"
-k8s_postgresql_dump_path: ""
-k8s_postgresql_backup_host_path: /data/ssd/backup/postgresql
 k8s_postgresql_data_sc: ssd
+k8s_postgresql_backup_temp_sc: ssd
+k8s_postgresql_backup_sc: hdd-backup

@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: CronJob
 metadata:
-  name: postgresql-backup
   namespace: "{{ k8s_postgresql_namespace }}"
+  name: postgresql-backup
 spec:
   schedule: "{{ k8s_postgresql_dump_schedule }}"
   concurrencyPolicy: Forbid
@@ -21,17 +21,21 @@ spec:
             - name: src
               configMap:
                 name: postgresql-backup-script
-            - name: backup
-              hostPath:
-                path: "{{ k8s_postgresql_backup_host_path }}"
-                type: Directory
+            - name: temp
+              persistentVolumeClaim:
+                claimName: postgresql-backup-temp
+                readOnly: false
+            - name: target
+              persistentVolumeClaim:
+                claimName: postgresql-backup-target
+                readOnly: false
           containers:
             - name: main
               image: "{{ __image }}"
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash
-                - /src/dump.sh
+                - /src/backup.sh
               env:
                 - name: PGPASSWORD
                   valueFrom:
@@ -44,11 +48,16 @@ spec:
                   value: "5432"
                 - name: PGUSER
                   value: postgres
-                - name: TARGET_PATH
-                  value: /backup
+                - name: BACKUP_TEMP_PATH
+                  value: /data/temp
+                - name: BACKUP_TARGET_PATH
+                  value: /data/target
               volumeMounts:
                 - name: src
                   mountPath: /src
                   readOnly: true
-                - name: backup
-                  mountPath: /backup
+                - name: temp
+                  mountPath: /data/temp
+                - name: target
+                  mountPath: /data/target
+

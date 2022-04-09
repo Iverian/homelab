@@ -1,6 +1,5 @@
 ---
 - tags: [storage]
-  become: true
   block:
     - name: create directories
       ansible.builtin.file:
@@ -20,3 +19,4 @@
     - name: create zfs file system on hdd
       tags: [storage.hdd]
       ansible.builtin.import_tasks: hdd.yaml
+  become: true

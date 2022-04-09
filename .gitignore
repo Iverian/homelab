@@ -152,3 +152,4 @@ cython_debug/
 .idea/
 .local/
 .vault-pass
+credentials/

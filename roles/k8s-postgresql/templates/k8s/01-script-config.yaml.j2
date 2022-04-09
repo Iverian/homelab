@@ -5,5 +5,5 @@ metadata:
   namespace: "{{ k8s_postgresql_namespace }}"
   name: postgresql-backup-script
 data:
-  dump.sh: |-
-    {{ lookup('file', role_path + '/files/dump.sh') | indent(4) }}
+  backup.sh: |-
+    {{ lookup('file', role_path + '/files/backup.sh') | indent(4) }}
