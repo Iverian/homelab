@@ -20,6 +20,7 @@
     password: /etc/vault/ssd-key
     opts: discard
     state: present
+  no_log: true
 - name: create fs on ssd
   community.general.filesystem:
     dev: /dev/mapper/cryptssd

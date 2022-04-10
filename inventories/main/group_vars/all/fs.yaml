@@ -1,5 +1,5 @@
 ---
-ssd_partition: /dev/nvme0n1p4
+ssd_partition: /dev/nvme0n1p5
 
 zfs_pool_name: hdd
 zfs_fs_name: main
@@ -8,4 +8,6 @@ zfs_pool_devices:
   - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D415NP4H
   - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D4136UV7
   - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D41367TU
-zfs_pool_options: {}
+zfs_pool_options:
+  autotrim: "on"
+zfs_pool_cache: nvme-eui.0025385711b0243d-part4

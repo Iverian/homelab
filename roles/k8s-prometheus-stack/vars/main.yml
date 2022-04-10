@@ -20,6 +20,7 @@ prometheus_stack_values:
     enabled: true
     image:
       repository: docker.io/grafana/grafana
+    defaultDashboardsEnabled: true
     defaultDashboardsTimezone: "{{ k8s_prometheus_stack__timezone }}"
     adminPassword: "{{ k8s_prometheus_stack__grafana_password }}"
     persistence:

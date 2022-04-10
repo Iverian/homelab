@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description=Load encryption keys
+DefaultDependencies=false
+Before=zfs-mount.service
+After=zfs-import.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/zfs load-key -a
+
+[Install]
+WantedBy=zfs-mount.service

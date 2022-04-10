@@ -11,3 +11,4 @@ zfs_pool_mode: ""
 zfs_pool_devices: []
 zfs_pool_options:
   autotrim: "on"
+zfs_pool_cache: ""
