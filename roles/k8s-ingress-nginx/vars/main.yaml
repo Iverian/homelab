@@ -22,3 +22,9 @@ values:
       requests:
         cpu: 100m
         memory: 64Mi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+      prometheusRule:
+        enabled: true
