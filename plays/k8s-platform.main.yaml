@@ -1,6 +1,6 @@
 ---
 - name: install k8s local path provisioner
-  hosts: all
+  hosts: k8s
   tags: [k8s.lpp]
   any_errors_fatal: true
   become: true
@@ -42,7 +42,7 @@
         k8s_lpp_sc_name: hdd-backup
         k8s_lpp_host_path: /data/hdd/backup
 - name: install k8s ingress resources
-  hosts: all
+  hosts: k8s
   any_errors_fatal: true
   run_once: true
   become: true
@@ -68,10 +68,12 @@
         k8s_nginx_default: false
         k8s_nginx_external_ip: "{{ k8s_ingress__external_ip }}"
 - name: install k8s platform resources
-  hosts: all
+  hosts: k8s
   any_errors_fatal: true
   run_once: true
   become: true
   roles:
-    - k8s-postgresql
+    - k8s-duckdns
     - k8s-letsencrypt-cloudflare
+    - k8s-prometheus-stack
+    - k8s-postgresql

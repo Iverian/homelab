@@ -1,0 +1,80 @@
+---
+local_subnet_pattern: "{{ '{}.{}'.format(ansible_default_ipv4.network.rsplit('.', 1)[0], '*') }}"
+release_name: transmission
+values:
+  env:
+    TZ: "{{ k8s_timezone }}"
+    TRANSMISSION_WEB_HOME: /web
+    TRANSMISSION_DOWNLOAD_DIR: /downloads/complete
+    TRANSMISSION_INCOMPLETE_DIR_ENABLED: true
+    TRANSMISSION_INCOMPLETE_DIR: /downloads/incomplete
+    TRANSMISSION_WATCH_DIR_ENABLED: true
+    TRANSMISSION_WATCH_DIR: /watch
+    TRANSMISSION_DOWNLOAD_QUEUE_ENABLED: true
+    TRANSMISSION_DOWNLOAD_QUEUE_SIZE: 5
+    TRANSMISSION_RPC_WHITELIST_ENABLED: false
+    TRANSMISSION_BLOCKLIST_ENABLED: true
+    TRANSMISSION_DHT_ENABLED: true
+    TRANSMISSION_RPC_AUTHENTICATION_REQUIRED: false
+    TRANSMISSION_PEER_PORT: &port 31413
+  secret:
+    TRANSMISSION_RPC_USERNAME: rpc
+    TRANSMISSION_RPC_PASSWORD: "{{ k8s_transmission__rpc_password }}"
+  service:
+    utptcp:
+      enabled: false
+      type: NodePort
+      ports:
+        utptcp:
+          enabled: true
+          port: *port
+          protocol: TCP
+          targetPort: *port
+          nodePort: *port
+    utpudp:
+      enabled: true
+      type: NodePort
+      ports:
+        utpudp:
+          enabled: true
+          port: *port
+          protocol: UDP
+          targetPort: *port
+          nodePort: *port
+  ingress:
+    main:
+      enabled: true
+      annotations: "{{ k8s_transmission__ingress_annotations }}"
+      ingressClassName: "{{ k8s_transmission__ingress_class }}"
+      hosts:
+        - host: "{{ k8s_transmission__ingress_host }}"
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: transmission-tls
+          hosts:
+            - "{{ k8s_transmission__ingress_host }}"
+  persistence:
+    config:
+      enabled: true
+      mountPath: /config
+      type: pvc
+      storageClass: "{{ k8s_transmission__storage_class }}"
+      size: 500Mi
+      accessMode: ReadWriteOnce
+    downloads:
+      enabled: true
+      mountPath: /downloads/complete
+      type: hostPath
+      hostPath: "{{ k8s_transmission__download_dir }}"
+    incomplete:
+      enabled: true
+      mountPath: /downloads/incomplete
+      type: hostPath
+      hostPath: "{{ k8s_transmission__incomplete_dir }}"
+    watch:
+      enabled: true
+      mountPath: /watch
+      type: hostPath
+      hostPath: "{{ k8s_transmission__watch_dir }}"

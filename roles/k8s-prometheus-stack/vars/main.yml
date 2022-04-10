@@ -1,0 +1,81 @@
+---
+etcd_hosts: "{% set r = [] %}{% for i in groups.etcd %}{{ r.append(hostvars[i].ansible_default_ipv4.address) }}{% endfor %}{{ r }}"
+prometheus_stack_values:
+  alertmanager:
+    enabled: true
+    ingress:
+      enabled: true
+      ingressClassName: "{{ k8s_prometheus_stack__ingress_class }}"
+      hosts:
+        - "alertmanager.{{ k8s_prometheus_stack__ingress_host_prefix }}"
+      annotations: "{{ k8s_prometheus_stack__ingress_annotations }}"
+      paths:
+        - /
+      pathType: Prefix
+      tls:
+        - secretName: k8s-prometheus-alertmanager
+          hosts:
+            - "alertmanager.{{ k8s_prometheus_stack__ingress_host_prefix }}"
+  grafana:
+    enabled: true
+    image:
+      repository: docker.io/grafana/grafana
+    defaultDashboardsTimezone: "{{ k8s_prometheus_stack__timezone }}"
+    adminPassword: "{{ k8s_prometheus_stack__grafana_password }}"
+    persistence:
+      type: pvc
+      enabled: true
+      storageClassName: "{{ k8s_prometheus_stack__storage_class }}"
+      accessModes:
+        - ReadWriteOnce
+      size: "{{ k8s_prometheus_stack__grafana_pvc_size }}"
+    ingress:
+      enabled: true
+      ingressClassName: "{{ k8s_prometheus_stack__ingress_class }}"
+      annotations: "{{ k8s_prometheus_stack__ingress_annotations }}"
+      hosts:
+        - "grafana.{{ k8s_prometheus_stack__ingress_host_prefix }}"
+      path: /
+      tls:
+        - secretName: k8s-prometheus-grafana
+          hosts:
+            - "grafana.{{ k8s_prometheus_stack__ingress_host_prefix }}"
+  kubeEtcd:
+    enabled: true
+    endpoints: "{{ etcd_hosts }}"
+  nodeExporter:
+    enabled: true
+  prometheus:
+    enabled: true
+    prometheusSpec:
+      retention: "{{ k8s_prometheus_stack__retention_days }}"
+      retentionSize: "{{ k8s_prometheus_stack__retention_size }}"
+      walCompression: true
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: "{{ k8s_prometheus_stack__storage_class }}"
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: "{{ k8s_prometheus_stack__retention_size }}"
+      resources:
+        limits:
+          cpu: 200m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+    ingress:
+      enabled: true
+      ingressClassName: "{{ k8s_prometheus_stack__ingress_class }}"
+      annotations: "{{ k8s_prometheus_stack__ingress_annotations }}"
+      hosts:
+        - "prometheus.{{ k8s_prometheus_stack__ingress_host_prefix }}"
+      paths:
+        - /
+      tls:
+        - secretName: k8s-prometheus-prometheus
+          hosts:
+            - "prometheus.{{ k8s_prometheus_stack__ingress_host_prefix }}"

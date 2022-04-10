@@ -6,3 +6,4 @@ k8s_postgresql_dump_schedule: "@daily"
 k8s_postgresql_data_sc: ssd
 k8s_postgresql_backup_temp_sc: ssd
 k8s_postgresql_backup_sc: hdd-backup
+k8s_postgresql_load_balancer_ip: ""

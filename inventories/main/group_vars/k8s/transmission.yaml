@@ -1,0 +1,10 @@
+---
+k8s_transmission__download_dir: "/data/hdd/transmission/download/complete"
+k8s_transmission__watch_dir: "/data/hdd/transmission/watch"
+k8s_transmission__incomplete_dir: "/data/hdd/transmission/download/incomplete"
+k8s_transmission__ingress_class: "{{ ingress_internal_class }}"
+k8s_transmission__ingress_host: "transmission.{{ internal_domain }}"
+k8s_transmission__storage_class: ssd
+k8s_transmission__ingress_annotations:
+  manager.io/issue-temporary-certificate: "true"
+  cert-manager.io/cluster-issuer: "{{ k8s_le__cluster_issuer }}"

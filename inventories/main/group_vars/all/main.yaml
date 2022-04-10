@@ -2,6 +2,3 @@
 root_dir: "{{ lookup('env', 'ANSIBLE_ROOT') }}"
 inventory_name: "{{ inventory_dir | basename }}"
 local_dir: "{{ [root_dir, '.local'] | join('/') }}"
-
-backup_directories:
-  - postgresql

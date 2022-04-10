@@ -4,7 +4,7 @@
     - name: create directories
       ansible.builtin.file:
         path: "{{ item }}"
-        mode: 0700
+        mode: 0755
         owner: root
         group: root
         state: directory
@@ -12,7 +12,13 @@
         - /data
         - /data/ssd
         - /data/hdd
-        - /etc/vault
+    - name: create vault directory
+      ansible.builtin.file:
+        path: /etc/vault
+        mode: 0700
+        owner: root
+        group: root
+        state: directory
     - name: create xfs file system on ssd
       tags: [storage.ssd]
       ansible.builtin.import_tasks: ssd.yaml

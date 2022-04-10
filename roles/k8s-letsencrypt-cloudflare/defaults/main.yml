@@ -5,3 +5,4 @@ k8s_le__server: ""
 k8s_le__cloudflare_api_token: ""
 k8s_le__cloudflare_email: ""
 k8s_le__ingress_class: ""
+k8s_le__cluster_issuer: letsencrypt

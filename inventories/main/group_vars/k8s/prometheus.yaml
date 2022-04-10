@@ -1,0 +1,8 @@
+---
+k8s_prometheus_stack__ingress_class: "{{ ingress_internal_class }}"
+k8s_prometheus_stack__ingress_host_prefix: "{{ internal_domain }}"
+k8s_prometheus_stack__ingress_annotations:
+  cert-manager.io/issue-temporary-certificate: "true"
+  cert-manager.io/cluster-issuer: "{{ k8s_le__cluster_issuer }}"
+k8s_prometheus_stack__timezone: "{{ k8s_timezone }}"
+k8s_prometheus_stack__storage_class: ssd
