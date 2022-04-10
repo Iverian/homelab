@@ -1,0 +1,7 @@
+---
+k8s_le__namespace: letsencrypt-cloudflare
+k8s_le__email: ""
+k8s_le__server: ""
+k8s_le__cloudflare_api_token: ""
+k8s_le__cloudflare_email: ""
+k8s_le__ingress_class: ""

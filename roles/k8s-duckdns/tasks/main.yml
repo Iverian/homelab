@@ -2,7 +2,7 @@
 - tags: [k8s-duckdns]
   block:
     - name: deploy duckdns update script
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         resource_definition: "{{ lookup('template', item) }}"
         state: present
       loop: "{{ query('fileglob', role_path + '/templates/k8s/*.yaml.j2') }}"

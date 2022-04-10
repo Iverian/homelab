@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ k8s_le__namespace }}"
+  labels:
+    app: letsencrypt-cloudflare
+    name: "{{ k8s_le__namespace }}"

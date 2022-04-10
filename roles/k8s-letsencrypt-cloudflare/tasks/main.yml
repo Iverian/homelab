@@ -1,0 +1,18 @@
+---
+- tags: [k8s-le]
+  block:
+    - name: check constraints
+      ansible.builtin.assert:
+        that:
+          - k8s_le__email is defined and k8s_le__email | length > 0
+          - k8s_le__server is defined and k8s_le__server | length > 0
+          - k8s_le__cloudflare_api_token is defined and k8s_le__cloudflare_api_token | length > 0
+          - k8s_le__cloudflare_email is defined and k8s_le__cloudflare_email | length > 0
+          - k8s_le__ingress_class is defined and k8s_le__ingress_class | length > 0
+    - name: create kubernetes resources
+      kubernetes.core.k8s:
+        resource_definition: "{{ lookup('template', item) }}"
+        state: present
+      loop: "{{ query('fileglob', role_path + '/templates/k8s/*.yaml.j2') }}"
+      loop_control:
+        label: "{{ item | basename }}"

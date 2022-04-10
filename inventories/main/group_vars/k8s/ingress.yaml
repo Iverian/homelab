@@ -1,3 +1,3 @@
 ---
-k8s_ingress__internal_ip: "{{ unbound__local_ip }}"
-k8s_ingress__external_ip: "10.90.0.201"
+ingress_internal_class: nginx-internal
+ingress_external_class: nginx-external
