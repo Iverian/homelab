@@ -50,7 +50,6 @@ prometheus_stack_values:
     enabled: true
     prometheusSpec:
       retention: "{{ k8s_prometheus_stack__retention_days }}"
-      retentionSize: "{{ k8s_prometheus_stack__retention_size }}"
       walCompression: true
       storageSpec:
         volumeClaimTemplate:

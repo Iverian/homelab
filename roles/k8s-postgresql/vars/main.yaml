@@ -6,11 +6,13 @@ values:
     postgresPassword: "{{ k8s_postgresql_password }}"
   auth:
     enablePostgreUser: true
+    database: postgres
   primary:
     service:
       type: LoadBalancer
       loadBalancerIP: "{{ k8s_postgresql_load_balancer_ip }}"
   metrics:
+    enabled: true
     serviceMonitor:
       enabled: true
     prometheusRule:
