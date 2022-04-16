@@ -16,6 +16,12 @@ values:
     TRANSMISSION_BLOCKLIST_ENABLED: true
     TRANSMISSION_DHT_ENABLED: true
     TRANSMISSION_RPC_AUTHENTICATION_REQUIRED: false
+    TRANSMISSION_TRASH_ORIGINAL_TORRENT_FILES: false
+    TRANSMISSION_PORT_FORWARDING_ENABLED: false
+    TRANSMISSION_SPEED_LIMIT_UP: 4096
+    TRANSMISSION_SPEED_LIMIT_DOWN: 16384
+    TRANSMISSION_SPEED_LIMIT_DOWN_ENABLED: true
+    TRANSMISSION_SPEED_LIMIT_UP_ENABLED: true
     TRANSMISSION_PEER_PORT: &port 31413
   secret:
     TRANSMISSION_RPC_USERNAME: rpc
@@ -32,11 +38,11 @@ values:
           targetPort: *port
           nodePort: *port
     utpudp:
-      enabled: true
+      enabled: false
       type: NodePort
       ports:
         utpudp:
-          enabled: true
+          enabled: false
           port: *port
           protocol: UDP
           targetPort: *port

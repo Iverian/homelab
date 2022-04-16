@@ -48,6 +48,7 @@
   become: true
   roles:
     - k8s-metallb
+    - k8s-prometheus-stack
   tasks:
     - name: create internal nginx controller
       ansible.builtin.import_role:
@@ -74,6 +75,7 @@
   become: true
   roles:
     - k8s-duckdns
+    - k8s-cert-manager
     - k8s-letsencrypt-cloudflare
-    - k8s-prometheus-stack
+    - k8s-metrics-server
     - k8s-postgresql

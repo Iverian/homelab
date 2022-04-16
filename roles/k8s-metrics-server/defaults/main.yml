@@ -1,0 +1,2 @@
+---
+k8s_metrics_server__namespace: metrics-server

@@ -1,0 +1,15 @@
+---
+release_name: metrics-server
+values:
+  hostNetwork:
+    enabled: true
+  metrics:
+    enabled: true
+  serviceMonitor:
+    enabled: true
+  defaultArgs:
+    - --cert-dir=/tmp
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    - --kubelet-use-node-status-port
+    - --metric-resolution=15s
+    - --kubelet-insecure-tls

@@ -23,6 +23,23 @@ prometheus_stack_values:
     defaultDashboardsEnabled: true
     defaultDashboardsTimezone: "{{ k8s_prometheus_stack__timezone }}"
     adminPassword: "{{ k8s_prometheus_stack__grafana_password }}"
+    grafana.ini:
+      paths:
+        data: /var/lib/grafana/
+        logs: /var/log/grafana
+        plugins: /var/lib/grafana/plugins
+        provisioning: /etc/grafana/provisioning
+      analytics:
+        check_for_updates: false
+      log:
+        mode: console
+      grafana_net:
+        url: https://grafana.net
+      auth.anonymous:
+        enabled: true
+        org_name: Main Org.
+        org_role: Admin
+        hide_version: true
     persistence:
       type: pvc
       enabled: true
@@ -51,6 +68,10 @@ prometheus_stack_values:
     prometheusSpec:
       retention: "{{ k8s_prometheus_stack__retention_days }}"
       walCompression: true
+      ruleSelectorNilUsesHelmValues: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -62,10 +83,10 @@ prometheus_stack_values:
                 storage: "{{ k8s_prometheus_stack__retention_size }}"
       resources:
         limits:
-          cpu: 200m
+          cpu: 400m
           memory: 512Mi
         requests:
-          cpu: 100m
+          cpu: 200m
           memory: 256Mi
     ingress:
       enabled: true

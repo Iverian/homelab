@@ -1,0 +1,8 @@
+---
+release_name: cert-manager
+values:
+  installCRDs: true
+  prometheus:
+    enabled: true
+    servicemonitor:
+      enabled: true
