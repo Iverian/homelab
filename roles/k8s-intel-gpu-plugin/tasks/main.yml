@@ -1,0 +1,15 @@
+---
+- tags: [k8s, k8s-intel-gpu-plugin]
+  block:
+    - name: install intel-gpu-plugin helm chart
+      kubernetes.core.helm:
+        chart_repo_url: https://k8s-at-home.com/charts/
+        chart_ref: intel-gpu-plugin
+        chart_version: 4.2.0
+        release_namespace: "{{ k8s_intel_gpu_plugin__namespace }}"
+        release_name: intel-gpu-plugin
+        release_values: "{{ values }}"
+        create_namespace: true
+        state: present
+      run_once: true
+  become: true

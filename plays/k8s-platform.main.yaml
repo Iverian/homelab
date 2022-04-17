@@ -79,3 +79,4 @@
     - k8s-letsencrypt-cloudflare
     - k8s-metrics-server
     - k8s-postgresql
+    - k8s-intel-gpu-plugin

@@ -1,0 +1,15 @@
+---
+- tags: [k8s, k8s-jackett]
+  block:
+    - name: install jackett helm chart
+      kubernetes.core.helm:
+        chart_repo_url: https://k8s-at-home.com/charts/
+        chart_ref: jackett
+        chart_version: 11.4.0
+        release_namespace: "{{ k8s_jackett__namespace }}"
+        release_name: jackett
+        release_values: "{{ values }}"
+        create_namespace: true
+        state: present
+      run_once: true
+  become: true

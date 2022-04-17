@@ -1,0 +1,10 @@
+---
+k8s_radarr__namespace: radarr
+k8s_radarr__ingress_annotations: {}
+k8s_radarr__ingress_class: ""
+k8s_radarr__ingress_host: ""
+k8s_radarr__config_storage_class: ""
+k8s_radarr__cache_storage_class: ""
+k8s_radarr__media_storage_class: ""
+k8s_radarr__download_dir: ""
+k8s_radarr__media_host_path: ""

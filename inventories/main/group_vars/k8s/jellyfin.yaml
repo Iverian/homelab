@@ -1,0 +1,9 @@
+---
+k8s_jellyfin__namespace: jellyfin
+k8s_jellyfin__ingress_annotations:
+  cert-manager.io/cluster-issuer: "{{ k8s_le__cluster_issuer }}"
+k8s_jellyfin__ingress_class: "{{ ingress_internal_class }}"
+k8s_jellyfin__ingress_host: "jellyfin.{{ internal_domain }}"
+k8s_jellyfin__config_storage_class: ssd
+k8s_jellyfin__cache_storage_class: ssd
+k8s_jellyfin__media_host_path: "{{ k8s_transmission__download_dir }}"

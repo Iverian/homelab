@@ -1,0 +1,25 @@
+---
+- tags: [k8s, k8s-radarr]
+  block:
+    - name: create radarr host directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        mode: 0777
+        owner: root
+        group: root
+        state: directory
+      loop:
+        - "{{ k8s_radarr__media_host_path }}"
+        - "{{ k8s_radarr__download_dir }}"
+    - name: install radarr helm chart
+      kubernetes.core.helm:
+        chart_repo_url: https://k8s-at-home.com/charts/
+        chart_ref: radarr
+        chart_version: 16.1.0
+        release_namespace: "{{ k8s_radarr__namespace }}"
+        release_name: radarr
+        release_values: "{{ values }}"
+        create_namespace: true
+        state: present
+      run_once: true
+  become: true

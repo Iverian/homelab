@@ -1,0 +1,38 @@
+---
+values:
+  env:
+    TZ: "{{ k8s_timezone }}"
+  ingress:
+    main:
+      enabled: true
+      annotations: "{{ k8s_radarr__ingress_annotations }}"
+      ingressClassName: "{{ k8s_radarr__ingress_class }}"
+      hosts:
+        - host: "{{ k8s_radarr__ingress_host }}"
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: radarr-tls
+          hosts:
+            - "{{ k8s_radarr__ingress_host }}"
+  metrics:
+    enabled: true
+    prometheusRule:
+      enabled: true
+  persistence:
+    config:
+      enabled: true
+      type: pvc
+      storageClass: "{{ k8s_radarr__config_storage_class }}"
+      size: 100Mi
+      accessMode: ReadWriteOnce
+    downloads:
+      enabled: true
+      type: hostPath
+      mountPath: /download/complete
+      hostPath: "{{ k8s_radarr__download_dir }}"
+    media:
+      enabled: true
+      type: hostPath
+      hostPath: "{{ k8s_radarr__media_host_path }}"

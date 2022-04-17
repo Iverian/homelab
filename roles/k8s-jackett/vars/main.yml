@@ -1,0 +1,31 @@
+---
+values:
+  env:
+    TZ: "{{ k8s_timezone }}"
+  ingress:
+    main:
+      enabled: true
+      annotations: "{{ k8s_jackett__ingress_annotations }}"
+      ingressClassName: "{{ k8s_jackett__ingress_class }}"
+      hosts:
+        - host: "{{ k8s_jackett__ingress_host }}"
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: jackett-tls
+          hosts:
+            - "{{ k8s_jackett__ingress_host }}"
+  persistence:
+    config:
+      enabled: true
+      type: pvc
+      storageClass: "{{ k8s_jackett__config_storage_class }}"
+      size: 100Mi
+      accessMode: ReadWriteOnce
+    torrentblackhole:
+      enabled: true
+      type: pvc
+      storageClass: "{{ k8s_jackett__torrent_storage_class }}"
+      accessMode: ReadWriteOnce
+      size: 1Gi

@@ -1,0 +1,8 @@
+---
+k8s_jackett__namespace: jackett
+k8s_jackett__ingress_annotations:
+  cert-manager.io/cluster-issuer: "{{ k8s_le__cluster_issuer }}"
+k8s_jackett__ingress_class: "{{ ingress_internal_class }}"
+k8s_jackett__ingress_host: "jackett.{{ internal_domain }}"
+k8s_jackett__config_storage_class: ssd
+k8s_jackett__torrent_storage_class: ssd

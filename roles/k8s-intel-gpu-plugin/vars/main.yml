@@ -1,0 +1,4 @@
+---
+values:
+  env:
+    TZ: "{{ k8s_timezone }}"

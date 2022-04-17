@@ -1,0 +1,7 @@
+---
+k8s_jackett__namespace: jackett
+k8s_jackett__ingress_annotations: {}
+k8s_jackett__ingress_class: ""
+k8s_jackett__ingress_host: ""
+k8s_jackett__config_storage_class: ""
+k8s_jackett__torrent_storage_class: ""

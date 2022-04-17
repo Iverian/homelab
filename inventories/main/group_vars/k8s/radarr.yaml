@@ -1,0 +1,10 @@
+---
+k8s_radarr__namespace: radarr
+k8s_radarr__ingress_annotations:
+  cert-manager.io/cluster-issuer: "{{ k8s_le__cluster_issuer }}"
+k8s_radarr__ingress_class: "{{ ingress_internal_class }}"
+k8s_radarr__ingress_host: "radarr.{{ internal_domain }}"
+k8s_radarr__config_storage_class: ssd
+k8s_radarr__media_storage_class: ssd
+k8s_radarr__download_dir: "{{ k8s_transmission__download_dir }}"
+k8s_radarr__media_host_path: /data/hdd/radarr/media
