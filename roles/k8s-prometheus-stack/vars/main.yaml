@@ -4,7 +4,7 @@ prometheus_stack_values:
   alertmanager:
     enabled: true
     ingress:
-      enabled: true
+      enabled: false
       ingressClassName: "{{ k8s_prometheus_stack__ingress_class }}"
       hosts:
         - "alertmanager.{{ k8s_prometheus_stack__ingress_host_prefix }}"
@@ -38,7 +38,7 @@ prometheus_stack_values:
       auth.anonymous:
         enabled: true
         org_name: Main Org.
-        org_role: Admin
+        org_role: Viewer
         hide_version: true
     persistence:
       type: pvc
@@ -84,12 +84,12 @@ prometheus_stack_values:
       resources:
         limits:
           cpu: 400m
-          memory: 512Mi
+          memory: 2Gi
         requests:
           cpu: 200m
-          memory: 256Mi
+          memory: 512Mi
     ingress:
-      enabled: true
+      enabled: false
       ingressClassName: "{{ k8s_prometheus_stack__ingress_class }}"
       annotations: "{{ k8s_prometheus_stack__ingress_annotations }}"
       hosts:
