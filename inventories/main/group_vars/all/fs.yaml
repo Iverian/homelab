@@ -5,9 +5,10 @@ zfs_pool_name: hdd
 zfs_fs_name: main
 zfs_pool_mode: raidz1
 zfs_pool_devices:
-  - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D415NP4H
   - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D4136UV7
+  - ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NLF63
   - ata-WDC_WD20EFZX-68AWUN0_WD-WX12D41367TU
+  - ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NL0SD
 zfs_pool_options:
   autotrim: "on"
 zfs_pool_cache: nvme-eui.0025385711b0243d-part4
