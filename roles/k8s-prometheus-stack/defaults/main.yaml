@@ -7,7 +7,7 @@ k8s_prometheus_stack__ingress_host_prefix: ""
 k8s_prometheus_stack__ingress_annotations: {}
 k8s_prometheus_stack__timezone: ""
 k8s_prometheus_stack__grafana_password: ""
-k8s_prometheus_stack__retention_days: 7d
-k8s_prometheus_stack__retention_size: 8Gi
+k8s_prometheus_stack__retention_days: 3d
+k8s_prometheus_stack__retention_size: 4Gi
 k8s_prometheus_stack__storage_class: ""
 k8s_prometheus_stack__grafana_pvc_size: 2Gi

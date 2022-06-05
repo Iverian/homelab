@@ -83,10 +83,10 @@ prometheus_stack_values:
                 storage: "{{ k8s_prometheus_stack__retention_size }}"
       resources:
         limits:
-          cpu: 400m
+          cpu: "1"
           memory: 2Gi
         requests:
-          cpu: 200m
+          cpu: 250m
           memory: 512Mi
     ingress:
       enabled: false

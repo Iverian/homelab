@@ -37,7 +37,7 @@ nodelocaldns_second_health_port: 9256
 nodelocaldns_bind_metrics_host_ip: false
 nodelocaldns_secondary_skew_seconds: 5
 resolvconf_mode: docker_dns
-deploy_netchecker: true
+deploy_netchecker: false
 container_manager: crio
 k8s_image_pull_policy: IfNotPresent
 kubernetes_audit: false
@@ -49,7 +49,7 @@ system_cpu_reserved: 100m
 system_master_memory_reserved: 256Mi
 system_master_cpu_reserved: 100m
 eviction_hard: &eviction_hard
-  memory.available: 200Mi
+  memory.available: 32Mi
   nodefs.available: "10%"
   nodefs.inodesFree: "5%"
   imagefs.available: "15%"
