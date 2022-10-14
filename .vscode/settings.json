@@ -6,6 +6,11 @@
         "*.yml.j2": "jinja-yaml",
         "hosts": "ini"
     },
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        "3d/**/*.py",
+    ],
     "ansible.ansibleLint.enabled": true,
     "python.terminal.activateEnvironment": false,
     "ansible.python.activationScript": "activate.sh",
