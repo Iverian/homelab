@@ -19,7 +19,7 @@ values:
     TRANSMISSION_TRASH_ORIGINAL_TORRENT_FILES: false
     TRANSMISSION_PORT_FORWARDING_ENABLED: false
     TRANSMISSION_SPEED_LIMIT_UP: 4096
-    TRANSMISSION_SPEED_LIMIT_DOWN: 16384
+    TRANSMISSION_SPEED_LIMIT_DOWN: 32767
     TRANSMISSION_SPEED_LIMIT_DOWN_ENABLED: true
     TRANSMISSION_SPEED_LIMIT_UP_ENABLED: true
     TRANSMISSION_PEER_PORT: &port 31413
@@ -28,7 +28,7 @@ values:
     TRANSMISSION_RPC_PASSWORD: "{{ k8s_transmission__rpc_password }}"
   service:
     utptcp:
-      enabled: false
+      enabled: true
       type: NodePort
       ports:
         utptcp:
@@ -42,7 +42,7 @@ values:
       type: NodePort
       ports:
         utpudp:
-          enabled: false
+          enabled: true
           port: *port
           protocol: UDP
           targetPort: *port

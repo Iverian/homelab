@@ -1,6 +1,13 @@
 ---
 - tags: [k8s-transmission]
   block:
+    - name: download helm chart
+      ansible.builtin.get_url:
+        url: https://github.com/k8s-at-home/charts/releases/download/transmission-8.4.3/transmission-8.4.3.tgz
+        dest: /tmp/transmission.chart.tgz
+        mode: 0644
+        owner: root
+        group: root
     - name: create transmission host directories
       ansible.builtin.file:
         path: "{{ item }}"
@@ -14,13 +21,18 @@
         - "{{ k8s_transmission__incomplete_dir }}"
     - name: install transmission helm chart
       kubernetes.core.helm:
-        chart_repo_url: https://k8s-at-home.com/charts/
-        chart_ref: transmission
-        chart_version: 8.2.0
+        # chart_repo_url: https://k8s-at-home.com/charts/
+        chart_ref: /tmp/transmission.chart.tgz
+        # chart_version: 8.4.3
         release_namespace: "{{ k8s_transmission__namespace }}"
         release_name: "{{ release_name }}"
         release_values: "{{ values }}"
         create_namespace: true
         state: present
       run_once: true
+  always:
+    - name: remove helm chart
+      ansible.builtin.file:
+        path: /tmp/transmission.chart.tgz
+        state: absent
   become: true
