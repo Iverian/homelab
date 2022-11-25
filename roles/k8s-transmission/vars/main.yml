@@ -29,7 +29,10 @@ values:
   service:
     utptcp:
       enabled: true
-      type: NodePort
+      annotations:
+        metallb.universe.tf/allow-shared-ip: "transmission"
+      type: LoadBalancer
+      loadBalancerIP: "10.90.0.202"
       ports:
         utptcp:
           enabled: true
@@ -38,8 +41,11 @@ values:
           targetPort: *port
           nodePort: *port
     utpudp:
-      enabled: false
-      type: NodePort
+      enabled: true
+      annotations:
+        metallb.universe.tf/allow-shared-ip: "transmission"
+      type: LoadBalancer
+      loadBalancerIP: "10.90.0.202"
       ports:
         utpudp:
           enabled: true
