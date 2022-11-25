@@ -86,8 +86,8 @@ values:
       hostPath: "{{ k8s_transmission__watch_dir }}"
   resources:
     limits:
-      cpu: "1"
+      cpu: "500m"
       memory: "512Mi"
     requests:
-      cpu: "500m"
+      cpu: "100m"
       memory: "256Mi"
