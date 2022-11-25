@@ -1,9 +1,11 @@
-FILE=$([ -f "${BASH_SOURCE}" ] && echo "${BASH_SOURCE}" || echo "${0}")
+#!/usr/bin/env bash
+
+FILE=$([ -f "${BASH_SOURCE[1]}" ] && echo "${BASH_SOURCE[1]}" || echo "${0}")
 FILE=$(readlink -f "${FILE}")
 
-HERE=$(readlink -f $(dirname -- "${FILE}"))
+HERE=$(readlink -f "$(dirname -- "${FILE}")")
 VENV_DIR="${HERE}/.venv"
-REQUIREMENTS_FILE="${HERE}/requirements.yaml"
+REQUIREMENTS_FILE="${HERE}/requirements.yml"
 USAGE="USAGE: . activate.sh [help|install]
 Activate Ansible Environenment
 
@@ -16,25 +18,20 @@ export PIPENV_VENV_IN_PROJECT="1"
 export PIPENV_VERBOSITY="-1"
 
 log_info() {
-  echo "[*] $@"
+  echo "[*] $*"
 }
 
 log_error() {
-  echo "[x] $@"
+  echo "[x] $*"
 }
 
 install() {
-  if [ ! -d "${VENV_DIR}" ]; then
-    log_info "creating virtualenv at '${VENV_DIR}'"
-    pipenv --python 3 || return $?
-  fi
-
   log_info "installing python dependencies"
-  pipenv install --dev || return $?
+  poetry install || return $?
   log_info "installing ansible collections"
-  pipenv run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}" || return $?
+  poetry run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}" || return $?
   log_info "installing ansible roles"
-  pipenv run ansible-galaxy role install -f -r "${REQUIREMENTS_FILE}" || return $?
+  poetry run ansible-galaxy role install -f -r "${REQUIREMENTS_FILE}" || return $?
 
   log_info "installing git submodules"
   git submodule init || return $?

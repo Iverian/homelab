@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "homelab"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ansible = ">=4.8,<5.0"
+netaddr = "^0.8.0"
+pbr = "^5.11.0"
+jmespath = "^1.0.1"
+ruamel-yaml = "^0.17.21"
+kubernetes = ">=21.7,<22.0"
+docker = "^6.0.1"
+markupsafe = ">=1.1,<2.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ansible-lint = ">=5.3,<6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+exclude = [".cache/**", ".local/**", ".venv/**", ".vscode/**", "3d/**"]

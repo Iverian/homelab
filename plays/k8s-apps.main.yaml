@@ -5,5 +5,3 @@
   become: true
   roles:
     - k8s-transmission
-    - k8s-jackett
-    - k8s-radarr
