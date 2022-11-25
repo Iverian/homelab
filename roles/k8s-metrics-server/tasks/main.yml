@@ -1,15 +1,26 @@
 ---
-- tags: [k8s, k8s-metrics-server]
+- tags: [k8s, k8s.metrics-server]
   block:
+    - name: download helm chart
+      ansible.builtin.get_url:
+        url: https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-3.8.2/metrics-server-3.8.2.tgz
+        dest: &p /tmp/metrics-server.tgz
+        mode: 0644
+        owner: root
+        group: root
     - name: install cert-manager helm chart
       kubernetes.core.helm:
-        chart_repo_url: https://kubernetes-sigs.github.io/metrics-server
-        chart_ref: metrics-server
-        chart_version: 3.8.2
+        chart_ref: *p
         release_namespace: "{{ k8s_metrics_server__namespace }}"
         release_name: "{{ release_name }}"
         release_values: "{{ values }}"
         create_namespace: true
+        atomic: true
         state: present
-      run_once: true
+  always:
+    - name: remove helm chart
+      ansible.builtin.file:
+        path: *p
+        state: absent
+  run_once: true
   become: true

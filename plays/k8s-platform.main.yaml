@@ -1,10 +1,10 @@
 ---
 - name: install k8s local path provisioner
   hosts: k8s
-  tags: [k8s.lpp]
   any_errors_fatal: true
   become: true
   run_once: true
+  tags: [k8s, k8s.platform, k8s.lpp]
   tasks:
     - name: create local path provisioner directories
       ansible.builtin.file:
@@ -46,6 +46,7 @@
   any_errors_fatal: true
   run_once: true
   become: true
+  tags: [k8s, k8s.platform]
   roles:
     - k8s-metallb
     - k8s-prometheus-stack
@@ -73,10 +74,9 @@
   any_errors_fatal: true
   run_once: true
   become: true
+  tags: [k8s, k8s.platform]
   roles:
     - k8s-duckdns
     - k8s-cert-manager
     - k8s-letsencrypt-cloudflare
     - k8s-metrics-server
-    - k8s-postgresql
-    - k8s-intel-gpu-plugin

@@ -25,6 +25,24 @@
       loop: "{{ query('fileglob', role_path + '/templates/*.conf.j2') }}"
       notify:
         - reload unbound
+    - name: create drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/unbound.service.d
+        mode: 0755
+        owner: root
+        group: root
+        state: directory
+    - name: configure unbound service
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/unbound.service.d/10-after.conf
+        content: |-
+          [Unit]
+          After=network-online.target
+        mode: 0644
+        owner: root
+        group: root
+      notify:
+        - reload unbound
     - name: enable unbound
       ansible.builtin.systemd:
         name: unbound.service

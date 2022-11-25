@@ -84,3 +84,10 @@ values:
       mountPath: /watch
       type: hostPath
       hostPath: "{{ k8s_transmission__watch_dir }}"
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "500m"
+      memory: "256Mi"

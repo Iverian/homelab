@@ -1,15 +1,61 @@
 ---
 - tags: [k8s, k8s.metallb]
   block:
+    - name: download helm chart
+      ansible.builtin.get_url:
+        url: https://github.com/metallb/metallb/releases/download/metallb-chart-0.13.7/metallb-0.13.7.tgz
+        dest: /tmp/metallb.tgz
+        mode: 0644
+        owner: root
+        group: root
+    - name: create metallb namespace
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ k8s_metallb_namespace }}"
+            labels:
+              pod-security.kubernetes.io/enforce: privileged
+              pod-security.kubernetes.io/audit: privileged
+              pod-security.kubernetes.io/warn: privileged
+        state: present
     - name: install metallb
       kubernetes.core.helm:
+        chart_ref: /tmp/metallb.tgz
         release_name: "{{ k8s_metallb_name }}"
         release_namespace: "{{ k8s_metallb_namespace }}"
-        release_state: present
-        release_values: "{{ values }}"
-        chart_repo_url: https://metallb.github.io/metallb
-        chart_ref: metallb
-        chart_version: '0.12.1'
-        create_namespace: true
+        release_values:
+
+        create_namespace: false
+        atomic: true
+        state: present
+    - name: install metallb pool
+      community.kubernetes.k8s:
+        definition:
+          - apiVersion: metallb.io/v1beta1
+            kind: IPAddressPool
+            metadata:
+              name: pool
+              namespace: "{{ k8s_metallb_namespace }}"
+            spec:
+              addresses:
+                - "{{ k8s_metallb_pool }}"
+          - apiVersion: metallb.io/v1beta1
+            kind: L2Advertisement
+            metadata:
+              name: l2-advertisement
+              namespace: "{{ k8s_metallb_namespace }}"
+            spec:
+              ipAddressPools:
+                - pool
+              interfaces:
+                - enp3s0
+        state: present
+  always:
+    - name: remove helm chart
+      ansible.builtin.file:
+        path: /tmp/metallb.tgz
+        state: absent
   run_once: true
   become: true

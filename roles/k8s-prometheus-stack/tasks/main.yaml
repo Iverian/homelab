@@ -1,13 +1,26 @@
 ---
-- tags: [k8s-prometheus-stack]
+- tags: [k8s, k8s.prometheus-stack]
   block:
+    - name: download helm chart
+      ansible.builtin.get_url:
+        url: https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-34.9.0/kube-prometheus-stack-34.9.0.tgz
+        dest: /tmp/kube-prometheus-stack.tgz
+        mode: 0644
+        owner: root
+        group: root
     - name: install kube-prometheus-stack helm chart
       kubernetes.core.helm:
-        chart_ref: kube-prometheus-stack
-        chart_repo_url: https://prometheus-community.github.io/helm-charts
-        chart_version: "{{ k8s_prometheus_stack__chart_version }}"
+        chart_ref: /tmp/kube-prometheus-stack.tgz
         release_name: "{{ k8s_prometheus_stack__name }}"
         release_namespace: "{{ k8s_prometheus_stack__namespace }}"
         release_values: "{{ prometheus_stack_values }}"
         create_namespace: true
+        atomic: true
         state: present
+  always:
+    - name: remove chart
+      ansible.builtin.file:
+        path: /tmp/kube-prometheus-stack.tgz
+        state: absent
+  run_once: true
+  become: true

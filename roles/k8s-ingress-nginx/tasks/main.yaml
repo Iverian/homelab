@@ -6,13 +6,25 @@
         that:
           - k8s_nginx_external_ip is defined
           - k8s_nginx_external_ip | ansible.netcommon.ipaddr
+    - name: download helm chart
+      ansible.builtin.get_url:
+        url: https://helm.nginx.com/stable/nginx-ingress-0.12.1.tgz
+        dest: /tmp/nginx.tgz
+        mode: 0644
+        owner: root
+        group: root
     - name: install ingress-nginx
       kubernetes.core.helm:
+        chart_ref: /tmp/nginx.tgz
         release_name: "{{ k8s_nginx_name }}"
         release_namespace: "{{ k8s_nginx_namespace }}"
-        release_state: present
         release_values: "{{ values }}"
-        chart_repo_url: https://helm.nginx.com/stable
-        chart_ref: nginx-ingress
-        chart_version: "0.12.1"
         create_namespace: true
+        state: present
+  always:
+    - name: remove chart file
+      ansible.builtin.file:
+        path: /tmp/nginx.tgz
+        state: absent
+  run_once: true
+  become: true

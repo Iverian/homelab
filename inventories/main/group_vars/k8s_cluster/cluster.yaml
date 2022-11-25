@@ -1,5 +1,5 @@
 ---
-kube_version: v1.22.8
+kube_version: v1.25.3
 kube_network_plugin: calico
 
 kube_config_dir: /etc/kubernetes
@@ -38,7 +38,7 @@ nodelocaldns_bind_metrics_host_ip: false
 nodelocaldns_secondary_skew_seconds: 5
 resolvconf_mode: docker_dns
 deploy_netchecker: false
-container_manager: crio
+container_manager: containerd
 k8s_image_pull_policy: IfNotPresent
 kubernetes_audit: false
 podsecuritypolicy_enabled: false

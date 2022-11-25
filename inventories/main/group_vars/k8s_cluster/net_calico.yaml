@@ -1,5 +1,6 @@
 ---
 nat_outgoing: true
+calico_pool_blocksize: 24
 calico_advertise_cluster_ips: false
 calico_datastore: "kdd"
 calico_iptables_backend: "Auto"
