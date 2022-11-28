@@ -29,10 +29,7 @@ values:
   service:
     utptcp:
       enabled: true
-      annotations:
-        metallb.universe.tf/allow-shared-ip: "transmission"
-      type: LoadBalancer
-      loadBalancerIP: "10.90.0.202"
+      type: NodePort
       ports:
         utptcp:
           enabled: true
@@ -41,18 +38,7 @@ values:
           targetPort: *port
           nodePort: *port
     utpudp:
-      enabled: true
-      annotations:
-        metallb.universe.tf/allow-shared-ip: "transmission"
-      type: LoadBalancer
-      loadBalancerIP: "10.90.0.202"
-      ports:
-        utpudp:
-          enabled: true
-          port: *port
-          protocol: UDP
-          targetPort: *port
-          nodePort: *port
+      enabled: false
   ingress:
     main:
       enabled: true
@@ -90,10 +76,3 @@ values:
       mountPath: /watch
       type: hostPath
       hostPath: "{{ k8s_transmission__watch_dir }}"
-  resources:
-    limits:
-      cpu: "1"
-      memory: "2Gi"
-    requests:
-      cpu: "100m"
-      memory: "256Mi"
