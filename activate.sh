@@ -27,7 +27,7 @@ log_error() {
 
 install() {
   log_info "installing python dependencies"
-  poetry install || return $?
+  poetry install --no-root || return $?
   log_info "installing ansible collections"
   poetry run ansible-galaxy collection install -f -r "${REQUIREMENTS_FILE}" || return $?
   log_info "installing ansible roles"

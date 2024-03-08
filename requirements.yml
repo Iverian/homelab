@@ -1,6 +1,5 @@
 ---
 roles: []
 collections:
-  - community.general
   - community.postgresql
   - kubernetes.core
