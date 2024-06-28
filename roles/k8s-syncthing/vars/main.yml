@@ -1,0 +1,55 @@
+---
+local_subnet_pattern: "{{ '{}.{}'.format(ansible_default_ipv4.network.rsplit('.', 1)[0], '*') }}"
+release_name: syncthing
+values:
+  image:
+    repository: syncthing/syncthing
+    tag: 1.27.8
+    pullPolicy: IfNotPresent
+  service:
+    main:
+      ports:
+        http:
+          port: 8384
+    listen:
+      enabled: true
+      type: NodePort
+      externalTrafficPolicy: Local
+      ports:
+        listen:
+          enabled: true
+          port: 22000
+          protocol: TCP
+          targetPort: 22000
+    discovery:
+      enabled: true
+      type: NodePort
+      externalTrafficPolicy: Local
+      ports:
+        discovery:
+          enabled: true
+          port: 21027
+          protocol: UDP
+          targetPort: 21027
+  ingress:
+    main:
+      enabled: true
+      annotations: "{{ k8s_syncthing__ingress_annotations }}"
+      ingressClassName: "{{ k8s_syncthing__ingress_class }}"
+      hosts:
+        - host: "{{ k8s_syncthing__ingress_host }}"
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: syncthing-tls
+          hosts:
+            - "{{ k8s_syncthing__ingress_host }}"
+  persistence:
+    data:
+      enabled: true
+      mountPath: /var/syncthing
+      type: pvc
+      storageClass: "{{ k8s_syncthing__storage_class }}"
+      size: 500Mi
+      accessMode: ReadWriteOnce

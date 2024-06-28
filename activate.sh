@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-FILE=$([ -f "${BASH_SOURCE[1]}" ] && echo "${BASH_SOURCE[1]}" || echo "${0}")
+FILE=$([ -f "${BASH_SOURCE[0]}" ] && echo "${BASH_SOURCE[0]}" || echo "${0}")
 FILE=$(readlink -f "${FILE}")
 
 HERE=$(readlink -f "$(dirname -- "${FILE}")")

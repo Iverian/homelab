@@ -154,3 +154,4 @@ cython_debug/
 .vault-pass
 credentials/
 test.yaml
+/.devcontainer
