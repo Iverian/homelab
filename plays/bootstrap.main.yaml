@@ -27,7 +27,6 @@
   roles:
     - storage
     - rclone-backup
-    - unbound-dns
   tasks:
     - name: install host dependencies
       tags: [bootstrap.dependencies]

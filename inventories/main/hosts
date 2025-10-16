@@ -1,5 +1,5 @@
 [all]
-homelab ansible_host=homelab.local ansible_port=8022
+homelab ansible_host=homelab.lan ansible_port=8022
 
 [kube_control_plane]
 homelab

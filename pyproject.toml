@@ -2,7 +2,7 @@
 name = "homelab"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = []
 readme = "README.md"
 package-mode = false
 
@@ -16,7 +16,7 @@ ruamel-yaml = "^0.17.21"
 kubernetes = ">=21.7,<22.0"
 docker = "^6.0.1"
 markupsafe = ">=1.1,<2.0"
-
+ansible-vault = "^2.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ansible-lint = ">=5.3,<6.0"
