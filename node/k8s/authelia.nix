@@ -78,7 +78,7 @@ in
           postgres = {
             enabled = true;
             deploy = false;
-            address = "tcp://authelia-db-0";
+            address = "tcp://authelia-db-0.authelia.pod";
             database = "authelia";
             username = "postgres";
             password = {
