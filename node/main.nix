@@ -16,6 +16,7 @@
     ./k8s/cert-manager.nix
     ./k8s/postgres-operator.nix
     ./k8s/authentik.nix
+    ./k8s/prometheus-stack.nix
   ];
 
   sops.age.keyFile = "/etc/nixos/sops.key";

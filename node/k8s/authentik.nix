@@ -38,7 +38,6 @@ in
       };
       server = {
         ingress = {
-          ingressClassName = "traefik";
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
