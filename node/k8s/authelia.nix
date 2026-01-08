@@ -142,6 +142,7 @@ in
                 public = false;
                 require_pkce = true;
                 pkce_challenge_method = "S256";
+                authorization_policy = "one_factor";
                 redirect_uris = [
                   "https://grafana.home.iverian.ru/login/generic_oauth"
                 ];
