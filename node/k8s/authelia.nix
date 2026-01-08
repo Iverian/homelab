@@ -68,7 +68,7 @@ in
         annotations = {
           "cert-manager.io/cluster-issuer" = "letsencrypt";
         };
-        tls.secretName = "authelia-tls";
+        tls.secret = "authelia-tls";
         traefikCRD = {
           enabled = true;
           disableIngressRoute = true;
@@ -81,10 +81,10 @@ in
             deploy = false;
             address = "tcp://authelia-postgres-pooler";
             database = "authelia";
-            username = "authelia";
+            username = "postgres";
             password = {
               secret_name = "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do";
-              path = "password";
+              path = "/secrets/postgres/password";
             };
             tls.skip_verify = true;
           };
@@ -92,7 +92,7 @@ in
         session = {
           same_site = "strict";
           encryption_key = {
-            secret_name = "data";
+            secret_name = "authelia-data";
             path = "encryptionKey";
           };
           cookies = [
@@ -139,7 +139,9 @@ in
       secret = {
         additionalSecrets = {
           authelia-data = { };
-          "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do" = { };
+          "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do" = {
+            path = "postgres";
+          };
         };
       };
     };
