@@ -111,7 +111,7 @@ in
           disable_startup_check = true;
           filesystem = {
             enabled = true;
-            directory = "/notifications.txt";
+            filename = "/config/notification.txt";
           };
         };
         identity_providers = {
