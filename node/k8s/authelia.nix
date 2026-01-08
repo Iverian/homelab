@@ -55,7 +55,7 @@ in
     values = {
       rbac.enabled = true;
       pod = {
-        kind = "StatefulSet";
+        kind = "Deployment";
         resources = {
           requests.cpu = "100m";
           requests.memory = "256Mi";
