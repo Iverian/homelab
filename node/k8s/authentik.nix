@@ -1,6 +1,7 @@
 { config, ... }:
 let
   namespace = "authentik";
+  key-secret = "authentik-secret-key";
 in
 {
   services.k3s.autoDeployCharts.authentik = {
@@ -60,7 +61,7 @@ in
           {
             name = "secret-key";
             secret = {
-              secretName = "authentik-secret-key";
+              secretName = key-secret;
             };
           }
         ];
@@ -119,7 +120,7 @@ in
         teamId = "main";
         connectionPooler = {
           numberOfInstances = 1;
-          mode = "transaction";
+          mode = "session";
         };
         volume = {
           size = "1Gi";
@@ -139,7 +140,7 @@ in
         apiVersion = "v1";
         kind = "Secret";
         metadata = {
-          name = "authentik-secret-key";
+          name = key-secret;
           namespace = namespace;
         };
         stringData = {
