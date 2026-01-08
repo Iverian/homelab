@@ -3,7 +3,7 @@ let
   namespace = "postgres-operator";
 in
 {
-  services.k3s.autoDeployCharts.metallb = {
+  services.k3s.autoDeployCharts.postgres-operator = {
     name = "postgres-operator";
     repo = "https://opensource.zalando.com/postgres-operator/charts/postgres-operator";
     version = "1.15.1";
