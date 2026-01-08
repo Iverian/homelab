@@ -46,6 +46,7 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
+            "traefik.ingress.kubernetes.io/router.middlewares" = "authelia-forwardauth-authelia@kubernetescrd";
           };
           hosts = [ "alertmanager.home.iverian.ru" ];
           tls = [
@@ -66,6 +67,7 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
+            "traefik.ingress.kubernetes.io/router.middlewares" = "authelia-forwardauth-authelia@kubernetescrd";
           };
           hosts = [ "prometheus.home.iverian.ru" ];
           tls = [
