@@ -3,14 +3,6 @@ let
   namespace = "tailscale-operator";
 in
 {
-  services.k3s.autoDeployCharts.tailscale-operator = {
-    name = "tailscale-operator";
-    repo = "https://pkgs.tailscale.com/helmcharts";
-    version = "1.92.5";
-    hash = "sha256-nV0Ql9Z+Fcf7oH5SwmcNieIVBIoD37N+jNhGnzp+K8A=";
-    targetNamespace = namespace;
-    createNamespace = true;
-  };
   sops = {
     secrets = {
       tailscaleClientId = { };
@@ -31,6 +23,14 @@ in
       };
       path = "/var/lib/rancher/k3s/server/manifests/tailscale-operator-oauth.json";
     };
+  };
+  services.k3s.autoDeployCharts.tailscale-operator = {
+    name = "tailscale-operator";
+    repo = "https://pkgs.tailscale.com/helmcharts";
+    version = "1.92.5";
+    hash = "sha256-nV0Ql9Z+Fcf7oH5SwmcNieIVBIoD37N+jNhGnzp+K8A=";
+    targetNamespace = namespace;
+    createNamespace = true;
   };
   services.k3s.manifests = {
     tailscale-subnet-router.content = {

@@ -13,6 +13,7 @@
     ./k8s/storage.nix
     ./k8s/metallb.nix
     ./k8s/tailscale-operator.nix
+    ./k8s/cert-manager.nix
   ];
 
   sops.age.keyFile = "/etc/nixos/sops.key";
