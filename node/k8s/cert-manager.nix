@@ -25,7 +25,7 @@ in
         path = "/var/lib/rancher/k3s/server/manifests/cloudflare-api-key.json";
       };
       letsencrypt-issuer = {
-        content = {
+        content = builtins.toJSON {
           apiVersion = "cert-manager.io/v1";
           kind = "ClusterIssuer";
           metadata = {
