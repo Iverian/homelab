@@ -123,7 +123,6 @@ in
           mode = "transaction";
         };
         volume = {
-          storageClass = "fast";
           size = "1Gi";
         };
         numberOfInstances = 1;
