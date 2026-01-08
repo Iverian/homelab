@@ -28,7 +28,7 @@
           }
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
-          ./configuration.nix
+          ./nixos/main.nix
         ];
       };
     };

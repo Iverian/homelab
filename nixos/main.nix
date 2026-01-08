@@ -54,7 +54,6 @@
     packages = with pkgs; [ ];
   };
 
-  # ZFS
   boot.supportedFilesystems = [ "zfs" ];
   systemd.services.zfs-load-keys = {
     enable = true;
@@ -77,7 +76,12 @@
     curl
   ];
 
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+    };
+  };
   services.avahi = {
     enable = true;
     nssmdns4 = true;
@@ -86,5 +90,6 @@
   services.k3s.enable = true;
   services.k3s.role = "server";
 
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "25.11";
 }

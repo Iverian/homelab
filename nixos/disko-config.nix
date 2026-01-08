@@ -36,10 +36,10 @@
       };
       data1 = {
         type = "disk";
-	device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NL0SD";
-	content = {
-	  type = "gpt";
-	  partitions = {
+        device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NL0SD";
+        content = {
+          type = "gpt";
+          partitions = {
             zfs = {
               size = "100%";
               content = {
@@ -47,15 +47,15 @@
                 pool = "zdata";
               };
             };
-	  };
-	};
+          };
+        };
       };
       data2 = {
         type = "disk";
-	device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D4136UV7";
-	content = {
-	  type = "gpt";
-	  partitions = {
+        device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D4136UV7";
+        content = {
+          type = "gpt";
+          partitions = {
             zfs = {
               size = "100%";
               content = {
@@ -63,15 +63,15 @@
                 pool = "zdata";
               };
             };
-	  };
-	};
+          };
+        };
       };
       data3 = {
         type = "disk";
-	device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D41367TU";
-	content = {
-	  type = "gpt";
-	  partitions = {
+        device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D41367TU";
+        content = {
+          type = "gpt";
+          partitions = {
             zfs = {
               size = "100%";
               content = {
@@ -79,15 +79,15 @@
                 pool = "zdata";
               };
             };
-	  };
-	};
+          };
+        };
       };
       data4 = {
         type = "disk";
-	device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NLF63";
-	content = {
-	  type = "gpt";
-	  partitions = {
+        device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NLF63";
+        content = {
+          type = "gpt";
+          partitions = {
             zfs = {
               size = "100%";
               content = {
@@ -95,58 +95,58 @@
                 pool = "zdata";
               };
             };
-	  };
-	};
+          };
+        };
       };
     };
-      zpool = {
-        zdata = {
-	  type = "zpool";
-          rootFsOptions = {
-	    encryption = "on";
-	    keyformat = "raw";
-	    keylocation = "file:///etc/nixos/zfs.key";
-            mountpoint = "none";
-            compression = "zstd";
-            acltype = "posixacl";
-            xattr = "sa";
-            "com.sun:auto-snapshot" = "true";
+    zpool = {
+      zdata = {
+        type = "zpool";
+        rootFsOptions = {
+          encryption = "on";
+          keyformat = "raw";
+          keylocation = "file:///etc/nixos/zfs.key";
+          mountpoint = "none";
+          compression = "zstd";
+          acltype = "posixacl";
+          xattr = "sa";
+          "com.sun:auto-snapshot" = "true";
+        };
+        options = {
+          ashift = "12";
+          "feature@encryption" = "enabled";
+        };
+        mode = {
+          topology = {
+            type = "topology";
+            vdev = [
+              {
+                mode = "mirror";
+                members = [
+                  "data1"
+                  "data4"
+                ];
+              }
+              {
+                mode = "mirror";
+                members = [
+                  "data2"
+                  "data3"
+                ];
+              }
+            ];
           };
-	  options = {
-	    ashift = "12";
-	    "feature@encryption" = "enabled";
-	  };
-	  mode = {
-	    topology = {
-	      type = "topology";
-	      vdev = [
-	        {
-                  mode = "mirror";
-                  members = [
-                    "data1"
-                    "data4"
-                  ];
-                }
-	        {
-                  mode = "mirror";
-                  members = [
-                    "data2"
-                    "data3"
-                  ];
-                }
-	      ];
-	    };
-	  };
-          datasets = {
-	    "data" = {
-	      type = "zfs_fs";
-	      mountpoint = "/data/hdd";
-	      options = {
-                compression = "zstd";
-	      };
-	    };
+        };
+        datasets = {
+          "data" = {
+            type = "zfs_fs";
+            mountpoint = "/data/hdd";
+            options = {
+              compression = "zstd";
+            };
           };
-	};
+        };
       };
+    };
   };
 }
