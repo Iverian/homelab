@@ -75,6 +75,7 @@
   ];
 
   services.openssh.enable = true;
+  services.avahi.enable = true;
   services.k3s.enable = true;
   services.k3s.role = "server";
 
