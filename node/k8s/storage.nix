@@ -73,5 +73,16 @@ in
       reclaimPolicy = "Delete";
       volumeBindingMode = "WaitForFirstConsumer";
     };
+    storage-media.content = {
+      apiVersion = "v1";
+      kind = "PersistentVolume";
+      metadata.name = "media";
+      spec = {
+        capacity.storage = "2Ti";
+        accessModes = [ "ReadWriteMany" ];
+        persistentVolumeReclaimPolicy = "Retain";
+        hostPath.path = "/data/hdd/media";
+      };
+    };
   };
 }
