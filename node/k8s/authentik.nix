@@ -7,7 +7,7 @@ in
     name = "authentik";
     repo = "https://charts.goauthentik.io";
     version = "2025.10.3";
-    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
+    hash = "sha256-mnY7Jmnc1rbnyKew18S7WpOXHGHalWtNbSzJryFg/Fk=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
@@ -34,7 +34,7 @@ in
       };
       metrics = {
         enabled = true;
-        serviceMonitor.enabled = true;
+        # serviceMonitor.enabled = true;
       };
       server = {
         ingress = {
@@ -73,7 +73,7 @@ in
           }
           {
             name = "secret-key";
-            mountPath = "/postgres-creds";
+            mountPath = "/secret-key";
             readOnly = true;
           }
         ];
@@ -101,7 +101,7 @@ in
           }
           {
             name = "secret-key";
-            mountPath = "/postgres-creds";
+            mountPath = "/secret-key";
             readOnly = true;
           }
         ];
