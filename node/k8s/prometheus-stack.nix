@@ -81,13 +81,13 @@ in
         envValueFrom = {
           GF_DATABASE_USER = {
             secretKeyRef = {
-              name = "postgres.grafana-postgres.credentials.postgresql.acid.zalan.do";
+              name = "postgres.grafana-db";
               key = "username";
             };
           };
           GF_DATABASE_PASSWORD = {
             secretKeyRef = {
-              name = "postgres.grafana-postgres.credentials.postgresql.acid.zalan.do";
+              name = "postgres.grafana-db";
               key = "password";
             };
           };
@@ -127,7 +127,7 @@ in
       apiVersion = "acid.zalan.do/v1";
       kind = "postgresql";
       metadata = {
-        name = "grafana-postgres";
+        name = "grafana-db";
         namespace = namespace;
       };
       spec = {

@@ -28,7 +28,7 @@ in
     apiVersion = "acid.zalan.do/v1";
     kind = "postgresql";
     metadata = {
-      name = "authelia-postgres";
+      name = "authelia-db";
       namespace = namespace;
     };
     spec = {
@@ -83,7 +83,7 @@ in
             database = "authelia";
             username = "postgres";
             password = {
-              secret_name = "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do";
+              secret_name = "postgres.authelia-postgres";
               path = "/secrets/postgres/password";
             };
             tls.skip_verify = true;
@@ -139,7 +139,7 @@ in
       secret = {
         additionalSecrets = {
           authelia-data = { };
-          "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do" = {
+          "postgres.authelia-db" = {
             path = "postgres";
           };
         };

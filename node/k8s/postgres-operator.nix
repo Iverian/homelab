@@ -12,6 +12,7 @@ in
     createNamespace = true;
     values = {
       enableJsonLogging = true;
+      configKubernetes.secret_name_template = "{username}.{cluster}";
     };
   };
 }
