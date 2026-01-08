@@ -69,7 +69,7 @@ in
       crds = {
         enabled = true;
         keep = false;
-      };`
+      };
     };
   };
 }
