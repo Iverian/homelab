@@ -69,11 +69,7 @@ in
       crds = {
         enabled = true;
         keep = false;
-      };
-      # prometheus = {
-      #   enabled = false;
-      #   servicemonitor.enabled = false;
-      # };
+      };`
     };
   };
 }

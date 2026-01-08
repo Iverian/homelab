@@ -57,7 +57,7 @@ in
       };
       provisioner = "rancher.io/local-path";
       reclaimPolicy = "Delete";
-      volumeBindingMode = "Immediate";
+      volumeBindingMode = "WaitForFirstConsumer";
     };
     storageclass-default.content = {
       apiVersion = "storage.k8s.io/v1";
@@ -71,7 +71,7 @@ in
       };
       provisioner = "rancher.io/local-path";
       reclaimPolicy = "Delete";
-      volumeBindingMode = "Immediate";
+      volumeBindingMode = "WaitForFirstConsumer";
     };
   };
 }
