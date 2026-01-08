@@ -7,6 +7,7 @@ in
     secrets = {
       autheliaEncryptionKey = { };
       autheliaDatabase = { };
+      autheliaJwksKey = { };
     };
     templates.authelia-data = {
       content = builtins.toJSON {
@@ -18,6 +19,7 @@ in
         };
         data = {
           encryptionKey = config.sops.placeholder.autheliaEncryptionKey;
+          jwksKey = config.sops.placeholder.autheliaJwksKey;
           database = config.sops.placeholder.autheliaDatabase;
         };
       };
@@ -117,6 +119,14 @@ in
         identity_providers = {
           oidc = {
             enabled = true;
+            jwks = [
+              {
+                key_id = "auth";
+                algorithm = "RS256";
+                use = "sig";
+                key.path = "/secrets/authelia-data/jwksKey";
+              }
+            ];
             claims_policies = {
               grafana.id_token = [
                 "email"
