@@ -131,4 +131,23 @@ in
       };
     };
   };
+  sops = {
+    secrets = {
+      authentikSecretKey = { };
+    };
+    templates.authentik-secret-key = {
+      content = builtins.toJSON {
+        apiVersion = "v1";
+        kind = "Secret";
+        metadata = {
+          name = "authentik-secret-key";
+          namespace = namespace;
+        };
+        stringData = {
+          value = config.sops.placeholder.authentikSecretKey;
+        };
+      };
+      path = "/var/lib/rancher/k3s/server/manifests/tailscale-operator-oauth.json";
+    };
+  };
 }
