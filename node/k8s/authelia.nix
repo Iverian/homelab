@@ -99,7 +99,7 @@ in
           };
           cookies = [
             {
-              domain = "authelia.home.iverian.ru";
+              domain = "auth.home.iverian.ru";
             }
           ];
         };

@@ -101,9 +101,9 @@ in
           GF_AUTH_GENERIC_OAUTH_AUTO_LOGIN = "true";
           GF_AUTH_GENERIC_OAUTH_SKIP_ORG_ROLE_SYNC = "true";
           GF_AUTH_GENERIC_OAUTH_EMPTY_SCOPES = "false";
-          GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authelia.home.iverian.ru/api/oidc/authorization";
-          GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authelia.home.iverian.ru/api/oidc/token";
-          GF_AUTH_GENERIC_OAUTH_API_URL = "https://authelia.home.iverian.ru/api/oidc/userinfo";
+          GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://auth.home.iverian.ru/api/oidc/authorization";
+          GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://auth.home.iverian.ru/api/oidc/token";
+          GF_AUTH_GENERIC_OAUTH_API_URL = "https://auth.home.iverian.ru/api/oidc/userinfo";
           GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH = "preferred_username";
           GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH = "groups";
           GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH = "name";
