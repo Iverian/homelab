@@ -116,11 +116,21 @@ in
         };
         identity_providers = {
           oidc = {
+            claims_policies = {
+              grafana.id_token = [
+                "email"
+                "name"
+                "groups"
+                "preferred_username"
+              ];
+            };
             clients = [
               {
                 client_id = "grafana";
                 client_secret = "$pbkdf2-sha512$310000$glwqEtxfkikIqilXQtbV5w$mXIDhHzYc48iuLVjg4pR.239W1fO42gFXWsaWijmF/Joq7dHpOwAv6pF3/hjZKoWxy8dFkyq/yUZ2XO4pYnNdA";
                 public = false;
+                require_pkce = true;
+                pkce_challenge_method = "S256";
                 redirect_uris = [
                   "https://grafana.home.iverian.ru/login/generic_oauth"
                 ];

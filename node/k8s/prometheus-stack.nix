@@ -100,6 +100,7 @@ in
           GF_AUTH_GENERIC_OAUTH_ENABLED = "true";
           GF_AUTH_GENERIC_OAUTH_AUTO_LOGIN = "true";
           GF_AUTH_GENERIC_OAUTH_SKIP_ORG_ROLE_SYNC = "true";
+          GF_AUTH_GENERIC_OAUTH_EMPTY_SCOPES = "false";
           GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authelia.home.iverian.ru/api/oidc/authorization";
           GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authelia.home.iverian.ru/api/oidc/token";
           GF_AUTH_GENERIC_OAUTH_API_URL = "https://authelia.home.iverian.ru/api/oidc/userinfo";
