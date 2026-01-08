@@ -147,7 +147,7 @@ in
           value = config.sops.placeholder.authentikSecretKey;
         };
       };
-      path = "/var/lib/rancher/k3s/server/manifests/tailscale-operator-oauth.json";
+      path = "/var/lib/rancher/k3s/server/manifests/authentik-secret-key.json";
     };
   };
 }
