@@ -82,7 +82,7 @@ in
           postgres = {
             enabled = true;
             deploy = false;
-            address = "tcp://authelia-postgres-pooler";
+            address = "tcp://authelia-db-pooler";
             database = "authelia";
             username = "postgres";
             password = {
