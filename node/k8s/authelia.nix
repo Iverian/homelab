@@ -106,6 +106,7 @@ in
         webauthn = {
           enable_passkey_login = true;
         };
+        access_control.default_policy = "one_factor";
         notifier = {
           disable_startup_check = true;
           filesystem = {
