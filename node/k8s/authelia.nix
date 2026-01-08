@@ -83,7 +83,7 @@ in
             database = "authelia";
             username = "postgres";
             password = {
-              secret_name = "postgres.authelia-db";
+              secret_name = "postgres-authelia-db";
               path = "password";
             };
             tls.skip_verify = true;
@@ -139,7 +139,7 @@ in
       secret = {
         additionalSecrets = {
           authelia-data = { };
-          "postgres.authelia-db" = { };
+          "postgres-authelia-db" = { };
         };
       };
     };

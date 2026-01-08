@@ -81,13 +81,13 @@ in
         envValueFrom = {
           GF_DATABASE_USER = {
             secretKeyRef = {
-              name = "postgres.grafana-db";
+              name = "postgres-grafana-db";
               key = "username";
             };
           };
           GF_DATABASE_PASSWORD = {
             secretKeyRef = {
-              name = "postgres.grafana-db";
+              name = "postgres-grafana-db";
               key = "password";
             };
           };
