@@ -8,7 +8,7 @@ in
       autheliaEncryptionKey = { };
       autheliaDatabase = { };
     };
-    templates.tailscale-operator-oauth = {
+    templates.authelia-data = {
       content = builtins.toJSON {
         apiVersion = "v1";
         kind = "Secret";
@@ -49,7 +49,7 @@ in
     name = "authelia";
     repo = "https://charts.authelia.com";
     version = "0.10.49";
-    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
+    hash = "sha256-uqoZfS/NEj0jqynZUhDNAzCtqCNUMmQNszojxZwKC2A=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
