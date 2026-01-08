@@ -107,6 +107,7 @@ in
         webauthn = {
           enable_passkey_login = true;
         };
+        notifier.disable_startup_check = true;
         identity_providers = {
           oidc = {
             clients = [
