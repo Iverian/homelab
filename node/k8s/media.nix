@@ -4,7 +4,14 @@ let
 in
 {
   services.k3s.manifests = {
-    storage-media.content = {
+    media-namespace.content = {
+      apiVersion = "v1";
+      kind = "Namespace";
+      metadata = {
+        name = namespace;
+      };
+    };
+    media-storage.content = {
       apiVersion = "v1";
       kind = "PersistentVolumeClaim";
       metadata = {
