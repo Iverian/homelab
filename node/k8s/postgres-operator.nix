@@ -7,7 +7,7 @@ in
     name = "postgres-operator";
     repo = "https://opensource.zalando.com/postgres-operator/charts/postgres-operator";
     version = "1.15.1";
-    hash = "sha256-J9t2HFrSUl/RMMkv4vLUUA+IcOQC/v48nLjTTYpxpww=";
+    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
