@@ -46,7 +46,6 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
-            "traefik.ingress.kubernetes.io/router.middlewares" = "kube-system-redirect@kubernetescrd";
           };
           hosts = [ "alertmanager.home.iverian.ru" ];
           tls = [
@@ -67,7 +66,6 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
-            "traefik.ingress.kubernetes.io/router.middlewares" = "kube-system-redirect@kubernetescrd";
           };
           hosts = [ "prometheus.home.iverian.ru" ];
           tls = [
@@ -117,7 +115,6 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
-            "traefik.ingress.kubernetes.io/router.middlewares" = "kube-system-redirect@kubernetescrd";
           };
           hosts = [ "grafana.home.iverian.ru" ];
           tls = [

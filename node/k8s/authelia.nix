@@ -63,7 +63,6 @@ in
         enabled = true;
         annotations = {
           "cert-manager.io/cluster-issuer" = "letsencrypt";
-          "traefik.ingress.kubernetes.io/router.middlewares" = "kube-system-redirect@kubernetescrd";
         };
         tls = {
           enabled = true;
@@ -117,6 +116,7 @@ in
         };
         identity_providers = {
           oidc = {
+            enabled = true;
             claims_policies = {
               grafana.id_token = [
                 "email"
