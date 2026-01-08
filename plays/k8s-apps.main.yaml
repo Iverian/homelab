@@ -1,9 +1,0 @@
----
-- hosts: all
-  any_errors_fatal: true
-  run_once: true
-  become: true
-  tags: [k8s, k8s.apps]
-  roles:
-    - k8s-transmission
-    - k8s-syncthing

@@ -1,3 +1,0 @@
-[submodule "3d/kubespray"]
-	path = 3d/kubespray
-	url = https://github.com/kubernetes-sigs/kubespray.git

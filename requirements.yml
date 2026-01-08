@@ -1,5 +1,0 @@
----
-roles: []
-collections:
-  - community.postgresql
-  - kubernetes.core

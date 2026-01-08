@@ -1,3 +1,0 @@
----
-rclone_retention_days: 7
-rclone_backup_path: /data/hdd/backup

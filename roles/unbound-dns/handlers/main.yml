@@ -1,6 +1,0 @@
----
-- name: reload unbound
-  ansible.builtin.systemd:
-    name: unbound.service
-    state: restarted
-  become: true

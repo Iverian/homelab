@@ -1,3 +1,0 @@
----
-allowed_tcp_ports: "{{ [ansible_port] | union(ufw__allowed_tcp_ports) | unique | list }}"
-allowed_udp_ports: "{{ [] | union(ufw__allowed_udp_ports) | unique | list }}"

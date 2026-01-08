@@ -1,3 +1,0 @@
----
-k8s_le__cluster_issuer: letsencrypt
-k8s_le__namespace: cert-manager

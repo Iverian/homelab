@@ -1,3 +1,0 @@
----
-ingress_internal_class: nginx-internal
-ingress_external_class: nginx-external
