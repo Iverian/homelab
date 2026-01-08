@@ -14,6 +14,10 @@ update:
 apply:
   {{ rebuild_cmd }} switch
 
+# Apply host configuration
+apply-on-reboot:
+  {{ rebuild_cmd }} boot
+
 # Dry run
 plan:
   {{ rebuild_cmd }} dry-activate

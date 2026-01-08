@@ -45,7 +45,6 @@
     useXkbConfig = false;
   };
 
-  sops.secrets.adminPassword.neededForUsers = true;
   security.sudo.wheelNeedsPassword = false;
   users.users.iverian = {
     openssh.authorizedKeys.keys = [
@@ -54,7 +53,7 @@
 
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    hashedPasswordFile = config.sops.secrets.adminPassword.path;
+    initialPassword = "changeme";
     shell = pkgs.bash;
     packages = with pkgs; [ ];
   };
