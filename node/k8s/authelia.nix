@@ -1,0 +1,126 @@
+{ config, ... }:
+let
+  namespace = "authelia";
+in
+{
+  sops = {
+    secrets = {
+      autheliaEncryptionKey = { };
+      autheliaDatabase = { };
+    };
+    templates.tailscale-operator-oauth = {
+      content = builtins.toJSON {
+        apiVersion = "v1";
+        kind = "Secret";
+        metadata = {
+          name = "authelia-data";
+          namespace = namespace;
+        };
+        stringData = {
+          encryptionKey = config.sops.placeholder.autheliaEncryptionKey;
+          database = config.sops.placeholder.autheliaDatabase;
+        };
+      };
+      path = "/var/lib/rancher/k3s/server/manifests/authelia-secret.json";
+    };
+  };
+  services.k3s.autoDeployCharts.authelia = {
+    name = "authelia";
+    repo = "https://charts.authelia.com";
+    version = "0.10.49";
+    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
+    targetNamespace = namespace;
+    createNamespace = true;
+    values = {
+      rbac.enabled = true;
+      pod = {
+        kind = "StatefulSet";
+        resources = {
+          requests.cpu = "100m";
+          requests.memory = "256Mi";
+          limits.cpu = "500m";
+          limits.memory = "512Mi";
+        };
+      };
+      ingress = {
+        enabled = true;
+        annotations = {
+          "cert-manager.io/cluster-issuer" = "letsencrypt";
+        };
+        tls.secretName = "authelia-tls";
+        traefikCRD = {
+          enabled = true;
+          disableIngressRoute = true;
+        };
+      };
+      configMap = {
+        storage = {
+          postgres = {
+            enabled = true;
+            deploy = false;
+            address = "tcp://authelia-postgres-pooler";
+            database = "authelia";
+            username = "authelia";
+            password = {
+              secret_name = "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do";
+              path = "password";
+            };
+            tls.skip_verify = true;
+          };
+        };
+        session = {
+          same_site = "strict";
+          encryption_key = {
+            secret_name = "data";
+            path = "encryptionKey";
+          };
+          cookies = [
+            {
+              domain = "authelia.home.iverian.ru";
+            }
+          ];
+        };
+        webauthn = {
+          enable_passkey_login = true;
+        };
+        identity_providers = {
+          oidc = {
+            clients = [
+              {
+                client_id = "grafana";
+                client_secret = "$pbkdf2-sha512$310000$glwqEtxfkikIqilXQtbV5w$mXIDhHzYc48iuLVjg4pR.239W1fO42gFXWsaWijmF/Joq7dHpOwAv6pF3/hjZKoWxy8dFkyq/yUZ2XO4pYnNdA";
+                public = false;
+                redirect_uris = [
+                  "https://grafana.home.iverian.ru/login/generic_oauth"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "email"
+                  "groups"
+                ];
+                grant_types = [ "authorization_code" ];
+                response_types = [ "code" ];
+                access_token_signed_response_alg = "none";
+                userinfo_signed_response_alg = "none";
+                token_endpoint_auth_method = "client_secret_basic";
+              }
+            ];
+          };
+        };
+        authentication_backend = {
+          file = {
+            enabled = true;
+            path = "/secrets/authelia-data/database";
+          };
+        };
+      };
+      secret = {
+        additionalSecrets = {
+          authelia-data = { };
+          "postgres.authelia-postgres.credentials.postgresql.acid.zalan.do" = { };
+        };
+      };
+    };
+  };
+}

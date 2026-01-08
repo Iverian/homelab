@@ -15,7 +15,7 @@
     ./k8s/tailscale-operator.nix
     ./k8s/cert-manager.nix
     ./k8s/postgres-operator.nix
-    ./k8s/authentik.nix
+    ./k8s/authelia.nix
     ./k8s/prometheus-stack.nix
     ./k8s/media.nix
   ];
