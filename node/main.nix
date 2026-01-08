@@ -9,6 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ./disko-config.nix
+    ./k8s/metallb.nix
   ];
 
   sops.age.keyFile = "/etc/nixos/sops.key";
