@@ -12,6 +12,11 @@ in
     targetNamespace = namespace;
     createNamespace = true;
     values = {
+      ingressClass = {
+        enabled = true;
+        isDefaultClass = true;
+        name = "traefik";
+      };
       deployment = {
         podAnnotations = {
           "prometheus.io/port" = "8082";
