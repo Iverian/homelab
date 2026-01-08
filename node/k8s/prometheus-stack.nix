@@ -29,7 +29,7 @@ in
     name = "kube-prometheus-stack";
     repo = "https://prometheus-community.github.io/helm-charts";
     version = "80.11.1";
-    hash = "sha256-nV0Ql9Z+Fcf7oH5SwmcNieIVBIoD37N+jNhGnzp+K8A=";
+    hash = "sha256-V3T8IJ69CV5e5moKl+GpaxUuCMy7fFERWZeNT3qbxfI=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
@@ -134,7 +134,7 @@ in
         teamId = "main";
         connectionPooler = {
           numberOfInstances = 1;
-          mode = "transaction";
+          mode = "session";
         };
         volume = {
           size = "1Gi";

@@ -19,7 +19,7 @@ in
           }
           {
             name = "AUTHENTIK_POSTGRESQL__DISABLE_SERVER_SIDE_CURSORS";
-            value = "prefer";
+            value = "true";
           }
         ];
       };
