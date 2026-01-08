@@ -16,7 +16,7 @@ in
           name = "authelia-data";
           namespace = namespace;
         };
-        stringData = {
+        data = {
           encryptionKey = config.sops.placeholder.autheliaEncryptionKey;
           database = config.sops.placeholder.autheliaDatabase;
         };
