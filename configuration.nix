@@ -11,6 +11,9 @@
     ./disko-config.nix
   ];
 
+  sops.age.keyFile = "/etc/nixos/sops.key";
+  sops.defaultSopsFile = ./secrets/main.yaml;
+
   zramSwap.enable = true;
   zramSwap.memoryPercent = 25;
 
