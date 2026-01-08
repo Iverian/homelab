@@ -38,13 +38,13 @@ in
         setup = ''
           #!/bin/sh
           set -eu
-          mkdir -m 0777 -p "$${VOL_DIR}"
-          chmod 700 "$${VOL_DIR}/.."
+          mkdir -m 0777 -p "''${VOL_DIR}"
+          chmod 700 "''${VOL_DIR}/.."
         '';
         teardown = ''
           #!/bin/sh
           set -eu
-          rm -rf "$${VOL_DIR}"
+          rm -rf "''${VOL_DIR}"
         '';
       };
     };
