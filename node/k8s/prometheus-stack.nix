@@ -95,7 +95,7 @@ in
         env = {
           GF_SERVER_ROOT_URL = "https://grafana.home.iverian.ru";
           GF_DATABASE_TYPE = "postgres";
-          GF_DATABASE_HOST = "grafana-db-0.grafana.pod";
+          GF_DATABASE_HOST = "grafana-db";
           GF_DATABASE_SSL_MODE = "require";
           GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authentik.home.iverian.ru/application/o/authorize/";
           GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authentik.home.iverian.ru/application/o/token/";
