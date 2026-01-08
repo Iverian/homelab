@@ -37,7 +37,7 @@ in
         size = "1Gi";
       };
       numberOfInstances = 1;
-      preparedDatabases.grafana = { };
+      preparedDatabases.authelia = { };
       postgresql.version = "17";
     };
   };
