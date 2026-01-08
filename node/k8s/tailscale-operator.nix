@@ -3,8 +3,6 @@ let
   namespace = "tailscale-operator";
 in
 {
-  sops.secrets.tailscaleClientId = { };
-  sops.secrets.tailscaleClientSecret = { };
   services.k3s.autoDeployCharts.tailscale-operator = {
     name = "tailscale-operator";
     repo = "https://pkgs.tailscale.com/helmcharts";
@@ -12,32 +10,43 @@ in
     hash = "sha256-nV0Ql9Z+Fcf7oH5SwmcNieIVBIoD37N+jNhGnzp+K8A=";
     targetNamespace = namespace;
     createNamespace = true;
-    values = {
-      oauth = {
-        clientId = config.sops.secrets.tailscaleClientId;
-        clientSecret = config.sops.secrets.tailscaleClientSecret;
+  };
+  sops = {
+    secrets = {
+      tailscaleClientId = { };
+      tailscaleClientSecret = { };
+    };
+    templates.tailscale-operator-oauth = {
+      content = builtins.toJSON {
+        apiVersion = "v1";
+        kind = "Secret";
+        metadata = {
+          name = "operator-oauth";
+          namespace = namespace;
+        };
+        stringData = {
+          client_id = config.sops.placeholder.tailscaleClientId;
+          client_secret = config.sops.placeholder.tailscaleClientSecret;
+        };
       };
+      path = "/var/lib/rancher/k3s/server/manifests/tailscale-operator-oauth.json";
     };
   };
   services.k3s.manifests = {
-    # metallb-pool.content = {
-    #   apiVersion = "metallb.io/v1beta1";
-    #   kind = "IPAddressPool";
-    #   metadata = {
-    #     name = "main";
-    #     namespace = namespace;
-    #   };
-    #   spec = {
-    #     addresses = [ "192.168.88.90-192.168.88.100" ];
-    #   };
-    # };
-    # metallb-advertisement.content = {
-    #   apiVersion = "metallb.io/v1beta1";
-    #   kind = "L2Advertisement";
-    #   metadata = {
-    #     name = "main";
-    #     namespace = namespace;
-    #   };
-    # };
+    tailscale-subnet-router.content = {
+      apiVersion = "tailscale.com/v1alpha1";
+      kind = "Connector";
+      metadata = {
+        name = "subnet-router";
+        namespace = namespace;
+      };
+      spec = {
+        replicas = "1";
+        exitNode = "true";
+        subnetRouter = {
+          advertiseRoutes = "192.168.88.128/25";
+        };
+      };
+    };
   };
 }
