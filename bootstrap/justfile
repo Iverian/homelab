@@ -3,4 +3,4 @@ help:
 
 # Apply host configuration
 apply:
-  nix run nixpkgs#nixos-rebuild -- --target-host iverian@homelab.lan --sudo switch --flake .#homelab --show-trace
+  nix run nixpkgs#nixos-rebuild -- switch --sudo --use-substitutes --build-host iverian@homelab.lan --target-host iverian@homelab.lan --flake .#homelab
