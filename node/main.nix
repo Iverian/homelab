@@ -9,11 +9,14 @@
   imports = [
     ./hardware-configuration.nix
     ./disko-config.nix
+    # Kubernetes services
+    ./k8s/storage.nix
     ./k8s/metallb.nix
+    ./k8s/tailscale-operator.nix
   ];
 
   sops.age.keyFile = "/etc/nixos/sops.key";
-  sops.defaultSopsFile = ./secrets/main.yaml;
+  sops.defaultSopsFile = ../main.sops.yaml;
 
   zramSwap.enable = true;
   zramSwap.memoryPercent = 25;
@@ -42,6 +45,7 @@
     useXkbConfig = false;
   };
 
+  sops.secrets.adminPassword.neededForUsers = true;
   security.sudo.wheelNeedsPassword = false;
   users.users.iverian = {
     openssh.authorizedKeys.keys = [
@@ -50,7 +54,7 @@
 
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    initialPassword = "changeme";
+    hashedPasswordFile = config.sops.secrets.adminPassword.path;
     shell = pkgs.bash;
     packages = with pkgs; [ ];
   };

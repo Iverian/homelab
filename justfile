@@ -12,10 +12,16 @@ update:
 
 # Apply host configuration
 apply:
-  nix flake lock
   {{ rebuild_cmd }} switch
 
 # Dry run
 plan:
-  nix flake lock
   {{ rebuild_cmd }} dry-activate
+
+[no-cd]
+decrypt FILE:
+  sops --decrypt --indent 2 --in-place "{{ FILE }}"
+
+[no-cd]
+encrypt FILE:
+  sops --encrypt --indent 2 --in-place "{{ FILE }}"
