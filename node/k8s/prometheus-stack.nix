@@ -97,14 +97,18 @@ in
           GF_DATABASE_TYPE = "postgres";
           GF_DATABASE_HOST = "grafana-db";
           GF_DATABASE_SSL_MODE = "require";
-          GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authentik.home.iverian.ru/application/o/authorize/";
-          GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authentik.home.iverian.ru/application/o/token/";
-          GF_AUTH_GENERIC_OAUTH_API_URL = "https://authentik.home.iverian.ru/application/o/userinfo/";
-          GF_AUTH_SIGNOUT_REDIRECT_URL = "https://authentik.home.iverian.ru/application/o/grafana/end-session/";
           GF_AUTH_GENERIC_OAUTH_ENABLED = "true";
           GF_AUTH_GENERIC_OAUTH_AUTO_LOGIN = "true";
           GF_AUTH_GENERIC_OAUTH_SKIP_ORG_ROLE_SYNC = "true";
-          GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email";
+          GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authelia.home.iverian.ru/api/oidc/authorization";
+          GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authelia.home.iverian.ru/api/oidc/token";
+          GF_AUTH_GENERIC_OAUTH_API_URL = "https://authelia.home.iverian.ru/api/oidc/userinfo";
+          GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH = "preferred_username";
+          GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH = "groups";
+          GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH = "name";
+          GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
+          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "";
+          GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email groups";
         };
         ingress = {
           enabled = true;
