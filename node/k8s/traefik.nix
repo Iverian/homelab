@@ -8,7 +8,7 @@ in
     name = "traefik";
     repo = "https://traefik.github.io/charts";
     version = "38.0.2";
-    hash = "sha256-J9t2HFrSUl/RMMkv4vLUUA+IcOQC/v48nLjTTYpxpww=";
+    hash = "sha256-mjMHob26QA6MbwYngHQho8/BgXZ+lXv9/EtEe98YpgM=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
