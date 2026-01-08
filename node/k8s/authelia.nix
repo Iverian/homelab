@@ -107,7 +107,13 @@ in
         webauthn = {
           enable_passkey_login = true;
         };
-        notifier.disable_startup_check = true;
+        notifier = {
+          disable_startup_check = true;
+          filesystem = {
+            enabled = true;
+            directory = "/notifications.txt";
+          };
+        };
         identity_providers = {
           oidc = {
             clients = [
