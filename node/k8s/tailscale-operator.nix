@@ -44,7 +44,7 @@ in
         replicas = 1;
         exitNode = true;
         subnetRouter = {
-          advertiseRoutes = "192.168.88.128/25";
+          advertiseRoutes = [ "192.168.88.128/25" ];
         };
       };
     };
