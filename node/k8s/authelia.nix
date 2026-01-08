@@ -68,7 +68,10 @@ in
         annotations = {
           "cert-manager.io/cluster-issuer" = "letsencrypt";
         };
-        tls.secret = "authelia-tls";
+        tls = {
+          enabled = true;
+          secret = "authelia-tls";
+        };
         traefikCRD = {
           enabled = true;
           disableIngressRoute = true;
