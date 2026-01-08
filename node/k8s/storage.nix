@@ -76,7 +76,10 @@ in
     storage-media.content = {
       apiVersion = "v1";
       kind = "PersistentVolume";
-      metadata.name = "media";
+      metadata = {
+        name = "media";
+        namespace = namespace;
+      };
       spec = {
         capacity.storage = "2Ti";
         accessModes = [ "ReadWriteMany" ];
