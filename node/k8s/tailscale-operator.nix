@@ -41,8 +41,8 @@ in
         namespace = namespace;
       };
       spec = {
-        replicas = "1";
-        exitNode = "true";
+        replicas = 1;
+        exitNode = true;
         subnetRouter = {
           advertiseRoutes = "192.168.88.128/25";
         };
