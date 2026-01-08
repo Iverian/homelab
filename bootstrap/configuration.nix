@@ -75,7 +75,11 @@
   ];
 
   services.openssh.enable = true;
-  services.avahi.enable = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
   services.k3s.enable = true;
   services.k3s.role = "server";
 
