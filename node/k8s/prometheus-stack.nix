@@ -95,7 +95,7 @@ in
         env = {
           GF_SERVER_ROOT_URL = "https://grafana.home.iverian.ru";
           GF_DATABASE_TYPE = "postgres";
-          GF_DATABASE_HOST = "grafana-db-pooler";
+          GF_DATABASE_HOST = "grafana-db-0";
           GF_DATABASE_SSL_MODE = "require";
           GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://authentik.home.iverian.ru/application/o/authorize/";
           GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://authentik.home.iverian.ru/application/o/token/";
@@ -132,10 +132,6 @@ in
       };
       spec = {
         teamId = "main";
-        connectionPooler = {
-          numberOfInstances = 1;
-          mode = "session";
-        };
         volume = {
           size = "1Gi";
         };

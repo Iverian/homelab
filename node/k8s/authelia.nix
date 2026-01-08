@@ -33,10 +33,6 @@ in
     };
     spec = {
       teamId = "main";
-      connectionPooler = {
-        numberOfInstances = 1;
-        mode = "session";
-      };
       volume = {
         size = "1Gi";
       };
@@ -82,14 +78,17 @@ in
           postgres = {
             enabled = true;
             deploy = false;
-            address = "tcp://authelia-db-pooler";
+            address = "tcp://authelia-db-0";
             database = "authelia";
             username = "postgres";
             password = {
               secret_name = "postgres-authelia-db";
               path = "password";
             };
-            tls.skip_verify = true;
+            tls = {
+              enabled = true;
+              skip_verify = true;
+            };
           };
         };
         session = {
