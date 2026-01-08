@@ -9,7 +9,7 @@
         clone: true
         depth: 1
     - name: install helm chart
-      community.kubernetes.helm:
+      kubernetes.core.helm:
         chart_ref: /tmp/local-path-provisioner/deploy/chart
         release_name: "release-{{ k8s_lpp_namespace }}"
         release_namespace: "{{ k8s_lpp_namespace }}"

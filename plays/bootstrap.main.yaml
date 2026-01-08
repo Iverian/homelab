@@ -42,6 +42,8 @@
           ansible.builtin.pip:
             name:
               - openshift
+            extra_args: >-
+              --break-system-packages
             state: present
     - name: configure logrotate
       tags: [bootstrap.logrotate]

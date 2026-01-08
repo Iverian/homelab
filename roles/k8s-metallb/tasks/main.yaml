@@ -9,7 +9,7 @@
         owner: root
         group: root
     - name: create metallb namespace
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: Namespace
@@ -31,7 +31,7 @@
         atomic: true
         state: present
     - name: install metallb pool
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           - apiVersion: metallb.io/v1beta1
             kind: IPAddressPool
