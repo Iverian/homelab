@@ -14,6 +14,7 @@
     ./k8s/metallb.nix
     ./k8s/tailscale-operator.nix
     ./k8s/cert-manager.nix
+    ./k8s/postgres-operator.nix
   ];
 
   sops.age.keyFile = "/etc/nixos/sops.key";
