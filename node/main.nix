@@ -13,6 +13,7 @@
     ./k8s/storage.nix
     ./k8s/metallb.nix
     ./k8s/tailscale-operator.nix
+    ./k8s/frp-operator.nix
     ./k8s/cert-manager.nix
     ./k8s/postgres-operator.nix
     ./k8s/authelia.nix
