@@ -24,6 +24,27 @@ in
       path = "/var/lib/rancher/k3s/server/manifests/authelia-secret.json";
     };
   };
+  services.k3s.manifests.authelia-postgresql.content = {
+    apiVersion = "acid.zalan.do/v1";
+    kind = "postgresql";
+    metadata = {
+      name = "authelia-postgres";
+      namespace = namespace;
+    };
+    spec = {
+      teamId = "main";
+      connectionPooler = {
+        numberOfInstances = 1;
+        mode = "session";
+      };
+      volume = {
+        size = "1Gi";
+      };
+      numberOfInstances = 1;
+      preparedDatabases.grafana = { };
+      postgresql.version = "17";
+    };
+  };
   services.k3s.autoDeployCharts.authelia = {
     name = "authelia";
     repo = "https://charts.authelia.com";
