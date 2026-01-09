@@ -42,16 +42,13 @@ in
             selector = { };
           };
         };
-        ingress = {
+        route.main = {
           enabled = true;
-          annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt";
-          };
-          hosts = [ "alertmanager.home.iverian.ru" ];
-          tls = [
+          hostnames = [ "alertmanager.home.iverian.ru" ];
+          parentRefs = [
             {
-              hosts = [ "alertmanager.home.iverian.ru" ];
-              secretName = "alertmanager-tls";
+              name = "main";
+              namespace = "envoy-gateway-system";
             }
           ];
         };
@@ -62,16 +59,13 @@ in
           resources.requests.storage = "1Gi";
           selector = { };
         };
-        ingress = {
+        route.main = {
           enabled = true;
-          annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt";
-          };
-          hosts = [ "prometheus.home.iverian.ru" ];
-          tls = [
+          hostnames = [ "prometheus.home.iverian.ru" ];
+          parentRefs = [
             {
-              hosts = [ "prometheus.home.iverian.ru" ];
-              secretName = "prometheus-tls";
+              name = "main";
+              namespace = "envoy-gateway-system";
             }
           ];
         };
@@ -111,16 +105,13 @@ in
           GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "";
           GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email groups";
         };
-        ingress = {
+        route.main = {
           enabled = true;
-          annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt";
-          };
-          hosts = [ "grafana.home.iverian.ru" ];
-          tls = [
+          hostnames = [ "grafana.home.iverian.ru" ];
+          parentRefs = [
             {
-              hosts = [ "grafana.home.iverian.ru" ];
-              secretName = "grafana-tls";
+              name = "main";
+              namespace = "envoy-gateway-system";
             }
           ];
         };
@@ -143,6 +134,49 @@ in
         numberOfInstances = 1;
         preparedDatabases.grafana = { };
         postgresql.version = "17";
+      };
+    };
+    prometheus-stack-extauthz.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "SecurityPolicy";
+      metadata = {
+        name = "extauthz";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "HTTPRoute";
+            name = "prometheus-stack-kube-prom-alertmanager";
+          }
+        ];
+        extAuth = {
+          headersToExtAuth = [
+            "accept"
+            "cookie"
+            "authorization"
+            "header-authorization"
+            "x-forwarded-proto"
+          ];
+          failOpen = false;
+          http = {
+            backendRefs = [
+              {
+                name = "authelia";
+                namespace = "authelia";
+                port = 80;
+              }
+            ];
+            path = "/api/authz/ext-authz/";
+            headersToBackend = [
+              "Remote-User"
+              "Remote-Groups"
+              "Remote-Name"
+              "Remote-Email"
+            ];
+          };
+        };
       };
     };
   };

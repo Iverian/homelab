@@ -32,21 +32,47 @@ in
       path = "/var/lib/rancher/k3s/server/manifests/authelia-secret.json";
     };
   };
-  services.k3s.manifests.authelia-postgresql.content = {
-    apiVersion = "acid.zalan.do/v1";
-    kind = "postgresql";
-    metadata = {
-      name = "authelia-db";
-      namespace = namespace;
-    };
-    spec = {
-      teamId = "main";
-      volume = {
-        size = "1Gi";
+  services.k3s.manifests = {
+    authelia-postgresql.content = {
+      apiVersion = "acid.zalan.do/v1";
+      kind = "postgresql";
+      metadata = {
+        name = "authelia-db";
+        namespace = namespace;
       };
-      numberOfInstances = 1;
-      preparedDatabases.authelia = { };
-      postgresql.version = "17";
+      spec = {
+        teamId = "main";
+        volume = {
+          size = "1Gi";
+        };
+        numberOfInstances = 1;
+        preparedDatabases.authelia = { };
+        postgresql.version = "17";
+      };
+    };
+    authelia-reference-grant.content = {
+      apiVersion = "gateway.networking.k8s.io/v1beta1";
+      kind = "ReferenceGrant";
+      metadata = {
+        name = "authelia-reference-grant";
+        namespace = namespace;
+      };
+      spec = {
+        from = [
+          {
+            group = "gateway.envoyproxy.io";
+            kind = "SecurityPolicy";
+            namespace = "prometheus-stack";
+          }
+        ];
+        to = [
+          {
+            group = "";
+            kind = "Service";
+            name = "authelia";
+          }
+        ];
+      };
     };
   };
   services.k3s.autoDeployCharts.authelia = {
