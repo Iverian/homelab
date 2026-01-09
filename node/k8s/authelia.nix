@@ -68,17 +68,17 @@ in
         };
       };
       ingress = {
-        enabled = false;
+        enabled = public;
         gatewayAPI = {
           enabled = true;
           parentRefs = [
             {
-              name = "private";
-              sectionName = "main";
+              name = "main";
+              sectionName = "private";
             }
             {
-              name = "public";
-              sectionName = "main";
+              name = "main";
+              sectionName = "public";
             }
           ];
         };
@@ -114,6 +114,9 @@ in
           cookies = [
             {
               domain = "auth.home.iverian.ru";
+            }
+            {
+              domain = "auth.iverian.ru";
             }
           ];
         };
