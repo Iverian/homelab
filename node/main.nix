@@ -12,31 +12,43 @@
     # Kubernetes services
     ./k8s/storage.nix
     ./k8s/metallb.nix
+    ./k8s/samba-operator.nix
+    ./k8s/tailscale-operator.nix
+    ./k8s/postgres-operator.nix
     ./k8s/ingress.nix
     ./k8s/reloader.nix
-    ./k8s/tailscale-operator.nix
     ./k8s/cert-manager.nix
-    ./k8s/postgres-operator.nix
     ./k8s/authelia.nix
     ./k8s/prometheus-stack.nix
     ./k8s/media.nix
   ];
 
-  sops.age.keyFile = "/etc/nixos/sops.key";
-  sops.defaultSopsFile = ../main.sops.yaml;
+  sops = {
+    age.keyFile = "/etc/nixos/sops.key";
+    defaultSopsFile = ../main.sops.yaml;
+  };
 
-  zramSwap.enable = true;
-  zramSwap.memoryPercent = 25;
+  zramSwap = {
+    enable = true;
+    memoryPercent = 25;
+  };
 
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.editor = false;
-  boot.loader.systemd-boot.configurationLimit = 3;
+  boot.supportedFilesystems = [ "zfs" ];
+  boot.loader = {
+    efi.canTouchEfiVariables = true;
+    systemd-boot = {
+      enable = true;
+      editor = false;
+      configurationLimit = 3;
+    };
+  };
 
-  networking.hostId = "73961218";
-  networking.hostName = "homelab";
-  networking.firewall.enable = false;
-  networking.networkmanager.enable = true;
+  networking = {
+    hostId = "73961218";
+    hostName = "homelab";
+    firewall.enable = false;
+    networkmanager.enable = true;
+  };
 
   time.timeZone = "Europe/Moscow";
 
@@ -65,7 +77,6 @@
     packages = with pkgs; [ ];
   };
 
-  boot.supportedFilesystems = [ "zfs" ];
   systemd.services.zfs-load-keys = {
     enable = true;
     after = [
@@ -97,9 +108,22 @@
     enable = true;
     nssmdns4 = true;
     openFirewall = true;
+    allowInterfaces = [
+      "lo"
+      "enp3s0"
+    ];
+    publish = {
+      enable = true;
+      addresses = true;
+    };
+    extraServiceFiles = {
+      ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
+    };
   };
-  services.k3s.enable = true;
-  services.k3s.role = "server";
+  services.k3s = {
+    enable = true;
+    role = "server";
+  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "25.11";
