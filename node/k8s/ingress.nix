@@ -41,23 +41,13 @@ in
             hostname = "*.iverian.ru";
             port = 80;
             protocol = "HTTP";
+            allowedRoutes.namespaces.from = "All";
           }
           {
             name = "private";
             hostname = "*.home.iverian.ru";
             port = 80;
             protocol = "HTTP";
-          }
-          {
-            name = "public-secure";
-            hostname = "*.iverian.ru";
-            port = 443;
-            protocol = "HTTPS";
-            allowedRoutes.namespaces.from = "All";
-            tls = {
-              mode = "Terminate";
-              certificateRefs = [ { name = "eg-public-tls"; } ];
-            };
           }
           {
             name = "private-secure";
@@ -77,16 +67,11 @@ in
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "HTTPRoute";
       metadata = {
-        name = "http-to-https-filter-redirect";
+        name = "http-to-https-redirect";
         namespace = namespace;
       };
       spec = {
         parentRefs = [
-          {
-            name = "main";
-            namespace = namespace;
-            sectionName = "public";
-          }
           {
             name = "main";
             namespace = namespace;
