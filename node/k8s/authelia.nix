@@ -103,11 +103,6 @@ in
             {
               domain = "auth.home.iverian.ru";
             }
-            {
-              domain = "alertmanager.home.iverian.ru";
-              authelia_url = "https://auth.home.iverian.ru";
-              default_redirection_url = "https://alertmanager.home.iverian.ru";
-            }
           ];
         };
         webauthn = {
