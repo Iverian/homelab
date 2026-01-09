@@ -50,30 +50,6 @@ in
         postgresql.version = "17";
       };
     };
-    authelia-reference-grant.content = {
-      apiVersion = "gateway.networking.k8s.io/v1beta1";
-      kind = "ReferenceGrant";
-      metadata = {
-        name = "authelia-reference-grant";
-        namespace = namespace;
-      };
-      spec = {
-        from = [
-          {
-            group = "gateway.envoyproxy.io";
-            kind = "SecurityPolicy";
-            namespace = "prometheus-stack";
-          }
-        ];
-        to = [
-          {
-            group = "";
-            kind = "Service";
-            name = "authelia";
-          }
-        ];
-      };
-    };
   };
   services.k3s.autoDeployCharts.authelia = {
     name = "authelia";

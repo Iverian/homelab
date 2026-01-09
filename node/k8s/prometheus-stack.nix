@@ -136,53 +136,5 @@ in
         postgresql.version = "17";
       };
     };
-    prometheus-stack-extauthz.content = {
-      apiVersion = "gateway.envoyproxy.io/v1alpha1";
-      kind = "SecurityPolicy";
-      metadata = {
-        name = "extauthz";
-        namespace = namespace;
-      };
-      spec = {
-        targetRefs = [
-          {
-            group = "gateway.networking.k8s.io";
-            kind = "HTTPRoute";
-            name = "prometheus-stack-kube-prom-alertmanager";
-          }
-          {
-            group = "gateway.networking.k8s.io";
-            kind = "HTTPRoute";
-            name = "prometheus-stack-kube-prom-prometheus";
-          }
-        ];
-        extAuth = {
-          headersToExtAuth = [
-            "accept"
-            "cookie"
-            "authorization"
-            "header-authorization"
-            "x-forwarded-proto"
-          ];
-          failOpen = false;
-          http = {
-            backendRefs = [
-              {
-                name = "authelia";
-                namespace = "authelia";
-                port = 80;
-              }
-            ];
-            path = "/api/authz/ext-authz/";
-            headersToBackend = [
-              "Remote-User"
-              "Remote-Groups"
-              "Remote-Name"
-              "Remote-Email"
-            ];
-          };
-        };
-      };
-    };
   };
 }
