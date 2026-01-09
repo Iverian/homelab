@@ -41,6 +41,7 @@ in
             hostname = "*.iverian.ru";
             port = 80;
             protocol = "HTTP";
+
           }
           {
             name = "private";
@@ -53,6 +54,7 @@ in
             hostname = "*.iverian.ru";
             port = 443;
             protocol = "HTTPS";
+            allowedRoutes.namespaces.from = "All";
             tls = {
               mode = "Terminate";
               certificateRefs = [ { name = "eg-public-tls"; } ];
@@ -63,10 +65,46 @@ in
             hostname = "*.home.iverian.ru";
             port = 443;
             protocol = "HTTPS";
+            allowedRoutes.namespaces.from = "All";
             tls = {
               mode = "Terminate";
               certificateRefs = [ { name = "eg-private-tls"; } ];
             };
+          }
+        ];
+      };
+    };
+    envoy-gateway-http-redirect.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "HTTPRoute";
+      metadata = {
+        name = "http-to-https-filter-redirect";
+        namespace = namespace;
+      };
+      spec = {
+        parentRefs = [
+          {
+            name = "main";
+            namespace = namespace;
+            sectionName = "public";
+          }
+          {
+            name = "main";
+            namespace = namespace;
+            sectionName = "private";
+          }
+        ];
+        rules = [
+          {
+            filters = [
+              {
+                type = "RequestRedirect";
+                requestRedirect = {
+                  scheme = "https";
+                  statusCode = 301;
+                };
+              }
+            ];
           }
         ];
       };
@@ -82,6 +120,7 @@ in
         parentRefs = [
           {
             name = "main";
+            namespace = namespace;
           }
         ];
         hostnames = [ "*.home.iverian.ru" ];
