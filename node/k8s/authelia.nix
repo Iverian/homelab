@@ -83,7 +83,7 @@ in
       };
       configMap = {
         storage = {
-          encryption = {
+          encryption_key = {
             secret_name = "authelia-data";
             path = "databaseEncryptionKey";
           };
