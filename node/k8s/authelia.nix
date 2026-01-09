@@ -68,7 +68,7 @@ in
         };
       };
       ingress = {
-        enabled = public;
+        enabled = true;
         gatewayAPI = {
           enabled = true;
           parentRefs = [
