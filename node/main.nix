@@ -12,7 +12,7 @@
     # Kubernetes services
     ./k8s/storage.nix
     ./k8s/metallb.nix
-    ./k8s/traefik.nix
+    ./k8s/ingress.nix
     ./k8s/tailscale-operator.nix
     ./k8s/cert-manager.nix
     ./k8s/postgres-operator.nix
