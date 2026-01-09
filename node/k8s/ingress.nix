@@ -120,14 +120,9 @@ in
           {
             name = "main";
             namespace = namespace;
-            sectionName = "private";
-          }
-          {
-            name = "main";
-            namespace = namespace;
-            sectionName = "private-secure";
           }
         ];
+        hostnames = [ "*.home.iverian.ru" ];
         rules = [
           {
             matches = [
