@@ -46,9 +46,9 @@ in
           enabled = true;
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt";
-            # "traefik.ingress.kubernetes.io/router.middlewares" = "authelia-forwardauth-authelia@kubernetescrd";
-            # "traefik.ingress.kubernetes.io/router.entryPoints" = "websecure";
-            # "traefik.ingress.kubernetes.io/router.tls" = "true";
+            "traefik.ingress.kubernetes.io/router.middlewares" = "authelia-chain-authelia-auth@kubernetescrd";
+            "traefik.ingress.kubernetes.io/router.entryPoints" = "websecure";
+            "traefik.ingress.kubernetes.io/router.tls" = "true";
           };
           hosts = [ "alertmanager.home.iverian.ru" ];
           tls = [
