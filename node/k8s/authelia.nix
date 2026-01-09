@@ -5,9 +5,12 @@ in
 {
   sops = {
     secrets = {
-      autheliaEncryptionKey = { };
+      autheliaSessionEncryptionKey = { };
+      autheliaDatabaseEncryptionKey = { };
       autheliaDatabase = { };
       autheliaJwksKey = { };
+      autheliaHmacKey = { };
+      autheliaResetPasswordKey = { };
     };
     templates.authelia-data = {
       content = builtins.toJSON {
@@ -18,8 +21,11 @@ in
           namespace = namespace;
         };
         data = {
-          encryptionKey = config.sops.placeholder.autheliaEncryptionKey;
+          databaseEncryptionKey = config.sops.placeholder.autheliaDatabaseEncryptionKey;
+          sessionEncryptionKey = config.sops.placeholder.autheliaSessionEncryptionKey;
+          resetPasswordKey = config.sops.placeholder.autheliaResetPasswordKey;
           jwksKey = config.sops.placeholder.autheliaJwksKey;
+          hmacKey = config.sops.placeholder.autheliaHmacKey;
           database = config.sops.placeholder.autheliaDatabase;
         };
       };
@@ -77,6 +83,10 @@ in
       };
       configMap = {
         storage = {
+          encryption = {
+            secret_name = "authelia-data";
+            path = "databaseEncryptionKey";
+          };
           postgres = {
             enabled = true;
             deploy = false;
@@ -97,7 +107,7 @@ in
           same_site = "strict";
           encryption_key = {
             secret_name = "authelia-data";
-            path = "encryptionKey";
+            path = "sessionEncryptionKey";
           };
           cookies = [
             {
@@ -116,9 +126,17 @@ in
             filename = "/config/notification.txt";
           };
         };
+        identity_validation.reset_password.secret = {
+          secret_name = "authelia-data";
+          path = "resetPasswordKey";
+        };
         identity_providers = {
           oidc = {
             enabled = true;
+            hmac_secret = {
+              secret_name = "authelia-data";
+              path = "hmacKey";
+            };
             jwks = [
               {
                 key_id = "auth";
