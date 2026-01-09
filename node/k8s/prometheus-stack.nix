@@ -150,6 +150,11 @@ in
             kind = "HTTPRoute";
             name = "prometheus-stack-kube-prom-alertmanager";
           }
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "HTTPRoute";
+            name = "prometheus-stack-kube-prom-prometheus";
+          }
         ];
         extAuth = {
           headersToExtAuth = [
