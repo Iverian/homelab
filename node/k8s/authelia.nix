@@ -74,11 +74,7 @@ in
           parentRefs = [
             {
               name = "main";
-              sectionName = "private";
-            }
-            {
-              name = "main";
-              sectionName = "public";
+              namespace = "envoy-gateway-system";
             }
           ];
         };

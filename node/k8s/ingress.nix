@@ -39,6 +39,18 @@ in
           {
             name = "public";
             hostname = "*.iverian.ru";
+            port = 80;
+            protocol = "HTTP";
+          }
+          {
+            name = "private";
+            hostname = "*.home.iverian.ru";
+            port = 80;
+            protocol = "HTTP";
+          }
+          {
+            name = "public-secure";
+            hostname = "*.iverian.ru";
             port = 443;
             protocol = "HTTPS";
             tls = {
@@ -47,7 +59,7 @@ in
             };
           }
           {
-            name = "private";
+            name = "private-secure";
             hostname = "*.home.iverian.ru";
             port = 443;
             protocol = "HTTPS";
@@ -109,7 +121,7 @@ in
       spec = {
         directResponse = {
           contentType = "text/plain";
-          statusCode = "404";
+          statusCode = 404;
           body = {
             type = "Inline";
             inline = "not found";
