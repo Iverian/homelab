@@ -19,16 +19,22 @@ in
       metadata.name = gateway-class;
       spec.controllerName = "gateway.envoyproxy.io/gatewayclass-controller";
     };
-    envoy-gateway-public.content = {
+    envoy-gateway-main.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
       metadata = {
-        name = "public";
+        name = "main";
         namespace = namespace;
         annotations."cert-manager.io/cluster-issuer" = "letsencrypt";
       };
       spec = {
         gatewayClassName = gateway-class;
+        addresses = [
+          {
+            type = "IPAddress";
+            value = "192.168.88.90";
+          }
+        ];
         listeners = [
           {
             name = "public";
@@ -40,20 +46,6 @@ in
               certificateRefs = [ { name = "eg-public-tls"; } ];
             };
           }
-        ];
-      };
-    };
-    envoy-gateway-private.content = {
-      apiVersion = "gateway.networking.k8s.io/v1";
-      kind = "Gateway";
-      metadata = {
-        name = "private";
-        namespace = namespace;
-        annotations."cert-manager.io/cluster-issuer" = "letsencrypt";
-      };
-      spec = {
-        gatewayClassName = gateway-class;
-        listeners = [
           {
             name = "private";
             hostname = "*.home.iverian.ru";

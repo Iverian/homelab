@@ -68,17 +68,19 @@ in
         };
       };
       ingress = {
-        enabled = true;
-        annotations = {
-          "cert-manager.io/cluster-issuer" = "letsencrypt";
-        };
-        tls = {
+        enabled = false;
+        gatewayAPI = {
           enabled = true;
-          secret = "authelia-tls";
-        };
-        traefikCRD = {
-          enabled = true;
-          disableIngressRoute = true;
+          parentRefs = [
+            {
+              name = "private";
+              sectionName = "main";
+            }
+            {
+              name = "public";
+              sectionName = "main";
+            }
+          ];
         };
       };
       configMap = {
