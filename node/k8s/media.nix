@@ -44,7 +44,7 @@ in
         watch-dir-enabled = true;
         incomplete-dir-enabled = true;
         trash-can-enabled = false;
-        trash-original-torrent-files = true;
+        trash-original-torrent-files = false;
         peer-port = transmission-peer-port;
         port-forwarding-enabled = false;
         rpc-enabled = true;
@@ -283,6 +283,43 @@ in
         ];
       };
     };
+    transmission-remove-added-files.content = {
+      apiVersion = "batch/v1";
+      kind = "CronJob";
+      metadata = {
+        name = "transmission-remove-added-files";
+        namespace = namespace;
+      };
+      spec = {
+        schedule = "0 4 * * *";
+        jobTemplate.spec.template.spec = {
+          restartPolicy = "OnFailure";
+          volumes = [
+            {
+              name = "media";
+              persistentVolumeClaim.claimName = "media";
+            }
+          ];
+          containers = [
+            {
+              name = "main";
+              image = "rancher/mirrored-library-busybox:1.36.1";
+              command = [
+                "sh"
+                "-c"
+              ];
+              args = [ "set -eux && rm -f ${transmission-watch-dir}/*.added" ];
+              volumeMounts = [
+                {
+                  name = "media";
+                  mountPath = "/media";
+                }
+              ];
+            }
+          ];
+        };
+      };
+    };
     share-security-config.content = {
       apiVersion = "samba-operator.samba.org/v1alpha1";
       kind = "SmbSecurityConfig";
@@ -326,6 +363,7 @@ in
         readOnly = false;
       };
     };
+
   };
   sops = {
     secrets = {
