@@ -103,7 +103,7 @@ in
           GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
           GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email groups";
           GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN = "true";
-          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "'Editor'";
+          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "'Admin'";
         };
         route.main = {
           enabled = true;
@@ -112,6 +112,20 @@ in
             {
               name = "main";
               namespace = "envoy-gateway-system";
+            }
+          ];
+        };
+        serviceMonitor.enabled = true;
+        defaultDashboardsTimezone = "Europe/Moscow";
+        datasources."datasources.yaml" = {
+          apiVersion = 1;
+          datasources = [
+            {
+              name = "Prometheus";
+              type = "prometheus";
+              url = "http://prometheus-stack-kube-prom-prometheus:9090";
+              access = "proxy";
+              isDefault = true;
             }
           ];
         };
