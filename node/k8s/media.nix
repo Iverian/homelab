@@ -8,30 +8,6 @@ let
   transmission-watch-dir = "/media/downloads/watch";
 in
 {
-  # services.k3s.disable = [ "media-share" ];
-  services.samba = {
-    enable = false;
-    openFirewall = true;
-    settings = {
-      global = {
-        "passwd program" = "/run/wrappers/bin/passwd %u";
-        "pam password change" = "yes";
-        "map to guest" = "bad user";
-        "usershare allow guests" = "yes";
-      };
-      media = {
-        browseable = "yes";
-        comment = "Media";
-        path = "/data/hdd/pvc-a8c2f9f0-e6c5-49b4-a10d-03a49acb4ae4_media_media";
-        "read only" = "no";
-        "writable" = "yes";
-        public = "yes";
-        "guest only" = "yes";
-        "force create mode" = 0666;
-        "force directory mode" = 0777;
-      };
-    };
-  };
   services.k3s.manifests = {
     media-namespace.content = {
       apiVersion = "v1";
@@ -75,6 +51,10 @@ in
         rpc-port = transmission-rpc-port;
         rpc-password = "";
         rpc-whitelist-enabled = false;
+        speed-limit-down = 5000;
+        speed-limit-down-enabled = true;
+        dht-enabled = true;
+        lpd-enabled = true;
         preferred-transports = [ "tcp" ];
         tcp-enabled = true;
         utp-enabled = false;
