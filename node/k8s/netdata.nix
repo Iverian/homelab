@@ -11,9 +11,9 @@ in
     targetNamespace = namespace;
     createNamespace = true;
     values = {
-      parent.env.DO_NOT_TRACK = 1;
-      child.env.DO_NOT_TRACK = 1;
-      k8sState.env.DO_NOT_TRACK = 1;
+      parent.env.NETDATA_DISABLE_CLOUD = 1;
+      child.env.NETDATA_DISABLE_CLOUD = 1;
+      k8sState.env.NETDATA_DISABLE_CLOUD = 1;
     };
   };
   services.k3s.manifests.netdata-httproute.content = {

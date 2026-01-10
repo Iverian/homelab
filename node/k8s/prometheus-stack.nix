@@ -93,7 +93,6 @@ in
           GF_DATABASE_SSL_MODE = "require";
           GF_AUTH_GENERIC_OAUTH_ENABLED = "true";
           GF_AUTH_GENERIC_OAUTH_AUTO_LOGIN = "true";
-          GF_AUTH_GENERIC_OAUTH_SKIP_ORG_ROLE_SYNC = "true";
           GF_AUTH_GENERIC_OAUTH_EMPTY_SCOPES = "false";
           GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://auth.home.iverian.ru/api/oidc/authorization";
           GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://auth.home.iverian.ru/api/oidc/token";
@@ -102,8 +101,8 @@ in
           GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH = "groups";
           GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH = "name";
           GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
-          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "";
           GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email groups";
+          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "contains(groups[*], 'admins') && 'Editor' || contains(groups[*], 'editors') && 'Editor' || 'Viewer'";
         };
         route.main = {
           enabled = true;
