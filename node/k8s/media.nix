@@ -48,6 +48,7 @@ in
         port-forwarding-enabled = false;
         rpc-enabled = true;
         rpc-port = transmission-rpc-port;
+        rpc-password = "";
         rpc-whitelist-enabled = false;
       };
     };
