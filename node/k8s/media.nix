@@ -425,10 +425,12 @@ in
                   requests = {
                     cpu = "100m";
                     memory = "128Mi";
+                    "gpu.intel.com/i915" = "1";
                   };
                   limits = {
                     cpu = "1";
                     memory = "2Gi";
+                    "gpu.intel.com/i915" = "1";
                   };
                 };
               }
