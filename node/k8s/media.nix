@@ -457,26 +457,6 @@ in
         ];
       };
     };
-    jellyfin-discovery-service.content = {
-      apiVersion = "v1";
-      kind = "Service";
-      metadata = {
-        name = "jellyfin";
-        namespace = namespace;
-      };
-      spec = {
-        selector.app = "jellyfin";
-        type = "NodePort";
-        ports = [
-          {
-            name = "discovery";
-            port = 7359;
-            protocol = "UDP";
-            targetPort = "discovery";
-          }
-        ];
-      };
-    };
     jellyfin-httproute.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "HTTPRoute";
