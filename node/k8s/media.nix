@@ -398,11 +398,44 @@ in
                     name = "JELLYFIN_DATA_DIR";
                     value = "/config";
                   }
+                  {
+                    name = "JELLYFIN_CONFIG_DIR";
+                    value = "/config/config";
+                  }
+                  {
+                    name = "JELLYFIN_CACHE_DIR";
+                    value = "/config/cache";
+                  }
+                  {
+                    name = "JELLYFIN_LOG_DIR";
+                    value = "/config/log";
+                  }
+                  {
+                    name = "NODE_NAME";
+                    valueFrom.fieldRef = {
+                      apiVersion = "v1";
+                      fieldPath = "spec.nodeName";
+                    };
+                  }
+                  {
+                    name = "POD_NAME";
+                    valueFrom.fieldRef = {
+                      apiVersion = "v1";
+                      fieldPath = "metadata.name";
+                    };
+                  }
+                  {
+                    name = "POD_NAMESPACE";
+                    valueFrom.fieldRef = {
+                      apiVersion = "v1";
+                      fieldPath = "metadata.namespace";
+                    };
+                  }
                 ];
                 volumeMounts = [
                   {
                     name = "jellyfin-state";
-                    mountPath = "/state";
+                    mountPath = "/config";
                   }
                   {
                     name = "media";
