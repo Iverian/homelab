@@ -1,7 +1,7 @@
 { config, ... }:
 let
   namespace = "media";
-  transmission-peer-port = 32413;
+  transmission-peer-port = 31413;
   transmission-rpc-port = 9091;
   transmission-download-dir = "/media/downloads/completed";
   transmission-incomplete-dir = "/media/downloads/inprogress";
@@ -51,6 +51,9 @@ in
         rpc-port = transmission-rpc-port;
         rpc-password = "";
         rpc-whitelist-enabled = false;
+        preferred-transports = [ "tcp" ];
+        tcp-enabled = true;
+        utp-enabled = false;
       };
     };
     transmission-statefulset-service.content = {
