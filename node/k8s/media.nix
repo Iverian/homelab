@@ -3,7 +3,7 @@ let
   namespace = "media";
   transmission-peer-port = 32413;
   transmission-rpc-port = 9091;
-  transmission-download-dir = "/media/downloads/complete";
+  transmission-download-dir = "/media/downloads/completed";
   transmission-incomplete-dir = "/media/downloads/inprogress";
   transmission-watch-dir = "/media/downloads/watch";
 in
@@ -24,6 +24,7 @@ in
         namespace = namespace;
       };
       spec = {
+        storageClassName = "storage";
         resources.requests.storage = "2Ti";
         accessModes = [ "ReadWriteMany" ];
         persistentVolumeReclaimPolicy = "Retain";
@@ -58,7 +59,6 @@ in
       metadata = {
         name = "transmission-headless";
         namespace = namespace;
-
       };
       spec = {
         selector.app = "transmission";
@@ -279,6 +279,68 @@ in
           }
         ];
       };
+    };
+    share-security-config.content = {
+      apiVersion = "samba-operator.samba.org/v1alpha1";
+      kind = "SmbSecurityConfig";
+      metadata = {
+        name = "external";
+        namespace = namespace;
+      };
+      spec = {
+        mode = "user";
+        dns.register = "never";
+        users = {
+          secret = "share-users";
+          key = "users";
+        };
+      };
+    };
+    share-common-config.content = {
+      apiVersion = "samba-operator.samba.org/v1alpha1";
+      kind = "SmbCommonConfig";
+      metadata = {
+        name = "external";
+        namespace = namespace;
+      };
+      spec.network.publish = "external";
+    };
+    media-share.content = {
+      apiVersion = "samba-operator.samba.org/v1alpha1";
+      kind = "SmbShare";
+      metadata = {
+        name = "share";
+        namespace = namespace;
+      };
+      spec = {
+        storage.pvc = {
+          name = "media";
+        };
+        securityConfig = "external";
+        commonConfig = "external";
+        shareName = "media";
+        browseable = true;
+        readOnly = false;
+      };
+    };
+  };
+  sops = {
+    secrets = {
+      shareUsers = { };
+    };
+    templates.media-share-users = {
+      content = builtins.toJSON {
+        apiVersion = "v1";
+        kind = "Secret";
+        metadata = {
+          name = "share-users";
+          namespace = namespace;
+        };
+        data = {
+          users = config.sops.placeholder.shareUsers;
+        };
+      };
+      path = "/var/lib/rancher/k3s/server/manifests/media-share-users.json";
     };
   };
 }
