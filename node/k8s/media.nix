@@ -324,6 +324,198 @@ in
         };
       };
     };
+    jellyfin-config.content = {
+      apiVersion = "v1";
+      kind = "ConfigMap";
+      metadata = {
+        name = "jellyfin-config";
+        namespace = namespace;
+      };
+      data."settings.json" = "";
+    };
+    jellyfin-statefulset-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "jellyfin-headless";
+        namespace = namespace;
+      };
+      spec = {
+        selector.app = "jellyfin";
+        type = "ClusterIP";
+        clusterIP = "None";
+        ports = [
+          {
+            name = "rpc";
+            port = 8096;
+            protocol = "TCP";
+            targetPort = "rpc";
+          }
+        ];
+      };
+    };
+    jellyfin-statefulset.content = {
+      apiVersion = "apps/v1";
+      kind = "StatefulSet";
+      metadata = {
+        name = "jellyfin";
+        namespace = namespace;
+        annotations."reloader.stakater.com/auto" = "true";
+      };
+      spec = {
+        selector.matchLabels.app = "jellyfin";
+        serviceName = "jellyfin-headless";
+        volumeClaimTemplates = [
+          {
+            apiVersion = "v1";
+            kind = "PersistentVolumeClaim";
+            metadata.name = "jellyfin-state";
+            spec = {
+              accessModes = [ "ReadWriteOnce" ];
+              resources.requests.storage = "1Gi";
+            };
+          }
+        ];
+        template = {
+          metadata.labels.app = "jellyfin";
+          spec = {
+            volumes = [
+              {
+                name = "media";
+                persistentVolumeClaim.claimName = "media";
+              }
+            ];
+            containers = [
+              {
+                name = "jellyfin";
+                image = "ghcr.io/jellyfin/jellyfin:latest";
+                env = [
+                  {
+                    name = "JELLYFIN_PublishedServerUrl";
+                    value = "https://jellyfin.home.iverian.ru";
+                  }
+                  {
+                    name = "JELLYFIN_DATA_DIR";
+                    value = "/config";
+                  }
+                ];
+                volumeMounts = [
+                  {
+                    name = "jellyfin-state";
+                    mountPath = "/state";
+                  }
+                  {
+                    name = "media";
+                    mountPath = "/media";
+                  }
+                ];
+                ports = [
+                  {
+                    name = "http";
+                    protocol = "TCP";
+                    containerPort = 8096;
+                  }
+                  {
+                    name = "discovery";
+                    protocol = "UDP";
+                    containerPort = 7359;
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "100m";
+                    memory = "128Mi";
+                  };
+                  limits = {
+                    cpu = "1";
+                    memory = "2Gi";
+                  };
+                };
+              }
+            ];
+          };
+        };
+      };
+    };
+    jellyfin-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "jellyfin";
+        namespace = namespace;
+      };
+      spec = {
+        selector.app = "jellyfin";
+        type = "ClusterIP";
+        ports = [
+          {
+            name = "http";
+            port = 80;
+            protocol = "TCP";
+            targetPort = "http";
+          }
+        ];
+      };
+    };
+    jellyfin-discovery-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "jellyfin";
+        namespace = namespace;
+      };
+      spec = {
+        selector.app = "jellyfin";
+        type = "NodePort";
+        ports = [
+          {
+            name = "discovery";
+            port = 7359;
+            protocol = "UDP";
+            targetPort = "discovery";
+          }
+        ];
+      };
+    };
+    jellyfin-httproute.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "HTTPRoute";
+      metadata = {
+        name = "jellyfin";
+        namespace = namespace;
+      };
+      spec = {
+        hostnames = [ "jellyfin.home.iverian.ru" ];
+        parentRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "main";
+            namespace = "envoy-gateway-system";
+          }
+        ];
+        rules = [
+          {
+            backendRefs = [
+              {
+                group = "";
+                kind = "Service";
+                name = "jellyfin";
+                port = 80;
+              }
+            ];
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/";
+                };
+              }
+            ];
+          }
+        ];
+      };
+    };
     share-security-config.content = {
       apiVersion = "samba-operator.samba.org/v1alpha1";
       kind = "SmbSecurityConfig";
