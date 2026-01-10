@@ -102,7 +102,8 @@ in
           GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH = "name";
           GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
           GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email groups";
-          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "contains(groups[*], 'admins') && 'Editor' || contains(groups[*], 'editors') && 'Editor' || 'Viewer'";
+          GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN = "true";
+          GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "'Editor'";
         };
         route.main = {
           enabled = true;
