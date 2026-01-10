@@ -448,11 +448,6 @@ in
                     protocol = "TCP";
                     containerPort = 8096;
                   }
-                  {
-                    name = "discovery";
-                    protocol = "UDP";
-                    containerPort = 7359;
-                  }
                 ];
                 resources = {
                   requests = {
