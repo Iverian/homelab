@@ -96,7 +96,11 @@
   environment.systemPackages = with pkgs; [
     neovim
     curl
+    htop
+    iotop
   ];
+
+  services.irqbalance.enable = true;
 
   services.openssh = {
     enable = true;
@@ -104,6 +108,7 @@
       PermitRootLogin = "no";
     };
   };
+
   services.avahi = {
     enable = true;
     nssmdns4 = true;
@@ -120,6 +125,7 @@
       ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
     };
   };
+
   services.k3s = {
     enable = true;
     role = "server";
