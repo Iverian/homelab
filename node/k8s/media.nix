@@ -43,6 +43,7 @@ in
         watch-dir = transmission-watch-dir;
         watch-dir-enabled = true;
         incomplete-dir-enabled = true;
+        umask = "000";
         trash-can-enabled = false;
         trash-original-torrent-files = false;
         peer-port = transmission-peer-port;
