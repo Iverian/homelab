@@ -90,7 +90,6 @@ in
       metadata = {
         name = "transmission";
         namespace = namespace;
-        annotations."reloader.stakater.com/auto" = "true";
       };
       spec = {
         selector.matchLabels.app = "transmission";
@@ -107,7 +106,10 @@ in
           }
         ];
         template = {
-          metadata.labels.app = "transmission";
+          metadata = {
+            labels.app = "transmission";
+            annotations."reloader.stakater.com/auto" = "true";
+          };
           spec = {
             volumes = [
               {
