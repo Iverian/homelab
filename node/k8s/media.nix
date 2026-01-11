@@ -585,7 +585,27 @@ in
         readOnly = false;
       };
     };
-
+    media-share-service-tailscale.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "share-ext";
+        namespace = namespace;
+      };
+      spec = {
+        selector."samba-operator.samba.org/service" = "share";
+        type = "LoadBalancer";
+        loadBalancerClass = "tailscale";
+        ports = [
+          {
+            name = "smb";
+            port = 445;
+            protocol = "TCP";
+            targetPort = 445;
+          }
+        ];
+      };
+    };
   };
   sops = {
     secrets = {
