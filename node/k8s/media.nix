@@ -526,6 +526,22 @@ in
         ];
       };
     };
+    jellyfin-tailscale-ingress.content = {
+      apiVersion = "networking.k8s.io/v1";
+      kind = "Ingress";
+      metadata = {
+        name = "ts-jellyfin";
+        namespace = namespace;
+      };
+      spec = {
+        defaultBackend.service = {
+          name = "jellyfin";
+          port.number = 80;
+        };
+        ingressClassName = "tailscale";
+        tls = [ { hosts = [ "jellyfin" ]; } ];
+      };
+    };
     share-security-config.content = {
       apiVersion = "samba-operator.samba.org/v1alpha1";
       kind = "SmbSecurityConfig";
