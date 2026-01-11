@@ -117,18 +117,6 @@ in
         };
         serviceMonitor.enabled = true;
         defaultDashboardsTimezone = "Europe/Moscow";
-        datasources."datasources.yaml" = {
-          apiVersion = 1;
-          datasources = [
-            {
-              name = "Prometheus";
-              type = "prometheus";
-              url = "http://prometheus-stack-kube-prom-prometheus:9090";
-              access = "proxy";
-              isDefault = true;
-            }
-          ];
-        };
       };
     };
   };

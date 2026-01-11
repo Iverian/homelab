@@ -36,6 +36,7 @@
   };
 
   boot.supportedFilesystems = [ "zfs" ];
+  boot.kernelPackages = pkgs.linuxPackages_hardened;
   boot.kernelModules = [ "tcp_bbr" ];
   boot.kernelParams = [
     "i915.enable_fbc=1"
