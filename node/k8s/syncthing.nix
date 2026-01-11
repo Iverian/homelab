@@ -7,7 +7,7 @@ in
     name = "syncthing";
     repo = "https://k8s-home-lab.github.io/helm-charts/";
     version = "4.0.0";
-    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
+    hash = "sha256-O9uXdSBGuyoqUA5DbOtGyRzY0SEfHFmCyFcFmVq5jPg=";
     targetNamespace = namespace;
     createNamespace = true;
     values = {
