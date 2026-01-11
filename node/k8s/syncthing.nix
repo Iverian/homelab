@@ -1,0 +1,94 @@
+{ config, ... }:
+let
+  namespace = "syncthing";
+in
+{
+  services.k3s.autoDeployCharts.syncthing = {
+    name = "syncthing";
+    repo = "https://k8s-home-lab.github.io/helm-charts/";
+    version = "4.0.0";
+    hash = "sha256-nz7cPXlhBcAsBOquKKeOWPsIwYR6neASJF/WrCwNLAA=";
+    targetNamespace = namespace;
+    createNamespace = true;
+    values = {
+      image = {
+        repository = "syncthing/syncthing";
+        tag = "2.0.13";
+      };
+      service = {
+        main.ports.http.port = 8384;
+        listen = {
+          enabled = "true";
+          type = "NodePort";
+          externalTrafficPolicy = "Local";
+          ports.listen = {
+            enabled = true;
+            port = 22000;
+            protocol = "TCP";
+            targetPort = 22000;
+          };
+        };
+        discovery = {
+          enabled = "true";
+          type = "NodePort";
+          externalTrafficPolicy = "Local";
+          ports.discovery = {
+            enabled = true;
+            port = 22000;
+            protocol = "TCP";
+            targetPort = 22000;
+          };
+        };
+      };
+      persistence.data = {
+        enabled = "true";
+        mountPath = "/var/syncthing";
+        type = "pvc";
+        storageClass = "storage";
+        accessMode = "ReadWriteOnce";
+        size = "1Gi";
+      };
+    };
+  };
+  services.k3s.manifests = {
+    syncthing-httproute.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "HTTPRoute";
+      metadata = {
+        name = "syncthing";
+        namespace = namespace;
+      };
+      spec = {
+        hostnames = [ "syncthing.home.iverian.ru" ];
+        parentRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "main";
+            namespace = "envoy-gateway-system";
+          }
+        ];
+        rules = [
+          {
+            backendRefs = [
+              {
+                group = "";
+                kind = "Service";
+                name = "syncthing";
+                port = 8384;
+              }
+            ];
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/";
+                };
+              }
+            ];
+          }
+        ];
+      };
+    };
+  };
+}

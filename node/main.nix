@@ -21,6 +21,7 @@
     ./k8s/authelia.nix
     ./k8s/netdata.nix
     ./k8s/prometheus-stack.nix
+    ./k8s/syncthing.nix
     ./k8s/media.nix
   ];
 
