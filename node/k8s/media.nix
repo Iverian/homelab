@@ -53,6 +53,8 @@ in
         rpc-whitelist-enabled = false;
         speed-limit-down = 5000;
         speed-limit-down-enabled = true;
+        speed-limit-up = 5000;
+        speed-limit-up-enabled = true;
         dht-enabled = true;
         lpd-enabled = true;
         preferred-transports = [ "tcp" ];
