@@ -109,6 +109,27 @@
     packages = with pkgs; [ ];
   };
 
+  services.smartd = {
+    enable = true;
+    devices = [
+      {
+        device = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_250GB_S4EUNX0R704715T";
+      }
+      {
+        device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NL0SD";
+      }
+      {
+        device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D4136UV7";
+      }
+      {
+        device = "/dev/disk/by-id/ata-WDC_WD20EFZX-68AWUN0_WD-WX12D41367TU";
+      }
+      {
+        device = "/dev/disk/by-id/ata-WDC_WD40EFAX-68JH4N1_WD-WX72D71NLF63";
+      }
+    ];
+  };
+
   systemd.services.zfs-load-keys = {
     enable = true;
     after = [
