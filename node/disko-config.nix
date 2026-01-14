@@ -22,8 +22,12 @@
               content = {
                 type = "luks";
                 name = "root";
-                settings.allowDiscards = true;
                 passwordFile = "/etc/nixos/root.key";
+                settings = {
+                  keyFile = "/dev/disk/by-id/usb-NanoKVM_USB_Mass_Storage_0123456789ABCDEF-0:0";
+                  keyFileSize = 4096;
+                  allowDiscards = true;
+                };
                 content = {
                   type = "filesystem";
                   format = "ext4";

@@ -36,9 +36,11 @@
   };
 
   boot.supportedFilesystems = [ "zfs" ];
+  boot.initrd.kernelModules = [ "usb_storage" ];
   boot.kernelPackages = pkgs.linuxPackages_hardened;
   boot.kernelModules = [ "tcp_bbr" ];
   boot.kernelParams = [
+    "fsck.mode=force"
     "i915.enable_fbc=1"
     "i915.fastboot=1"
     "i915.i915_enable_rc6=1"
@@ -152,6 +154,7 @@
     htop
     iotop
     iftop
+    usbutils
   ];
 
   services.irqbalance.enable = true;
