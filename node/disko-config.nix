@@ -22,9 +22,8 @@
               content = {
                 type = "luks";
                 name = "root";
-                passwordFile = "/etc/nixos/root.key";
                 settings = {
-                  keyFile = "/dev/disk/by-id/usb-NanoKVM_USB_Mass_Storage_0123456789ABCDEF-0:0";
+                  keyFile = "/dev/disk/by-id/usb-Gembird_GFL-2.0-8mini_7835531142426188517-0:0";
                   keyFileSize = 4096;
                   allowDiscards = true;
                 };
@@ -109,11 +108,13 @@
         rootFsOptions = {
           encryption = "on";
           keyformat = "raw";
-          keylocation = "file:///etc/nixos/zfs.key";
+          keylocation = "file:///etc/nixos/secrets/zfs.key";
           mountpoint = "none";
           compression = "zstd";
           acltype = "posixacl";
           xattr = "sa";
+          atime = "on";
+          relatime = "on";
           "com.sun:auto-snapshot" = "true";
         };
         options = {

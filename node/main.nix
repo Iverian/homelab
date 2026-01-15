@@ -22,11 +22,12 @@
     ./k8s/netdata.nix
     ./k8s/prometheus-stack.nix
     ./k8s/syncthing.nix
+    ./k8s/intel-nfd.nix
     ./k8s/media.nix
   ];
 
   sops = {
-    age.keyFile = "/etc/nixos/sops.key";
+    age.keyFile = "/etc/nixos/secrets/sops.key";
     defaultSopsFile = ../main.sops.yaml;
   };
 
