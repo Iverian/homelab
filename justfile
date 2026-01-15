@@ -1,6 +1,6 @@
 flake := ".#homelab"
 node := "iverian@homelab.lan"
-rebuild_cmd := "nix run nixpkgs#nixos-rebuild -- --verbose --use-substitutes --sudo --build-host " + node + " --target-host " + node + " --flake " + flake
+rebuild_cmd := "nix run nixpkgs#nixos-rebuild -- --use-substitutes --sudo --build-host " + node + " --target-host " + node + " --flake " + flake
 
 help:
   @just --list

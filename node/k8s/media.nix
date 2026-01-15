@@ -6,6 +6,9 @@ let
   transmission-download-dir = "/media/downloads/completed";
   transmission-incomplete-dir = "/media/downloads/inprogress";
   transmission-watch-dir = "/media/downloads/watch";
+  movies-dir = "/media/movies";
+  shows-dir = "/media/shows";
+  transcode-dir = "/media/.transcode";
 in
 {
   services.k3s.manifests = {
@@ -130,7 +133,7 @@ in
                   "-c"
                 ];
                 args = [
-                  "set -eux && mkdir -p -m 0777 ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} && cp /config-ro/settings.json /config/settings.json && chmod 0666 /config/settings.json"
+                  "set -eux && mkdir -p ${movies-dir} ${shows-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} && chmod -R 0777 ${movies-dir} ${shows-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-download-dir} && cp /config-ro/settings.json /config/settings.json && chmod 0666 /config/settings.json"
                 ];
                 volumeMounts = [
                   {
