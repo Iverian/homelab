@@ -180,6 +180,28 @@ in
                 token_endpoint_auth_method = "client_secret_basic";
                 consent_mode = "implicit";
               }
+              {
+                client_id = "gitea";
+                client_secret = "$pbkdf2-sha512$310000$FTwibf/9uyjN6SUph5xRXg$BrIbOjQi1V8SrXQUOuMVfaBY64zOV.pi04DoDE8GDbpuAKPvvYf7ra9Gww9vaAJddTDTBmLUnd7LKzWY59GkWA";
+                public = false;
+                require_pkce = false;
+                pkce_challenge_method = "";
+                authorization_policy = "one_factor";
+                redirect_uris = [
+                  "https://gitea.home.iverian.ru/user/oauth2/authelia/callback"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "email"
+                ];
+                grant_types = [ "authorization_code" ];
+                response_types = [ "code" ];
+                access_token_signed_response_alg = "none";
+                userinfo_signed_response_alg = "none";
+                token_endpoint_auth_method = "client_secret_basic";
+                consent_mode = "implicit";
+              }
             ];
           };
         };

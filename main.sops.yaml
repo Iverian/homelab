@@ -13,18 +13,20 @@ autheliaJwksKey: ENC[AES256_GCM,data:SPJljFo/fUHDs8i8CFE7rEvZyPuePLLD3fmlnSGGTY8
 autheliaHmacKey: ENC[AES256_GCM,data:J1U+Mjw77o+cRxusowT3DRpDdbcZ5lRH1cePk5sr+V+PhaTSJVr9vkgY0tCl8YsKXftesxMlvHgIIR1TJVufK44FSCFWhRLZX+TJg7wEbTijuEO2QsSSYRabUGp7OVPov4V07JsAlH5yk3GkAvC/MClXOKMAS8AKQEvuthR/HMRp9WjSvT9j5L+dD0h8yEE08YfD/fWTZm0eiG46UVzIQ/p81AA/2ESG8/JevQ==,iv:mBwVjnf1cqxyPP6suLVB4sgKd4fbQOiD6l5U/st+ZLw=,tag:dNH8uJRzBVh4OtDhTxAXgw==,type:str]
 autheliaResetPasswordKey: ENC[AES256_GCM,data:yZR8Bnir6kzm4O8cIIvIYonfUfH3W8j28mQ0c/0mvhyMStgo/of5PaFcKIvwn555vN8w7Z//SbkGVXfKDXzCDrN9BSQJ5Ss8kolgDmZnkgbYmFj3mOi09MydoZ2T1us3vI2UaHc0Hoz0jfQ7RYkhJ+sBcM5cDyQ8lU01xSBpsF16j4b5mgflnMAi3SXRV2zFluYo+CraXg4ywCjoNptzAavp0mP2BL289F/ubw==,iv:yNJS2XZKdijQ4SRgn16lyDYbH3ZOkW7EXlzCnvmwU80=,tag:xQX1OJYJNeIec55VC62QeQ==,type:str]
 shareUsers: ENC[AES256_GCM,data:S7xSNCsETCnUVJpNfXiEs21FFzNFbjiV3vUiAiZJotd3lFVTsVA4xFfNYeFQ34jxJDXVWLyAJafFcZTZ5Iu6UnwSAR0sAKhGEWMi6CKKs2pb21q2b0wazPev2+L335ccoOGyodKpM8+i3esGlEyXPl0xUht58xfeFMAbPfpevYj4InDbElD76WqTfajvuInPx/8EKnM6f+Xee5P+seSmXVtYUViu59YDX8JowOqSUf8ddmbj5zBeGK0Z5v37zeYBQiou1Hz+sY7dFXkCBOtTyBNQtSm/FCw3,iv:BRv4eZvonpdplRaQEmfAkcrkpZVZKUjxiMEUPsAE1MQ=,tag:tcA2iiQ9UuBWwskXZMyyZg==,type:str]
+giteaAdminPassword: ENC[AES256_GCM,data:2bYFi3hA4XW8EpsBPbw=,iv:EZZa3mvO0QOvHqz0Q8wUnqOQXoMtxTKfEfs+OHr1FnI=,tag:EF/UqFezxDyDV0ild1Smkw==,type:str]
+giteaOidcClientSecret: ENC[AES256_GCM,data:Igv4/XtjsZs4lEUZPn0eZv891+dWpZUxGqRR8Noy5plAICFy/WTp665ybydiOpXqRL36OgYwaoZxf/uCjr793A==,iv:7GF+XjrccAU/1TG96L/1u1bzWakM/FWbb9lxQTGIThc=,tag:uOIpCHDj6zdnYaiBhlP44w==,type:str]
 sops:
-  age:
-    - recipient: age1p2c3gh2vpy32vpeky7na0y4azy8x9fxzdfsfharpxdlc8evs4a7s5966ep
-      enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAzUHJDdS9ZQWNtNFdpU21D
-        Q2w0SXp4RWxYck5XU0diR3NTTEp1ZU5rdEFNCnZMYUo5U2NqVDJPbk5KZDR5eStD
-        TUJSaVJaUGw2SUw2MFJEV1gzNWNkSTQKLS0tIFZJTGVZR1hBQytwZnhYWWNNM0ZT
-        Uy9LWnh4WUk4dkI4MlRWTTJNU0RUYTgKIrB5VlUe1lCbGFhdUzGMOkCc3qlcnh0E
-        z5fGp3ZgDMIUHkMp639/jyAKXINPX2ke6r5FyR+H3W2WezAXSvyu8Q==
-        -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-01-10T03:56:45Z"
-  mac: ENC[AES256_GCM,data:n+FDoDTilnzv3Z7tKTFiBiCoDDmMkorfJXw38yK8gbIDalReoD6E+H/9gKq+pgaIxhCm0f2e+8Xf5RjfNCyS5VHcaZS1LPwIrn6pXA7X624jCsvyPmz2soF6x6H8zwG43v8YFttLFIJo5CtQ0uTejlf1YB5dFuq99TN0i3PddQ4=,iv:nGhA6IQzxt3LrGcccOB9Bs5zrtR/uOSdsmTFgYb5jGA=,tag:zRA0qEHU7oiu/9Nkg/H0/w==,type:str]
-  unencrypted_suffix: _unencrypted
-  version: 3.11.0
+    age:
+        - recipient: age1p2c3gh2vpy32vpeky7na0y4azy8x9fxzdfsfharpxdlc8evs4a7s5966ep
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAzUHJDdS9ZQWNtNFdpU21D
+            Q2w0SXp4RWxYck5XU0diR3NTTEp1ZU5rdEFNCnZMYUo5U2NqVDJPbk5KZDR5eStD
+            TUJSaVJaUGw2SUw2MFJEV1gzNWNkSTQKLS0tIFZJTGVZR1hBQytwZnhYWWNNM0ZT
+            Uy9LWnh4WUk4dkI4MlRWTTJNU0RUYTgKIrB5VlUe1lCbGFhdUzGMOkCc3qlcnh0E
+            z5fGp3ZgDMIUHkMp639/jyAKXINPX2ke6r5FyR+H3W2WezAXSvyu8Q==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-04-13T17:41:01Z"
+    mac: ENC[AES256_GCM,data:3VNbBDHXln2aMNVLCHDFORLzpUyYs8jeTJUsABXrLCPrnCuUP/bUo9LgXddh8FCJJvIs2pKFrVyNrm8AKGV6l0HRFpga161iKuujQzOnl5xeb1HpKe/tOsQMQYDjJExRiHEGE0b8hKt3JzqiYUmJs6VydD0IJF/X1J2vHy+nfxc=,iv:87O644WA40nqA7f591gjkFJUu5yThWzWOVcd5rDxue4=,tag:s0yAjHXvZCLxHpR/jSklHA==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.12.1

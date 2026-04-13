@@ -23,6 +23,7 @@
     ./k8s/prometheus-stack.nix
     ./k8s/syncthing.nix
     ./k8s/intel-nfd.nix
+    ./k8s/gitea.nix
     ./k8s/media.nix
   ];
 
