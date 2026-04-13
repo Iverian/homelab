@@ -7,6 +7,7 @@ in
     secrets = {
       giteaAdminPassword = { };
       giteaOidcClientSecret = { };
+      giteaActRunnerToken = { };
     };
     templates = {
       gitea-admin-secret = {
@@ -39,6 +40,20 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/gitea-oauth-secret.json";
+      };
+      gitea-act-runner-token = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = "gitea-act-runner-token";
+            namespace = namespace;
+          };
+          stringData = {
+            token = config.sops.placeholder.giteaActRunnerToken;
+          };
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/gitea-act-runner-token.json";
       };
     };
   };
@@ -125,7 +140,9 @@ in
           server = {
             SSH_PORT = 22;
             SSH_LISTEN_PORT = 2222;
+            DOMAIN = "gitea.home.iverian.ru";
             ROOT_URL = "https://gitea.home.iverian.ru";
+            DISABLE_SSH = "true";
           };
           openid = {
             ENABLE_OPENID_SIGNIN = "false";
@@ -135,6 +152,12 @@ in
             DISABLE_REGISTRATION = "false";
             ALLOW_ONLY_EXTERNAL_REGISTRATION = "true";
             SHOW_REGISTRATION_BUTTON = "false";
+          };
+          repository = {
+            USE_COMPAT_SSH_URI = "true";
+          };
+          actions = {
+            ENABLED = "true";
           };
         };
 
@@ -154,6 +177,78 @@ in
             provider = "openidConnect";
             existingSecret = "gitea-authelia-oauth";
             autoDiscoverUrl = "https://auth.home.iverian.ru/.well-known/openid-configuration";
+          }
+        ];
+      };
+    };
+  };
+
+  services.k3s.manifests = {
+    gitea-act-runner.content = {
+      apiVersion = "apps/v1";
+      kind = "StatefulSet";
+      metadata = {
+        name = "act-runner";
+        namespace = namespace;
+        labels.app = "act-runner";
+      };
+      spec = {
+        replicas = 1;
+        serviceName = "act-runner";
+        selector.matchLabels.app = "act-runner";
+        template = {
+          metadata.labels.app = "act-runner";
+          spec = {
+            securityContext.fsGroup = 1000;
+            containers = [
+              {
+                name = "runner";
+                image = "gitea/act_runner:nightly-dind-rootless";
+                imagePullPolicy = "Always";
+                env = [
+                  {
+                    name = "DOCKER_HOST";
+                    value = "tcp://localhost:2376";
+                  }
+                  {
+                    name = "DOCKER_CERT_PATH";
+                    value = "/certs/client";
+                  }
+                  {
+                    name = "DOCKER_TLS_VERIFY";
+                    value = "1";
+                  }
+                  {
+                    name = "GITEA_INSTANCE_URL";
+                    value = "http://gitea-http.${namespace}.svc.cluster.local:3000";
+                  }
+                  {
+                    name = "GITEA_RUNNER_REGISTRATION_TOKEN";
+                    valueFrom.secretKeyRef = {
+                      name = "gitea-act-runner-token";
+                      key = "token";
+                    };
+                  }
+                ];
+                securityContext.privileged = true;
+                volumeMounts = [
+                  {
+                    name = "runner-data";
+                    mountPath = "/data";
+                  }
+                ];
+              }
+            ];
+          };
+        };
+        volumeClaimTemplates = [
+          {
+            metadata.name = "runner-data";
+            spec = {
+              accessModes = [ "ReadWriteOnce" ];
+              storageClassName = "local-path";
+              resources.requests.storage = "1Gi";
+            };
           }
         ];
       };
