@@ -235,6 +235,10 @@ in
                     value = "http://transmission-rpc:${toString (transmission-rpc-port)}/transmission/rpc";
                   }
                   {
+                    name = "VIDSORT_IMDB_BLACKLIST";
+                    value = "tt0892051";
+                  }
+                  {
                     name = "VIDSORT_MOVIES_DIR";
                     value = movies-dir;
                   }
