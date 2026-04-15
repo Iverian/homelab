@@ -96,11 +96,7 @@ in
         "on-done.sh" = ''
           #!/bin/sh
 
-          FIFO_PATH="/config/vidsort/fifo"
-
-          if [ -e "$FIFO_PATH" ] ; then
-            echo "''\${TR_TORRENT_ID}" >> "$FIFO_PATH"
-          fi
+          echo "''\$TR_TORRENT_ID" >> "$FIFO_PATH"
         '';
       };
     };

@@ -1,8 +1,0 @@
-bindPort = 7000
-
-vhostHTTPPort = 80
-vhostHTTPSPort = 443
-
-[auth]
-method = "token"
-token = "12345678"

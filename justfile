@@ -1,6 +1,8 @@
-flake := ".#homelab"
+node_flake := ".#homelab"
+external_flake := ".#external"
 node := "iverian@homelab.lan"
-rebuild_cmd := "nix run nixpkgs#nixos-rebuild -- --use-substitutes --sudo --build-host " + node + " --target-host " + node + " --flake " + flake
+rebuild_cmd := "nix run nixpkgs#nixos-rebuild -- --use-substitutes --sudo --build-host " + node + " --target-host " + node + " --flake " + node_flake
+rebuild_external_cmd := "nix run nixpkgs#nixos-rebuild -- --flake " + external_flake
 
 help:
   @just --list
@@ -21,6 +23,9 @@ apply-on-reboot:
 # Dry run
 plan:
   {{ rebuild_cmd }} dry-activate
+
+external:
+  {{ rebuild_external_cmd }} build-image --image-variant openstack
 
 [no-cd]
 decrypt FILE:

@@ -18,6 +18,8 @@ giteaOidcClientSecret: ENC[AES256_GCM,data:Igv4/XtjsZs4lEUZPn0eZv891+dWpZUxGqRR8
 giteaActRunnerToken: ENC[AES256_GCM,data:KtGyhtEt58/CCulnJWk6MKYUXy8x6ElLbUF1ZEQCCMlIq62ynvG9og==,iv:G1qj+NpvZdeWLipYkEnZpkWNPWJbzIBX5w8lWA7id70=,tag:an2sctPTi6C3JcYRnJ2JYQ==,type:str]
 giteaUserToken: ENC[AES256_GCM,data:zHq9Z0vuM+XM99LdAZtd3rHcfX7Vmcm0l4ahv3JWnFsRBc3mkc0BVQ==,iv:Hm+MPW1ZqVWA2fY3QibainPFkCiBSTOZ9rx2zikhstI=,tag:3qa/G6ebKJsU5To5akU6Mg==,type:str]
 tvdbApiKey: ENC[AES256_GCM,data:Czcox6nESTO5lgLpZD9iQjG3dDko9QOzNcEdp5mUe7h/ILuQ,iv:+2/j2kQjp+bIpySLrdCyKY499wWev1i1iVVtRDrEam0=,tag:VYQarvCWeBhnciTa5miioA==,type:str]
+externalPassword: ENC[AES256_GCM,data:tD0RpnkBo0Xtruj+lpw=,iv:HKh3hl3bFWWEsvPqJ3vkZKY8gNURa5wHWhdT4JQFioQ=,tag:+mHpTrEruMwEmuwzG+khwg==,type:str]
+frpToken: ENC[AES256_GCM,data:iRMpgZibdIIQTOFf6pt1BMrzr+bAF0sMvfTE74RMdOc=,iv:pqjvKf+KX04gWcFnJWGJcJsopFXlSo1xhZqL43nje6E=,tag:VRYue1ZdIqGOsSAqHhU0SA==,type:str]
 sops:
     age:
         - recipient: age1p2c3gh2vpy32vpeky7na0y4azy8x9fxzdfsfharpxdlc8evs4a7s5966ep
@@ -29,7 +31,7 @@ sops:
             Uy9LWnh4WUk4dkI4MlRWTTJNU0RUYTgKIrB5VlUe1lCbGFhdUzGMOkCc3qlcnh0E
             z5fGp3ZgDMIUHkMp639/jyAKXINPX2ke6r5FyR+H3W2WezAXSvyu8Q==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-04-15T08:29:30Z"
-    mac: ENC[AES256_GCM,data:vACkGP1r7WGqlPSaerQUuTHJzrobMqvxh8MvYcOnuhY0qx5Upec0egJ/bczIIfCKmQvfoUZ2KPRLAg67Q0nfIOCYw/Gn/QXSoLx3vRjifcTRpzA3e5vR7MM7zvgFMFBrH4JYetqAztCX35nJ/knkDh8hlCozfPlR1wtlI8m+aAU=,iv:TNquwSrgQwGTqaiP+6BJn+eacn771sawNdpkSWWyNW0=,tag:h8JJ1EmVBgqAsnUYrn0Xlg==,type:str]
+    lastmodified: "2026-04-15T18:50:54Z"
+    mac: ENC[AES256_GCM,data:CylKzGmwCMKwCFL4B15Gfi/Z0v+QtwnM5zvn7nUKlDw5pDmfkqcUDeRtCiu8kl55b3GLZwDyXh5ObC8g4SVP55tCso7YB3kez9WydPw4Ci/5xf82Vr0KGs4YYwCGAc9dJk7crq7zBzGDSoZw+Ig/s1izBu+Bt+aXaBMnIcFKVNk=,iv:VsLEbmAHnJEQ8FUC7iKUrsgfypJivMxWtvsopt11h0o=,tag:ufIIT2ndyr7QS8nKCgQyVQ==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.12.2
