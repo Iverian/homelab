@@ -240,7 +240,7 @@ in
                   }
                   {
                     name = "VIDSORT_SHOWS_DIR";
-                    value = movies-dir;
+                    value = shows-dir;
                   }
                   {
                     name = "VIDSORT_OTHER_DIR";
