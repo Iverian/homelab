@@ -3,14 +3,39 @@ let
   namespace = "media";
   transmission-peer-port = 31413;
   transmission-rpc-port = 9091;
+  vidsort-http-port = 8080;
   transmission-download-dir = "/media/downloads/completed";
   transmission-incomplete-dir = "/media/downloads/inprogress";
   transmission-watch-dir = "/media/downloads/watch";
   movies-dir = "/media/movies";
   shows-dir = "/media/shows";
+  other-dir = "/media/other";
   transcode-dir = "/media/.transcode";
+  vidsort-dir = "/config/vidsort";
 in
 {
+  sops = {
+    secrets = {
+      tvdbApiKey = { };
+    };
+    templates = {
+      vidsort-secret = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = "vidsort-secret";
+            namespace = namespace;
+          };
+          stringData = {
+            VIDSORT_TVDB_API_KEY = config.sops.placeholder.tvdbApiKey;
+          };
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/media-vidsort-secret.json";
+      };
+    };
+  };
+
   services.k3s.manifests = {
     media-namespace.content = {
       apiVersion = "v1";
@@ -40,30 +65,43 @@ in
         name = "transmission-config";
         namespace = namespace;
       };
-      data."settings.json" = builtins.toJSON {
-        download-dir = transmission-download-dir;
-        incomplete-dir = transmission-incomplete-dir;
-        watch-dir = transmission-watch-dir;
-        watch-dir-enabled = true;
-        incomplete-dir-enabled = true;
-        umask = "000";
-        trash-can-enabled = false;
-        trash-original-torrent-files = false;
-        peer-port = transmission-peer-port;
-        port-forwarding-enabled = false;
-        rpc-enabled = true;
-        rpc-port = transmission-rpc-port;
-        rpc-password = "";
-        rpc-whitelist-enabled = false;
-        speed-limit-down = 5000;
-        speed-limit-down-enabled = true;
-        speed-limit-up = 5000;
-        speed-limit-up-enabled = true;
-        dht-enabled = true;
-        lpd-enabled = true;
-        preferred-transports = [ "tcp" ];
-        tcp-enabled = true;
-        utp-enabled = false;
+      data = {
+        "settings.json" = builtins.toJSON {
+          download-dir = transmission-download-dir;
+          incomplete-dir = transmission-incomplete-dir;
+          watch-dir = transmission-watch-dir;
+          watch-dir-enabled = true;
+          incomplete-dir-enabled = true;
+          umask = "000";
+          trash-can-enabled = false;
+          trash-original-torrent-files = false;
+          peer-port = transmission-peer-port;
+          port-forwarding-enabled = false;
+          rpc-enabled = true;
+          rpc-port = transmission-rpc-port;
+          rpc-password = "";
+          rpc-whitelist-enabled = false;
+          speed-limit-down = 5000;
+          speed-limit-down-enabled = true;
+          speed-limit-up = 5000;
+          speed-limit-up-enabled = true;
+          dht-enabled = true;
+          lpd-enabled = true;
+          preferred-transports = [ "tcp" ];
+          tcp-enabled = true;
+          utp-enabled = false;
+          script-torrent-done-enabled = true;
+          script-torrent-added-filename = "/config/on-done.sh";
+        };
+        "on-done.sh" = ''
+          #!/bin/sh
+
+          FIFO_PATH="/config/vidsort/fifo"
+
+          if [ -e "$FIFO_PATH" ] ; then
+            echo "''\${TR_TORRENT_ID}" >> "$FIFO_PATH"
+          fi
+        '';
       };
     };
     transmission-statefulset-service.content = {
@@ -133,7 +171,7 @@ in
                   "-c"
                 ];
                 args = [
-                  "set -eux && mkdir -p ${movies-dir} ${shows-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} && chmod -R 0777 ${movies-dir} ${shows-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-download-dir} && cp /config-ro/settings.json /config/settings.json && chmod 0666 /config/settings.json"
+                  "set -eux && mkdir -p ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} ${vidsort-dir} && chmod -R 0777 ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-download-dir} ${vidsort-dir} && cp /config-ro/settings.json /config-ro/on-done.sh /config/ && chmod -R 0777 /config"
                 ];
                 volumeMounts = [
                   {
@@ -162,6 +200,81 @@ in
               }
             ];
             containers = [
+              {
+                name = "vidsort";
+                image = "gitea.home.iverian.ru/iverian/vidsort:0.1.2";
+                imagePullPolicy = "Always";
+                envFrom = [
+                  {
+                    secretRef.name = "vidsort-secret";
+                  }
+                ];
+                env = [
+                  {
+                    name = "VIDSORT_BIND";
+                    value = "0.0.0.0:8080";
+                  }
+                  {
+                    name = "VIDSORT_LOG_FORMAT";
+                    value = "json";
+                  }
+                  {
+                    name = "VIDSORT_LOG";
+                    value = "info";
+                  }
+                  {
+                    name = "VIDSORT_FIFO_PATH";
+                    value = "/config/vidsort/fifo";
+                  }
+                  {
+                    name = "VIDSORT_TVDB_CACHE_PATH";
+                    value = "/config/vidsort/cache";
+                  }
+                  {
+                    name = "VIDSORT_TRANSMISSION_URL";
+                    value = "http://transmission-rpc:${toString (transmission-rpc-port)}/transmission/rpc";
+                  }
+                  {
+                    name = "VIDSORT_MOVIES_DIR";
+                    value = movies-dir;
+                  }
+                  {
+                    name = "VIDSORT_SHOWS_DIR";
+                    value = movies-dir;
+                  }
+                  {
+                    name = "VIDSORT_OTHER_DIR";
+                    value = other-dir;
+                  }
+                ];
+                volumeMounts = [
+                  {
+                    name = "transmission-state";
+                    mountPath = "/config";
+                  }
+                  {
+                    name = "media";
+                    mountPath = "/media";
+                  }
+                ];
+                ports = [
+                  {
+                    name = "vidsort-http";
+                    protocol = "TCP";
+                    containerPort = vidsort-http-port;
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "50m";
+                    memory = "128Mi";
+                  };
+                  limits = {
+                    cpu = "100m";
+                    memory = "256Mi";
+                  };
+                };
+              }
               {
                 name = "transmission";
                 image = "linuxserver/transmission:4.0.6";
@@ -206,6 +319,26 @@ in
             ];
           };
         };
+      };
+    };
+    vidsort-rpc-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "vidsort";
+        namespace = namespace;
+      };
+      spec = {
+        selector.app = "transmission";
+        type = "ClusterIP";
+        ports = [
+          {
+            name = "vidsort-http";
+            port = vidsort-http-port;
+            protocol = "TCP";
+            targetPort = "vidsort-http";
+          }
+        ];
       };
     };
     transmission-rpc-service.content = {
