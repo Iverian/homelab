@@ -91,7 +91,7 @@ in
           tcp-enabled = true;
           utp-enabled = false;
           script-torrent-done-enabled = true;
-          script-torrent-added-filename = "/config/on-done.sh";
+          script-torrent-done-filename = "/config/on-done.sh";
         };
         "on-done.sh" = ''
           #!/bin/sh
