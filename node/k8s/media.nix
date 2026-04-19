@@ -12,6 +12,7 @@ let
   other-dir = "/media/other";
   transcode-dir = "/media/.transcode";
   vidsort-dir = "/config/vidsort";
+  vidsort-fifo = "/config/vidsort/fifo";
 in
 {
   sops = {
@@ -96,7 +97,7 @@ in
         "on-done.sh" = ''
           #!/bin/sh
 
-          echo "''\$TR_TORRENT_ID" >> "$FIFO_PATH"
+          echo "''\$TR_TORRENT_ID" >> "${vidsort-fifo}"
         '';
       };
     };
@@ -220,7 +221,7 @@ in
                   }
                   {
                     name = "VIDSORT_FIFO_PATH";
-                    value = "/config/vidsort/fifo";
+                    value = vidsort-fifo;
                   }
                   {
                     name = "VIDSORT_TVDB_CACHE_PATH";
