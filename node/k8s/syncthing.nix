@@ -18,25 +18,39 @@ in
       service = {
         main.ports.http.port = 8384;
         listen = {
-          enabled = "true";
+          enabled = true;
           type = "NodePort";
           externalTrafficPolicy = "Local";
           ports.listen = {
             enabled = true;
+            nodePort = 31070;
             port = 22000;
             protocol = "TCP";
             targetPort = 22000;
           };
         };
+        listen-udp = {
+          enabled = true;
+          type = "NodePort";
+          externalTrafficPolicy = "Local";
+          ports.listen-udp = {
+            enabled = true;
+            nodePort = 31080;
+            port = 22000;
+            protocol = "UDP";
+            targetPort = 22000;
+          };
+        };
         discovery = {
-          enabled = "true";
+          enabled = true;
           type = "NodePort";
           externalTrafficPolicy = "Local";
           ports.discovery = {
             enabled = true;
-            port = 22000;
-            protocol = "TCP";
-            targetPort = 22000;
+            nodePort = 31090;
+            port = 21027;
+            protocol = "UDP";
+            targetPort = 21027;
           };
         };
       };
