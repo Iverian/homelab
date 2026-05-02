@@ -32,9 +32,15 @@
   };
 
   zramSwap = {
-    enable = true;
+    enable = false;
     memoryPercent = 25;
   };
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 32 * 1024; # 16 GiB
+    }
+  ];
 
   boot.supportedFilesystems = [ "zfs" ];
   boot.initrd.kernelModules = [ "usb_storage" ];
@@ -49,7 +55,7 @@
     "clocksource=tsc"
   ];
   boot.kernel.sysctl = {
-    "vm.swappiness" = 10;
+    # "vm.swappiness" = 10;
     "vm.overcommit_ratio" = 90;
     "net.core.somaxconn" = 65536;
     "net.core.netdev_max_backlog" = 16384;
