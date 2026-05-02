@@ -19,7 +19,6 @@
     ./k8s/reloader.nix
     ./k8s/cert-manager.nix
     ./k8s/authelia.nix
-    ./k8s/netdata.nix
     ./k8s/prometheus-stack.nix
     ./k8s/syncthing.nix
     ./k8s/intel-nfd.nix

@@ -54,10 +54,22 @@ in
         };
       };
       prometheus = {
-        prometheusSpec.storageSpec.volumeClaimTemplate.spec = {
-          accessModes = [ "ReadWriteOnce" ];
-          resources.requests.storage = "1Gi";
-          selector = { };
+        prometheusSpec = {
+          resources = {
+            requests = {
+              cpu = "500m";
+              memory = "256Mi";
+            };
+            limits = {
+              cpu = "1";
+              memory = "512Mi";
+            };
+          };
+          storageSpec.volumeClaimTemplate.spec = {
+            accessModes = [ "ReadWriteOnce" ];
+            resources.requests.storage = "1Gi";
+            selector = { };
+          };
         };
         route.main = {
           enabled = true;
