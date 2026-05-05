@@ -9,7 +9,6 @@
   sops = {
     defaultSopsFile = ../main.sops.yaml;
     secrets = {
-      externalPassword.neededForUsers = true;
       frpToken = { };
       frpCaCert = { };
       frpServerCert = { };
@@ -77,7 +76,7 @@
 
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    hashedPasswordFile = config.sops.secrets.externalPassword.path;
+    hashedPassword = "$y$j9T$jyEOKc4Wge0pxD4edKum7/$1n9kBlWL65Rm1Zw4Oev85s3PQzXunxFPFd4GE60Uyf0";
     shell = pkgs.bash;
     packages = with pkgs; [ ];
   };
