@@ -6,11 +6,36 @@
 }:
 
 {
+  sops = {
+    defaultSopsFile = ../main.sops.yaml;
+    secrets = {
+      externalPassword.neededForUsers = true;
+      frpToken = { };
+      frpCaCert = { };
+      frpServerCert = { };
+      frpServerKey = { };
+    };
+    templates.frpToken = {
+      content = config.sops.placeholder.frpToken;
+      path = "/etc/frp/token";
+    };
+    templates.frpCaCert = {
+      content = config.sops.placeholder.frpCaCert;
+      path = "/etc/frp/ca.pem";
+    };
+    templates.frpServerCert = {
+      content = config.sops.placeholder.frpServerCert;
+      path = "/etc/frp/server-cert.pem";
+    };
+    templates.frpServerKey = {
+      content = config.sops.placeholder.frpServerKey;
+      path = "/etc/frp/server-key.pem";
+    };
+  };
+
   boot.kernelPackages = pkgs.linuxPackages_hardened;
   boot.kernelModules = [ "tcp_bbr" ];
   boot.kernel.sysctl = {
-    "vm.swappiness" = 10;
-    "vm.overcommit_ratio" = 90;
     "net.core.somaxconn" = 65536;
     "net.core.netdev_max_backlog" = 16384;
     "net.ipv4.ip_local_port_range" = "10000 65499";
@@ -52,7 +77,7 @@
 
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    initialPassword = "changeme";
+    hashedPasswordFile = config.sops.secrets.externalPassword.path;
     shell = pkgs.bash;
     packages = with pkgs; [ ];
   };
@@ -69,6 +94,28 @@
     enable = true;
     settings = {
       PasswordAuthentication = false;
+    };
+  };
+
+  services.frp = {
+    enable = true;
+    role = "server";
+    settings = {
+      auth = {
+        method = "token";
+        tokenSource = {
+          type = "file";
+          file.path = "/etc/frp/token";
+        };
+      };
+      bindPort = 7000;
+      vhostHTTPPort = 80;
+      vhostHTTPSPort = 443;
+      enablePrometheus = false;
+      transport.tls.force = true;
+      transport.tls.certFile = "/etc/frp/server-cert.pem";
+      transport.tls.keyFile = "/etc/frp/server-key.pem";
+      transport.tls.trustedCaFile = "/etc/frp/ca.pem";
     };
   };
 
