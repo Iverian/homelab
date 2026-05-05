@@ -9,7 +9,7 @@ update:
   nix flake lock
 
 rebuild NODE *ARGS:
-  addr="iverian@{{ NODE }}.lan" flake=".#{{ NODE }}" && nix run nixpkgs#nixos-rebuild -- --use-substitutes --sudo --target-host "$addr" --flake "$flake" {{ ARGS }}
+  addr="iverian@{{ NODE }}.lan" flake=".#{{ NODE }}" && nix run nixpkgs#nixos-rebuild -- --use-substitutes --sudo --build-host "$addr" --target-host "$addr" --flake "$flake" {{ ARGS }}
 
 # Apply host configuration
 apply NODE=default_node *ARGS:
