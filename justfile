@@ -27,8 +27,8 @@ apply-on-reboot:
 plan:
   {{ rebuild_cmd }} dry-activate
 
-image:
-  {{ rebuild_image_cmd }} build-image --image-variant openstack
+image *ARGS:
+  {{ rebuild_image_cmd }} build-image --image-variant openstack {{ ARGS }}
 
 [no-cd]
 decrypt FILE:
