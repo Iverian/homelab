@@ -56,6 +56,28 @@
   };
   # copy.fail mitigation, until we're on a kernel that has it patched
   boot.extraModprobeConfig = "install algif_aead /bin/false";
+  boot.growPartition = true;
+  boot.kernelParams = [ "console=tty1" ];
+  boot.loader.grub.device = "/dev/sda";
+  boot.loader.grub.efiSupport = false;
+  boot.loader.grub.efiInstallAsRemovable = false;
+  boot.loader.timeout = 1;
+  boot.loader.grub.extraConfig = ''
+    serial --unit=1 --speed=115200 --word=8 --parity=no --stop=1
+    terminal_output console serial
+    terminal_input console serial
+  '';
+
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-label/nixos";
+      fsType = "ext4";
+      options = [
+        "x-systemd.growfs"
+        "x-initrd.mount"
+      ];
+    };
+  };
 
   networking = {
     hostName = "homelab-external";
@@ -90,9 +112,12 @@
     iftop
   ];
 
+  systemd.services."serial-getty@tty1".enable = true;
+
   services.openssh = {
     enable = true;
     settings = {
+      PermitRootLogin = "prohibit-password";
       PasswordAuthentication = false;
     };
   };
