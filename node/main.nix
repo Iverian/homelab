@@ -24,6 +24,7 @@
     ./k8s/intel-nfd.nix
     ./k8s/gitea.nix
     ./k8s/media.nix
+    ./k8s/frpc.nix
   ];
 
   sops = {

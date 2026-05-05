@@ -4,6 +4,7 @@ import ipaddress
 import json
 import re
 from argparse import ArgumentParser, Namespace
+from base64 import urlsafe_b64encode
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -56,12 +57,16 @@ def main():
     server_cert, server_key = server.pem()
     client_cert, client_key = client.pem()
 
-    sops_set(CA_CERT_FIELD, ca_cert)
-    sops_set(CA_KEY_FIELD, ca_key)
-    sops_set(SERVER_CERT_FIELD, server_cert)
-    sops_set(SERVER_KEY_FIELD, server_key)
-    sops_set(CLIENT_CERT_FIELD, client_cert)
-    sops_set(CLIENT_KEY_FIELD, client_key)
+    for f, v in [
+        (CA_CERT_FIELD, ca_cert),
+        (CA_KEY_FIELD, ca_key),
+        (SERVER_CERT_FIELD, server_cert),
+        (SERVER_KEY_FIELD, server_key),
+        (CLIENT_CERT_FIELD, client_cert),
+        (CLIENT_KEY_FIELD, client_key),
+    ]:
+        sops_set(f, v)
+        sops_set(f"{f}B64", urlsafe_b64encode(v.encode()).decode())
 
 
 def arguments() -> Namespace:

@@ -92,7 +92,10 @@ in
             sectionName = "private-secure";
           }
         ];
-        hostnames = [ "gitea.home.iverian.ru" ];
+        hostnames = [
+          "gitea.home.iverian.ru"
+          "gitea.iverian.ru"
+        ];
         rules = [
           {
             backendRefs = [
