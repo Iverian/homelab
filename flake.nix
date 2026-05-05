@@ -30,6 +30,21 @@
             ./image/main.nix
           ];
         };
+        external = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            {
+              nix = {
+                settings.experimental-features = [
+                  "nix-command"
+                  "flakes"
+                ];
+              };
+            }
+            sops-nix.nixosModules.sops
+            ./external/main.nix
+          ];
+        };
         homelab = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [

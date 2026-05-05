@@ -7,6 +7,7 @@
 
 {
   sops = {
+    age.keyFile = "/etc/nixos/secrets/sops.key";
     defaultSopsFile = ../main.sops.yaml;
     secrets = {
       frpToken = { };
