@@ -55,7 +55,7 @@
     "clocksource=tsc"
   ];
   boot.kernel.sysctl = {
-    # "vm.swappiness" = 10;
+    "vm.swappiness" = 10;
     "vm.overcommit_ratio" = 90;
     "net.core.somaxconn" = 65536;
     "net.core.netdev_max_backlog" = 16384;

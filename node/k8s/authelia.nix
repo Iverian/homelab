@@ -186,9 +186,10 @@ in
                 public = false;
                 require_pkce = false;
                 pkce_challenge_method = "";
-                authorization_policy = "one_factor";
+                authorization_policy = "two_factor";
                 redirect_uris = [
                   "https://gitea.home.iverian.ru/user/oauth2/authelia/callback"
+                  "https://gitea.iverian.ru/user/oauth2/authelia/callback"
                 ];
                 scopes = [
                   "openid"

@@ -6,21 +6,11 @@
 }:
 
 {
-  sops = {
-    defaultSopsFile = ../main.sops.yaml;
-    secrets = {
-      externalPassword.neededForUsers = true;
-      frpToken = { };
-    };
-    templates.frpsToken = {
-      content = config.sops.placeholder.frpToken;
-      path = "/etc/frp/token";
-    };
-  };
-
   boot.kernelPackages = pkgs.linuxPackages_hardened;
   boot.kernelModules = [ "tcp_bbr" ];
   boot.kernel.sysctl = {
+    "vm.swappiness" = 10;
+    "vm.overcommit_ratio" = 90;
     "net.core.somaxconn" = 65536;
     "net.core.netdev_max_backlog" = 16384;
     "net.ipv4.ip_local_port_range" = "10000 65499";
@@ -47,6 +37,9 @@
       configurationLimit = 3;
     };
   };
+  # copy.fail mitigation, until we're on a kernel that has it patched
+  boot.extraModprobeConfig = "install algif_aead /bin/false";
+
   networking = {
     hostName = "homelab-external";
     firewall.enable = false;
@@ -66,7 +59,6 @@
 
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    hashedPasswordFile = config.sops.secrets.externalPassword.path;
     shell = pkgs.bash;
     packages = with pkgs; [ ];
   };
@@ -81,22 +73,9 @@
 
   services.openssh = {
     enable = true;
-  };
-
-  services.frp = {
-    enable = true;
-    role = "server";
     settings = {
-      auth = {
-        method = "token";
-        tokenSource = {
-          type = "file";
-          file.path = "/etc/frp/token";
-        };
-      };
-      bindPort = 7000;
-      vhostHTTPPort = 80;
-      vhostHTTPSPort = 443;
+      PermitRootLogin = "no";
+      PasswordAuthentication = "no";
     };
   };
 

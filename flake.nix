@@ -16,7 +16,7 @@
     }:
     {
       nixosConfigurations = {
-        external = nixpkgs.lib.nixosSystem {
+        image = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             {
@@ -27,8 +27,7 @@
                 ];
               };
             }
-            sops-nix.nixosModules.sops
-            ./external/main.nix
+            ./image/main.nix
           ];
         };
         homelab = nixpkgs.lib.nixosSystem {
