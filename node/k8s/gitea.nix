@@ -152,12 +152,26 @@ in
             DISABLE_REGISTRATION = "false";
             ALLOW_ONLY_EXTERNAL_REGISTRATION = "true";
             SHOW_REGISTRATION_BUTTON = "false";
+            REQUIRE_SIGNIN_VIEW = "expensive";
+            DEFAULT_KEEP_EMAIL_PRIVATE = "true";
+            ENABLE_PASSKEY_AUTHENTICATION = "false";
+            ENABLE_PASSWORD_SIGNIN_FORM = "false";
+          };
+          "service.explore" = {
+            DISABLE_USERS_PAGE = "true";
+            DISABLE_ORGANIZATIONS_PAGE = "true";
           };
           repository = {
             USE_COMPAT_SSH_URI = "true";
           };
           actions = {
             ENABLED = "true";
+          };
+          ui = {
+            SHOW_USER_EMAIL = "false";
+          };
+          "repository.pull-request" = {
+            DEFAULT_MERGE_STYLE = "fast-forward-only";
           };
         };
 
