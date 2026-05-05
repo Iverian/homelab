@@ -93,7 +93,6 @@ in
           }
         ];
         hostnames = [
-          "gitea.home.iverian.ru"
           "gitea.iverian.ru"
         ];
         rules = [
@@ -141,10 +140,8 @@ in
             SSL_MODE = "require";
           };
           server = {
-            SSH_PORT = 22;
-            SSH_LISTEN_PORT = 2222;
-            DOMAIN = "gitea.home.iverian.ru";
-            ROOT_URL = "https://gitea.home.iverian.ru";
+            DOMAIN = "gitea.iverian.ru";
+            ROOT_URL = "https://gitea.iverian.ru";
             DISABLE_SSH = "true";
           };
           openid = {
@@ -193,7 +190,7 @@ in
             name = "authelia";
             provider = "openidConnect";
             existingSecret = "gitea-authelia-oauth";
-            autoDiscoverUrl = "https://auth.home.iverian.ru/.well-known/openid-configuration";
+            autoDiscoverUrl = "https://auth.iverian.ru/.well-known/openid-configuration";
           }
         ];
       };
