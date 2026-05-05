@@ -109,12 +109,12 @@ in
           name = "web"
           type = "https"
           customDomains = ${builtins.toJSON public-domains}
-
           [proxies.plugin]
           type = "https2http"
           localAddr = "192.168.88.90:80"
           crtPath = "/public-tls/tls.crt"
           keyPath = "/public-tls/tls.key"
+          requestHeaders.set.x-from-where = "frp"
         '';
       };
     };
