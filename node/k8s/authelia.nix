@@ -111,9 +111,6 @@ in
           };
           cookies = [
             {
-              domain = "auth.home.iverian.ru";
-            }
-            {
               domain = "auth.iverian.ru";
             }
           ];
@@ -188,7 +185,6 @@ in
                 pkce_challenge_method = "";
                 authorization_policy = "one_factor";
                 redirect_uris = [
-                  "https://gitea.home.iverian.ru/user/oauth2/authelia/callback"
                   "https://gitea.iverian.ru/user/oauth2/authelia/callback"
                 ];
                 scopes = [

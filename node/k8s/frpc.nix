@@ -5,10 +5,7 @@ let
   token-secret-name = "frpc-token";
   tls-secret-name = "frpc-tls";
   tls-public-name = "public-tls";
-  public-domains = [
-    "auth.iverian.ru"
-    "gitea.iverian.ru"
-  ];
+  ingress = "192.168.88.90";
 in
 {
   sops = {
@@ -106,15 +103,24 @@ in
           transport.tls.serverName = "external.iverian.ru"
 
           [[proxies]]
-          name = "web"
+          name = "auth01"
           type = "https"
-          customDomains = ${builtins.toJSON public-domains}
+          subdomain = "auth"
           [proxies.plugin]
-          type = "https2http"
-          localAddr = "192.168.88.90:80"
+          type = "https2https"
+          localAddr = "auth.iverian.ru"
           crtPath = "/public-tls/tls.crt"
           keyPath = "/public-tls/tls.key"
-          requestHeaders.set.x-from-where = "frp"
+
+          [[proxies]]
+          name = "gitea01"
+          type = "https"
+          subdomain = "gitea"
+          [proxies.plugin]
+          type = "https2https"
+          localAddr = "gitea.iverian.ru"
+          crtPath = "/public-tls/tls.crt"
+          keyPath = "/public-tls/tls.key"
         '';
       };
     };
@@ -131,6 +137,7 @@ in
       };
       spec = {
         replicas = 1;
+        strategy.type = "Recreate";
         selector.matchLabels = {
           "app.kubernetes.io/instance" = "frpc";
           "app.kubernetes.io/name" = "frpc";

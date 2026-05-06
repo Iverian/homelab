@@ -89,7 +89,6 @@ in
           {
             name = "main";
             namespace = "envoy-gateway-system";
-            sectionName = "private-secure";
           }
         ];
         hostnames = [

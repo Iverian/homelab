@@ -121,19 +121,6 @@ in
         ];
         rules = [
           {
-            matches = [
-              {
-                headers = [
-                  {
-                    name = "x-from-where";
-                    value = "frp";
-                  }
-                ];
-              }
-            ];
-            filters = [ ];
-          }
-          {
             filters = [
               {
                 type = "RequestRedirect";
