@@ -76,6 +76,40 @@ in
         };
       };
     };
+    envoy-gateway-backend-policy-public.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "BackendTrafficPolicy";
+      metadata = {
+        name = "public-backend-policy";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "public";
+          }
+        ];
+        rateLimit.global.rules = [
+          {
+            clientSelectors = [
+              {
+                sourceCIDR = {
+                  type = "Distinct";
+                  value = "0.0.0.0/0";
+                };
+              }
+            ];
+            limit = {
+              requests = "1";
+              unit = "Second";
+            };
+            shared = true;
+          }
+        ];
+      };
+    };
     envoy-gateway-main.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
