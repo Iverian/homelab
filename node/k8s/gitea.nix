@@ -158,7 +158,7 @@ in
             REQUIRE_SIGNIN_VIEW = "expensive";
             DEFAULT_KEEP_EMAIL_PRIVATE = "true";
             ENABLE_PASSKEY_AUTHENTICATION = "false";
-            ENABLE_PASSWORD_SIGNIN_FORM = "true";
+            ENABLE_PASSWORD_SIGNIN_FORM = "false";
           };
           "service.explore" = {
             DISABLE_USERS_PAGE = "true";

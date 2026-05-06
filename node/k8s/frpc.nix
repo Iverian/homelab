@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
   namespace = "frpc";
   config-name = "frpc-config";
@@ -9,6 +9,10 @@ let
   ingress-ip = "192.168.88.92";
   ingress-http = "8080";
   ingress-https = "8443";
+  subdomains = [
+    "auth"
+    "gitea"
+  ];
 in
 {
   sops = {
@@ -83,36 +87,15 @@ in
           transport.tls.trustedCaFile = "/tls/ca.pem"
           transport.tls.serverName = "external.iverian.ru"
 
-
-          [[proxies]]
-          name = "auth-http"
-          type = "http"
-          subdomain = "auth"
-          transport.proxyProtocolVersion = "v2"
-          localIP = "${ingress-ip}"
-          localPort = ${ingress-http}
-          [[proxies]]
-          name = "auth-https"
-          type = "https"
-          subdomain = "auth"
-          transport.proxyProtocolVersion = "v2"
-          localIP = "${ingress-ip}"
-          localPort = ${ingress-https}
-
-          [[proxies]]
-          name = "gitea-http"
-          type = "http"
-          subdomain = "gitea"
-          transport.proxyProtocolVersion = "v2"
-          localIP = "${ingress-ip}"
-          localPort = ${ingress-http}
-          [[proxies]]
-          name = "gitea-https"
-          type = "https"
-          subdomain = "gitea"
-          transport.proxyProtocolVersion = "v2"
-          localIP = "${ingress-ip}"
-          localPort = ${ingress-https}
+          ${lib.concatMapStringsSep "\n" (item: ''
+            [[proxies]]
+            name = "${item}-https"
+            type = "https"
+            subdomain = "${item}"
+            transport.proxyProtocolVersion = "v2"
+            localIP = "${ingress-ip}"
+            localPort = ${ingress-https}
+          '') subdomains}
         '';
       };
     };
