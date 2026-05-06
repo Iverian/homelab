@@ -5,7 +5,10 @@ let
   token-secret-name = "frpc-token";
   tls-secret-name = "frpc-tls";
   tls-public-name = "public-tls";
-  ingress = "192.168.88.90";
+  ingress = "192.168.88.92:8080";
+  ingress-ip = "192.168.88.92";
+  ingress-http = "8080";
+  ingress-https = "8443";
 in
 {
   sops = {
@@ -56,28 +59,6 @@ in
       kind = "Namespace";
       metadata.name = namespace;
     };
-    frpc-public-cert.content = {
-      apiVersion = "cert-manager.io/v1";
-      kind = "Certificate";
-      metadata = {
-        name = "frpc-public-cert";
-        namespace = namespace;
-      };
-      spec = {
-        secretName = tls-public-name;
-        issuerRef = {
-          kind = "ClusterIssuer";
-          name = "letsencrypt";
-        };
-        usages = [
-          "digital signature"
-          "key encipherment"
-        ];
-        dnsNames = [
-          "*.iverian.ru"
-        ];
-      };
-    };
     frpc-config.content = {
       apiVersion = "v1";
       kind = "ConfigMap";
@@ -102,25 +83,36 @@ in
           transport.tls.trustedCaFile = "/tls/ca.pem"
           transport.tls.serverName = "external.iverian.ru"
 
-          [[proxies]]
-          name = "auth01"
-          type = "https"
-          subdomain = "auth"
-          [proxies.plugin]
-          type = "https2https"
-          localAddr = "auth.iverian.ru"
-          crtPath = "/public-tls/tls.crt"
-          keyPath = "/public-tls/tls.key"
 
           [[proxies]]
-          name = "gitea01"
+          name = "auth-http"
+          type = "http"
+          subdomain = "auth"
+          transport.proxyProtocolVersion = "v2"
+          localIP = "${ingress-ip}"
+          localPort = ${ingress-http}
+          [[proxies]]
+          name = "auth-https"
+          type = "https"
+          subdomain = "auth"
+          transport.proxyProtocolVersion = "v2"
+          localIP = "${ingress-ip}"
+          localPort = ${ingress-https}
+
+          [[proxies]]
+          name = "gitea-http"
+          type = "http"
+          subdomain = "gitea"
+          transport.proxyProtocolVersion = "v2"
+          localIP = "${ingress-ip}"
+          localPort = ${ingress-http}
+          [[proxies]]
+          name = "gitea-https"
           type = "https"
           subdomain = "gitea"
-          [proxies.plugin]
-          type = "https2https"
-          localAddr = "gitea.iverian.ru"
-          crtPath = "/public-tls/tls.crt"
-          keyPath = "/public-tls/tls.key"
+          transport.proxyProtocolVersion = "v2"
+          localIP = "${ingress-ip}"
+          localPort = ${ingress-https}
         '';
       };
     };
@@ -166,10 +158,6 @@ in
                 name = "tls";
                 secret.secretName = tls-secret-name;
               }
-              {
-                name = "public-tls";
-                secret.secretName = tls-public-name;
-              }
             ];
             containers = [
               {
@@ -202,10 +190,6 @@ in
                   {
                     name = "tls";
                     mountPath = "/tls";
-                  }
-                  {
-                    name = "public-tls";
-                    mountPath = "/public-tls";
                   }
                 ];
               }

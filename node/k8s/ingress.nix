@@ -19,6 +19,63 @@ in
       metadata.name = gateway-class;
       spec.controllerName = "gateway.envoyproxy.io/gatewayclass-controller";
     };
+    envoy-gateway-public.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "Gateway";
+      metadata = {
+        name = "public";
+        namespace = namespace;
+      };
+      spec = {
+        gatewayClassName = gateway-class;
+        addresses = [
+          {
+            type = "IPAddress";
+            value = "192.168.88.92";
+          }
+        ];
+        listeners = [
+          {
+            name = "public";
+            hostname = "*.iverian.ru";
+            port = 8080;
+            protocol = "HTTP";
+          }
+          {
+            name = "public-secure";
+            hostname = "*.iverian.ru";
+            port = 8443;
+            protocol = "HTTPS";
+            allowedRoutes.namespaces.from = "All";
+            tls = {
+              mode = "Terminate";
+              certificateRefs = [ { name = "eg-public-tls"; } ];
+            };
+          }
+        ];
+      };
+    };
+    envoy-gateway-policy-public.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "ClientTrafficPolicy";
+      metadata = {
+        name = "public-policy";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "public";
+          }
+        ];
+        enableProxyProtocol = true;
+        proxyProtocol = {
+          optional = false;
+        };
+      };
+    };
     envoy-gateway-main.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
@@ -41,7 +98,6 @@ in
             hostname = "*.iverian.ru";
             port = 80;
             protocol = "HTTP";
-            allowedRoutes.namespaces.from = "All";
           }
           {
             name = "public-secure";
@@ -86,37 +142,12 @@ in
           {
             name = "main";
             namespace = namespace;
-            sectionName = "private";
+            sectionName = "public";
           }
-        ];
-        rules = [
-          {
-            filters = [
-              {
-                type = "RequestRedirect";
-                requestRedirect = {
-                  scheme = "https";
-                  statusCode = 301;
-                };
-              }
-            ];
-          }
-        ];
-      };
-    };
-    envoy-gateway-http-redirect-public.content = {
-      apiVersion = "gateway.networking.k8s.io/v1";
-      kind = "HTTPRoute";
-      metadata = {
-        name = "http-to-https-redirect-public";
-        namespace = namespace;
-      };
-      spec = {
-        parentRefs = [
           {
             name = "main";
             namespace = namespace;
-            sectionName = "public";
+            sectionName = "private";
           }
         ];
         rules = [

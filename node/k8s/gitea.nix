@@ -90,6 +90,10 @@ in
             name = "main";
             namespace = "envoy-gateway-system";
           }
+          {
+            name = "public";
+            namespace = "envoy-gateway-system";
+          }
         ];
         hostnames = [
           "gitea.iverian.ru"
@@ -154,7 +158,7 @@ in
             REQUIRE_SIGNIN_VIEW = "expensive";
             DEFAULT_KEEP_EMAIL_PRIVATE = "true";
             ENABLE_PASSKEY_AUTHENTICATION = "false";
-            ENABLE_PASSWORD_SIGNIN_FORM = "false";
+            ENABLE_PASSWORD_SIGNIN_FORM = "true";
           };
           "service.explore" = {
             DISABLE_USERS_PAGE = "true";
@@ -189,7 +193,12 @@ in
             name = "authelia";
             provider = "openidConnect";
             existingSecret = "gitea-authelia-oauth";
-            autoDiscoverUrl = "https://auth.iverian.ru/.well-known/openid-configuration";
+            # autoDiscoverUrl = "https://auth.iverian.ru/.well-known/openid-configuration";
+            useCustomUrls = true;
+            customAuthUrl = "https://auth.iverian.ru/api/oidc/authorization";
+            customTokenUrl = "https://auth.iverian.ru/api/oidc/token";
+            customProfileUrl = "http://auth.iverian.ru/api/oidc/userinfo";
+            #   customEmailUrl:
           }
         ];
       };

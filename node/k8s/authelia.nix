@@ -78,6 +78,10 @@ in
               name = "main";
               namespace = "envoy-gateway-system";
             }
+            {
+              name = "public";
+              namespace = "envoy-gateway-system";
+            }
           ];
         };
       };
@@ -112,6 +116,7 @@ in
           cookies = [
             {
               domain = "auth.iverian.ru";
+              authelia_url = "https://auth.iverian.ru";
             }
           ];
         };
