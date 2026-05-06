@@ -12,6 +12,7 @@ let
   subdomains = [
     "auth"
     "gitea"
+    "jellyfin"
   ];
 in
 {

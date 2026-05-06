@@ -637,12 +637,21 @@ in
         namespace = namespace;
       };
       spec = {
-        hostnames = [ "jellyfin.home.iverian.ru" ];
+        hostnames = [
+          "jellyfin.home.iverian.ru"
+          "jellyfin.iverian.ru"
+        ];
         parentRefs = [
           {
             group = "gateway.networking.k8s.io";
             kind = "Gateway";
             name = "main";
+            namespace = "envoy-gateway-system";
+          }
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "public";
             namespace = "envoy-gateway-system";
           }
         ];
