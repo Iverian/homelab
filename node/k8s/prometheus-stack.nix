@@ -148,6 +148,7 @@ in
         numberOfInstances = 1;
         preparedDatabases.grafana = { };
         postgresql.version = "17";
+        enableLogicalBackup = true;
       };
     };
   };

@@ -48,6 +48,7 @@ in
         numberOfInstances = 1;
         preparedDatabases.authelia = { };
         postgresql.version = "17";
+        enableLogicalBackup = true;
       };
     };
   };

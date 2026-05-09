@@ -74,6 +74,7 @@ in
         numberOfInstances = 1;
         preparedDatabases.gitea = { };
         postgresql.version = "17";
+        enableLogicalBackup = true;
       };
     };
 
