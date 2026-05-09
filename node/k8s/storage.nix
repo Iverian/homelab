@@ -16,10 +16,10 @@ in
           {
             "storageClassConfigs": {
               "storage": {
-                "sharedFilesystemPath": "/data/hdd"
+                "nodePathMap": [{"node": "DEFAULT_PATH_FOR_NON_LISTED_NODES", "paths": ["/data/hdd"]}]
               },
               "local-path": {
-                "sharedFilesystemPath": "/data/ssd"
+                "nodePathMap": [{"node": "DEFAULT_PATH_FOR_NON_LISTED_NODES", "paths": ["/data/ssd"]}]
               }
             }
           }

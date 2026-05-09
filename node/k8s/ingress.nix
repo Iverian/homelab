@@ -19,11 +19,11 @@ in
       metadata.name = gateway-class;
       spec.controllerName = "gateway.envoyproxy.io/gatewayclass-controller";
     };
-    envoy-gateway-public.content = {
+    envoy-gateway-external.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
       metadata = {
-        name = "public";
+        name = "external";
         namespace = namespace;
         annotations."cert-manager.io/cluster-issuer" = "letsencrypt";
       };
@@ -56,11 +56,11 @@ in
         ];
       };
     };
-    envoy-gateway-policy-public.content = {
+    envoy-gateway-policy-external.content = {
       apiVersion = "gateway.envoyproxy.io/v1alpha1";
       kind = "ClientTrafficPolicy";
       metadata = {
-        name = "public-policy";
+        name = "external-policy";
         namespace = namespace;
       };
       spec = {
@@ -68,7 +68,7 @@ in
           {
             group = "gateway.networking.k8s.io";
             kind = "Gateway";
-            name = "public";
+            name = "external";
           }
         ];
         enableProxyProtocol = true;
@@ -77,40 +77,6 @@ in
         };
       };
     };
-    # envoy-gateway-backend-policy-public.content = {
-    #   apiVersion = "gateway.envoyproxy.io/v1alpha1";
-    #   kind = "BackendTrafficPolicy";
-    #   metadata = {
-    #     name = "public-backend-policy";
-    #     namespace = namespace;
-    #   };
-    #   spec = {
-    #     targetRefs = [
-    #       {
-    #         group = "gateway.networking.k8s.io";
-    #         kind = "Gateway";
-    #         name = "public";
-    #       }
-    #     ];
-    #     rateLimit.global.rules = [
-    #       {
-    #         clientSelectors = [
-    #           {
-    #             sourceCIDR = {
-    #               type = "Distinct";
-    #               value = "0.0.0.0/0";
-    #             };
-    #           }
-    #         ];
-    #         limit = {
-    #           requests = 5;
-    #           unit = "Second";
-    #         };
-    #         shared = true;
-    #       }
-    #     ];
-    #   };
-    # };
     envoy-gateway-main.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
@@ -175,7 +141,7 @@ in
       spec = {
         parentRefs = [
           {
-            name = "public";
+            name = "external";
             namespace = namespace;
             sectionName = "public";
           }

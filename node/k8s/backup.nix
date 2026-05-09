@@ -154,9 +154,7 @@ in
                   "--cache-dir"
                   "/state/cache"
                   "--vfs-cache-mode"
-                  "full"
-                  "--vfs-cache-max-size"
-                  "10G"
+                  "off"
                 ];
                 env = [
                   {

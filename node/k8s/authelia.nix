@@ -158,8 +158,36 @@ in
                 "groups"
                 "preferred_username"
               ];
+              nextcloud.id_token = [
+                "email"
+                "name"
+                "groups"
+                "preferred_username"
+              ];
             };
             clients = [
+              {
+                client_id = "nextcloud";
+                client_secret = "$pbkdf2-sha512$310000$gTW1V09kbOUlmuENIQQijw$zQdsYQiG98Pktbbf8dz3d5NzlELofFmo7UAazLoY1Uw5eQoWlmSofZavHys/7o8f5T9afIDYgniBm7nD0O0nRg";
+                public = false;
+                require_pkce = false;
+                authorization_policy = "one_factor";
+                redirect_uris = [
+                  "https://nextcloud.iverian.ru/apps/user_oidc/code"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "email"
+                  "groups"
+                ];
+                grant_types = [ "authorization_code" ];
+                response_types = [ "code" ];
+                access_token_signed_response_alg = "none";
+                userinfo_signed_response_alg = "none";
+                token_endpoint_auth_method = "client_secret_post";
+                consent_mode = "implicit";
+              }
               {
                 client_id = "grafana";
                 client_secret = "$pbkdf2-sha512$310000$glwqEtxfkikIqilXQtbV5w$mXIDhHzYc48iuLVjg4pR.239W1fO42gFXWsaWijmF/Joq7dHpOwAv6pF3/hjZKoWxy8dFkyq/yUZ2XO4pYnNdA";

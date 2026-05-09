@@ -15,6 +15,8 @@
     ./k8s/samba-operator.nix
     ./k8s/tailscale-operator.nix
     ./k8s/postgres-operator.nix
+    ./k8s/valkey-operator.nix
+    ./k8s/nextcloud.nix
     ./k8s/ingress.nix
     ./k8s/reloader.nix
     ./k8s/cert-manager.nix
