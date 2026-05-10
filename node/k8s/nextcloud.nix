@@ -356,6 +356,10 @@ in
         hostnames = [ "nextcloud.iverian.ru" ];
         parentRefs = [
           {
+            name = "external";
+            namespace = "envoy-gateway-system";
+          }
+          {
             name = "main";
             namespace = "envoy-gateway-system";
           }
