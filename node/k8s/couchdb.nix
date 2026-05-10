@@ -159,7 +159,7 @@ in
               {
                 name = "couchdb-data";
                 persistentVolumeClaim = {
-                  claimName = "database-storage-couchdb-0";
+                  claimName = "database-storage-couchdb-couchdb-0";
                   readOnly = true;
                 };
               }
