@@ -13,6 +13,8 @@ let
     "auth"
     "gitea"
     "jellyfin"
+    "nextcloud"
+    "sync"
   ];
 in
 {

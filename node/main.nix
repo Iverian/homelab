@@ -25,6 +25,7 @@
     ./k8s/syncthing.nix
     ./k8s/intel-nfd.nix
     ./k8s/gitea.nix
+    ./k8s/couchdb.nix
     ./k8s/media.nix
     ./k8s/frpc.nix
     ./k8s/backup.nix
