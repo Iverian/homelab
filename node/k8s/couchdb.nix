@@ -120,6 +120,25 @@ in
       };
     };
 
+    couchdb-backend-policy.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "BackendTrafficPolicy";
+      metadata = {
+        name = "couchdb-timeout";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "HTTPRoute";
+            name = "couchdb";
+          }
+        ];
+        timeout.http.requestTimeout = "1h";
+      };
+    };
+
     couchdb-rclone-backup.content = {
       apiVersion = "batch/v1";
       kind = "CronJob";

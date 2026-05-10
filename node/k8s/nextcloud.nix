@@ -99,6 +99,25 @@ in
       };
     };
 
+    nextcloud-backend-policy.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "BackendTrafficPolicy";
+      metadata = {
+        name = "nextcloud-timeout";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "HTTPRoute";
+            name = "nextcloud";
+          }
+        ];
+        timeout.http.requestTimeout = "1h";
+      };
+    };
+
     nextcloud-rclone-backup.content = {
       apiVersion = "batch/v1";
       kind = "CronJob";
