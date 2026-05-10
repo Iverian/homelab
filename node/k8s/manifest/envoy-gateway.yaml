@@ -51,6 +51,11 @@ data:
         shutdownManager:
           image: docker.io/envoyproxy/gateway:v1.6.1
       type: Kubernetes
+    rateLimit:
+      backend:
+        type: Redis
+        redis:
+          url: ratelimit.envoy-gateway-system.svc.cluster.local:6379
 ---
 # Source: gateway-helm/templates/envoy-gateway-rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1

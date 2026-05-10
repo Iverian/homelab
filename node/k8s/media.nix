@@ -18,6 +18,8 @@ in
   sops = {
     secrets = {
       tvdbApiKey = { };
+      shareUsers = { };
+      jellyfinOidcClientSecret = { };
     };
     templates = {
       vidsort-secret = {
@@ -33,6 +35,20 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/media-vidsort-secret.json";
+      };
+      media-share-users = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = "share-users";
+            namespace = namespace;
+          };
+          data = {
+            users = config.sops.placeholder.shareUsers;
+          };
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/media-share-users.json";
       };
     };
   };
@@ -466,6 +482,43 @@ in
         };
       };
     };
+    jellyfin-network-config.content = {
+      apiVersion = "v1";
+      kind = "ConfigMap";
+      metadata = {
+        name = "jellyfin-network-config";
+        namespace = namespace;
+      };
+      data."network.xml" = ''
+        <?xml version="1.0" encoding="utf-8"?>
+        <NetworkConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <BaseUrl />
+          <EnableHttps>false</EnableHttps>
+          <RequireHttps>false</RequireHttps>
+          <InternalHttpPort>8096</InternalHttpPort>
+          <InternalHttpsPort>8920</InternalHttpsPort>
+          <PublicHttpPort>8096</PublicHttpPort>
+          <PublicHttpsPort>8920</PublicHttpsPort>
+          <AutoDiscovery>false</AutoDiscovery>
+          <EnableIPv4>true</EnableIPv4>
+          <EnableIPv6>false</EnableIPv6>
+          <EnableRemoteAccess>true</EnableRemoteAccess>
+          <LocalNetworkSubnets />
+          <LocalNetworkAddresses />
+          <KnownProxies>
+            <string>10.42.0.0/16</string>
+          </KnownProxies>
+          <IgnoreVirtualInterfaces>true</IgnoreVirtualInterfaces>
+          <VirtualInterfaceNames>
+            <string>veth</string>
+          </VirtualInterfaceNames>
+          <EnablePublishedServerUriByRequest>false</EnablePublishedServerUriByRequest>
+          <PublishedServerUriBySubnet />
+          <RemoteIPFilter />
+          <IsRemoteIPFilterBlacklist>false</IsRemoteIPFilterBlacklist>
+        </NetworkConfiguration>
+      '';
+    };
     jellyfin-config.content = {
       apiVersion = "v1";
       kind = "ConfigMap";
@@ -525,6 +578,56 @@ in
               {
                 name = "media";
                 persistentVolumeClaim.claimName = "media";
+              }
+              {
+                name = "sso-config";
+                secret.secretName = "jellyfin-sso-config";
+              }
+              {
+                name = "network-config";
+                configMap.name = "jellyfin-network-config";
+              }
+            ];
+            initContainers = [
+              {
+                name = "setup-jellyfin";
+                image = "alpine:3";
+                command = [
+                  "sh"
+                  "-c"
+                ];
+                args = [
+                  ''
+                    set -eu
+                    cp /network-config/network.xml /config/config/network.xml
+                  ''
+                ];
+                volumeMounts = [
+                  {
+                    name = "jellyfin-state";
+                    mountPath = "/config";
+                  }
+                  {
+                    name = "sso-config";
+                    mountPath = "/sso-config";
+                    readOnly = true;
+                  }
+                  {
+                    name = "network-config";
+                    mountPath = "/network-config";
+                    readOnly = true;
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "50m";
+                    memory = "64Mi";
+                  };
+                  limits = {
+                    cpu = "500m";
+                    memory = "256Mi";
+                  };
+                };
               }
             ];
             containers = [
@@ -673,6 +776,29 @@ in
                 };
               }
             ];
+            filters = [
+              {
+                type = "ResponseHeaderModifier";
+                responseHeaderModifier.add = [
+                  {
+                    name = "Strict-Transport-Security";
+                    value = "max-age=31536000; includeSubDomains; preload";
+                  }
+                  {
+                    name = "X-Content-Type-Options";
+                    value = "nosniff";
+                  }
+                  {
+                    name = "X-Frame-Options";
+                    value = "SAMEORIGIN";
+                  }
+                  {
+                    name = "Referrer-Policy";
+                    value = "strict-origin-when-cross-origin";
+                  }
+                ];
+              }
+            ];
           }
         ];
       };
@@ -756,25 +882,6 @@ in
           }
         ];
       };
-    };
-  };
-  sops = {
-    secrets = {
-      shareUsers = { };
-    };
-    templates.media-share-users = {
-      content = builtins.toJSON {
-        apiVersion = "v1";
-        kind = "Secret";
-        metadata = {
-          name = "share-users";
-          namespace = namespace;
-        };
-        data = {
-          users = config.sops.placeholder.shareUsers;
-        };
-      };
-      path = "/var/lib/rancher/k3s/server/manifests/media-share-users.json";
     };
   };
 }

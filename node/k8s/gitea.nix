@@ -8,6 +8,8 @@ in
       giteaAdminPassword = { };
       giteaOidcClientSecret = { };
       giteaActRunnerToken = { };
+      giteaSecretKey = { };
+      giteaInternalToken = { };
     };
     templates = {
       gitea-admin-secret = {
@@ -54,6 +56,21 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/gitea-act-runner-token.json";
+      };
+      gitea-security = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = "gitea-security";
+            namespace = namespace;
+          };
+          stringData = {
+            secretKey = config.sops.placeholder.giteaSecretKey;
+            internalToken = config.sops.placeholder.giteaInternalToken;
+          };
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/gitea-security-secret.json";
       };
     };
   };
@@ -111,102 +128,7 @@ in
         ];
       };
     };
-  };
 
-  services.k3s.autoDeployCharts.gitea = {
-    name = "gitea";
-    repo = "https://dl.gitea.com/charts";
-    version = "12.5.0";
-    hash = "sha256-LW8189H/DPyrDyIULSCh1kBfqXSnnXoYAAkE0jMTGCM=";
-    targetNamespace = namespace;
-    createNamespace = true;
-    values = {
-      persistence = {
-        enabled = true;
-        storageClass = "storage";
-        size = "10Gi";
-      };
-
-      "postgresql-ha".enabled = false;
-      postgresql.enabled = false;
-      valkey-cluster.enabled = false;
-      valkey.enabled = true;
-
-      gitea = {
-        admin.existingSecret = "gitea-admin";
-
-        config = {
-          database = {
-            DB_TYPE = "postgres";
-            HOST = "gitea-db:5432";
-            NAME = "gitea";
-            USER = "postgres";
-            SSL_MODE = "require";
-          };
-          server = {
-            DOMAIN = "gitea.iverian.ru";
-            ROOT_URL = "https://gitea.iverian.ru";
-            DISABLE_SSH = "true";
-          };
-          openid = {
-            ENABLE_OPENID_SIGNIN = "false";
-            ENABLE_OPENID_SIGNUP = "true";
-          };
-          service = {
-            DISABLE_REGISTRATION = "false";
-            ALLOW_ONLY_EXTERNAL_REGISTRATION = "true";
-            SHOW_REGISTRATION_BUTTON = "false";
-            REQUIRE_SIGNIN_VIEW = "expensive";
-            DEFAULT_KEEP_EMAIL_PRIVATE = "true";
-            ENABLE_PASSKEY_AUTHENTICATION = "false";
-            ENABLE_PASSWORD_SIGNIN_FORM = "false";
-          };
-          "service.explore" = {
-            DISABLE_USERS_PAGE = "true";
-            DISABLE_ORGANIZATIONS_PAGE = "true";
-          };
-          repository = {
-            USE_COMPAT_SSH_URI = "true";
-          };
-          actions = {
-            ENABLED = "true";
-          };
-          ui = {
-            SHOW_USER_EMAIL = "false";
-          };
-          "repository.pull-request" = {
-            DEFAULT_MERGE_STYLE = "fast-forward-only";
-          };
-        };
-
-        additionalConfigFromEnvs = [
-          {
-            name = "GITEA__DATABASE__PASSWD";
-            valueFrom.secretKeyRef = {
-              name = "postgres-gitea-db";
-              key = "password";
-            };
-          }
-        ];
-
-        oauth = [
-          {
-            name = "authelia";
-            provider = "openidConnect";
-            existingSecret = "gitea-authelia-oauth";
-            # autoDiscoverUrl = "https://auth.iverian.ru/.well-known/openid-configuration";
-            useCustomUrls = true;
-            customAuthUrl = "https://auth.iverian.ru/api/oidc/authorization";
-            customTokenUrl = "https://auth.iverian.ru/api/oidc/token";
-            customProfileUrl = "http://auth.iverian.ru/api/oidc/userinfo";
-            #   customEmailUrl:
-          }
-        ];
-      };
-    };
-  };
-
-  services.k3s.manifests = {
     gitea-act-runner.content = {
       apiVersion = "apps/v1";
       kind = "StatefulSet";
@@ -272,6 +194,121 @@ in
               storageClassName = "local-path";
               resources.requests.storage = "1Gi";
             };
+          }
+        ];
+      };
+    };
+  };
+
+  services.k3s.autoDeployCharts.gitea = {
+    name = "gitea";
+    repo = "https://dl.gitea.com/charts";
+    version = "12.5.0";
+    hash = "sha256-LW8189H/DPyrDyIULSCh1kBfqXSnnXoYAAkE0jMTGCM=";
+    targetNamespace = namespace;
+    createNamespace = true;
+    values = {
+      persistence = {
+        enabled = true;
+        storageClass = "storage";
+        size = "10Gi";
+      };
+
+      "postgresql-ha".enabled = false;
+      postgresql.enabled = false;
+      valkey-cluster.enabled = false;
+      valkey.enabled = true;
+
+      gitea = {
+        admin.existingSecret = "gitea-admin";
+
+        config = {
+          database = {
+            DB_TYPE = "postgres";
+            HOST = "gitea-db:5432";
+            NAME = "gitea";
+            USER = "postgres";
+            SSL_MODE = "require";
+          };
+          server = {
+            DOMAIN = "gitea.iverian.ru";
+            ROOT_URL = "https://gitea.iverian.ru";
+            DISABLE_SSH = "true";
+          };
+          openid = {
+            ENABLE_OPENID_SIGNIN = "false";
+            ENABLE_OPENID_SIGNUP = "true";
+          };
+          service = {
+            DISABLE_REGISTRATION = "false";
+            ALLOW_ONLY_EXTERNAL_REGISTRATION = "true";
+            SHOW_REGISTRATION_BUTTON = "false";
+            REQUIRE_SIGNIN_VIEW = "true";
+            DEFAULT_KEEP_EMAIL_PRIVATE = "true";
+            ENABLE_PASSKEY_AUTHENTICATION = "false";
+            ENABLE_PASSWORD_SIGNIN_FORM = "false";
+          };
+          "service.explore" = {
+            DISABLE_USERS_PAGE = "true";
+            DISABLE_ORGANIZATIONS_PAGE = "true";
+          };
+          repository = {
+            USE_COMPAT_SSH_URI = "true";
+            DEFAULT_PRIVATE = "true";
+          };
+          webhook = {
+            ALLOWED_HOST_LIST = "private";
+          };
+          cors = {
+            ENABLED = "true";
+            ALLOW_DOMAIN = "https://gitea.iverian.ru";
+            ALLOW_SUBDOMAIN = "false";
+            X_FRAME_OPTIONS = "SAMEORIGIN";
+          };
+          actions = {
+            ENABLED = "true";
+          };
+          ui = {
+            SHOW_USER_EMAIL = "false";
+          };
+          "repository.pull-request" = {
+            DEFAULT_MERGE_STYLE = "fast-forward-only";
+          };
+        };
+
+        additionalConfigFromEnvs = [
+          {
+            name = "GITEA__DATABASE__PASSWD";
+            valueFrom.secretKeyRef = {
+              name = "postgres-gitea-db";
+              key = "password";
+            };
+          }
+          {
+            name = "GITEA__SECURITY__SECRET_KEY";
+            valueFrom.secretKeyRef = {
+              name = "gitea-security";
+              key = "secretKey";
+            };
+          }
+          {
+            name = "GITEA__SECURITY__INTERNAL_TOKEN";
+            valueFrom.secretKeyRef = {
+              name = "gitea-security";
+              key = "internalToken";
+            };
+          }
+        ];
+
+        oauth = [
+          {
+            name = "authelia";
+            provider = "openidConnect";
+            existingSecret = "gitea-authelia-oauth";
+            useCustomUrls = true;
+            customAuthUrl = "https://auth.iverian.ru/api/oidc/authorization";
+            customTokenUrl = "https://auth.iverian.ru/api/oidc/token";
+            customProfileUrl = "http://auth.iverian.ru/api/oidc/userinfo";
           }
         ];
       };

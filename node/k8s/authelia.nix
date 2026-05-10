@@ -69,6 +69,12 @@ in
           limits.cpu = "500m";
           limits.memory = "512Mi";
         };
+        env = [
+          {
+            name = "AUTHELIA_TRUSTED_PROXIES_0";
+            value = "10.42.0.0/16";
+          }
+        ];
       };
       ingress = {
         enabled = true;
@@ -110,6 +116,9 @@ in
         };
         session = {
           same_site = "strict";
+          inactivity = "30m";
+          expiration = "8h";
+          remember_me = "1M";
           encryption_key = {
             secret_name = "authelia-data";
             path = "sessionEncryptionKey";
@@ -118,13 +127,21 @@ in
             {
               domain = "auth.iverian.ru";
               authelia_url = "https://auth.iverian.ru";
+              inactivity = "30m";
+              expiration = "8h";
             }
           ];
         };
         webauthn = {
           enable_passkey_login = true;
+          selection_criteria.user_verification = "required";
         };
-        access_control.default_policy = "one_factor";
+        access_control.default_policy = "two_factor";
+        regulation = {
+          max_retries = 5;
+          find_time = "2m";
+          ban_time = "10m";
+        };
         notifier = {
           disable_startup_check = true;
           filesystem = {
@@ -132,9 +149,15 @@ in
             filename = "/config/notification.txt";
           };
         };
-        identity_validation.reset_password.secret = {
-          secret_name = "authelia-data";
-          path = "resetPasswordKey";
+        identity_validation = {
+          elevated_session = {
+            code_lifespan = "1h";
+            elevation_lifespan = "2h";
+          };
+          reset_password.secret = {
+            secret_name = "authelia-data";
+            path = "resetPasswordKey";
+          };
         };
         identity_providers = {
           oidc = {
@@ -171,7 +194,7 @@ in
                 client_secret = "$pbkdf2-sha512$310000$gTW1V09kbOUlmuENIQQijw$zQdsYQiG98Pktbbf8dz3d5NzlELofFmo7UAazLoY1Uw5eQoWlmSofZavHys/7o8f5T9afIDYgniBm7nD0O0nRg";
                 public = false;
                 require_pkce = false;
-                authorization_policy = "one_factor";
+                authorization_policy = "two_factor";
                 redirect_uris = [
                   "https://nextcloud.iverian.ru/apps/user_oidc/code"
                 ];
@@ -217,7 +240,7 @@ in
                 public = false;
                 require_pkce = false;
                 pkce_challenge_method = "";
-                authorization_policy = "one_factor";
+                authorization_policy = "two_factor";
                 redirect_uris = [
                   "https://gitea.iverian.ru/user/oauth2/authelia/callback"
                 ];

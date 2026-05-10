@@ -131,6 +131,61 @@ in
         ];
       };
     };
+    envoy-gateway-ratelimit-valkey.content = {
+      apiVersion = "hyperspike.io/v1";
+      kind = "Valkey";
+      metadata = {
+        name = "ratelimit";
+        namespace = namespace;
+      };
+      spec = {
+        nodes = 1;
+        anonymousAuth = true;
+        storage.spec = {
+          accessModes = [ "ReadWriteOnce" ];
+          storageClassName = "local-path";
+          resources.requests.storage = "1Gi";
+        };
+      };
+    };
+
+    envoy-gateway-ratelimit-policy.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "BackendTrafficPolicy";
+      metadata = {
+        name = "external-ratelimit";
+        namespace = namespace;
+      };
+      spec = {
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "external";
+          }
+        ];
+        rateLimit = {
+          type = "Global";
+          global.rules = [
+            {
+              clientSelectors = [
+                {
+                  sourceCIDR = {
+                    type = "Distinct";
+                    value = "0.0.0.0/0";
+                  };
+                }
+              ];
+              limit = {
+                requests = 100;
+                unit = "Minute";
+              };
+            }
+          ];
+        };
+      };
+    };
+
     envoy-gateway-http-redirect.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "HTTPRoute";

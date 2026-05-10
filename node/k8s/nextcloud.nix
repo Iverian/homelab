@@ -305,6 +305,12 @@ in
             --unique-uid=0 \
             --mapping-groups=groups || true
           php /var/www/html/occ config:app:set user_oidc allow_multiple_user_backends --value=0 || true
+
+          # Disable unused features (reduces attack surface)
+          php /var/www/html/occ app:disable federation || true
+          php /var/www/html/occ app:disable sharebymail || true
+          php /var/www/html/occ app:enable notes || true
+          php /var/www/html/occ config:system:set lost_password_link --value=disabled || true
         '';
       };
 
@@ -352,6 +358,29 @@ in
           {
             name = "main";
             namespace = "envoy-gateway-system";
+          }
+        ];
+        rules = [
+          {
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/";
+                };
+              }
+            ];
+            filters = [
+              {
+                type = "ResponseHeaderModifier";
+                responseHeaderModifier.add = [
+                  {
+                    name = "Strict-Transport-Security";
+                    value = "max-age=31536000; includeSubDomains; preload";
+                  }
+                ];
+              }
+            ];
           }
         ];
       };
