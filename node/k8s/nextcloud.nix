@@ -2,6 +2,9 @@
 let
   namespace = "nextcloud";
   rclone-config = "nextcloud-rclone-config";
+  s3-service = "rclone-s3";
+  s3-pvc = "nextcloud-s3-data";
+  s3-credentials = "nextcloud-s3-credentials";
 in
 {
   sops = {
@@ -9,6 +12,8 @@ in
       nextcloudAdminPassword = { };
       nextcloudOidcClientSecret = { };
       rcloneConfigB64 = { };
+      nextcloudS3AccessKey = { };
+      nextcloudS3SecretKey = { };
     };
     templates = {
       nextcloud-admin = {
@@ -53,6 +58,22 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/nextcloud-rclone-config.json";
+      };
+      nextcloud-s3-credentials = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = s3-credentials;
+            namespace = namespace;
+          };
+          stringData = {
+            auth-key = "\"${config.sops.placeholder.nextcloudS3AccessKey},${config.sops.placeholder.nextcloudS3SecretKey}\"";
+            access-key = config.sops.placeholder.nextcloudS3AccessKey;
+            secret-key = config.sops.placeholder.nextcloudS3SecretKey;
+          };
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/nextcloud-s3-credentials.json";
       };
     };
   };
@@ -118,6 +139,109 @@ in
       };
     };
 
+    nextcloud-s3-pvc.content = {
+      apiVersion = "v1";
+      kind = "PersistentVolumeClaim";
+      metadata = {
+        name = s3-pvc;
+        namespace = namespace;
+      };
+      spec = {
+        accessModes = [ "ReadWriteOnce" ];
+        storageClassName = "storage";
+        resources.requests.storage = "200Gi";
+      };
+    };
+
+    nextcloud-s3-deployment.content = {
+      apiVersion = "apps/v1";
+      kind = "Deployment";
+      metadata = {
+        name = s3-service;
+        namespace = namespace;
+      };
+      spec = {
+        replicas = 1;
+        selector.matchLabels.app = s3-service;
+        template = {
+          metadata.labels.app = s3-service;
+          spec = {
+            containers = [
+              {
+                name = "rclone";
+                image = "rclone/rclone:sha-0157a1f";
+                args = [
+                  "serve"
+                  "s3"
+                  "/data"
+                  "--addr"
+                  ":9000"
+                  "--log-level"
+                  "INFO"
+                ];
+                env = [
+                  {
+                    name = "RCLONE_AUTH_KEY";
+                    valueFrom.secretKeyRef = {
+                      name = s3-credentials;
+                      key = "auth-key";
+                    };
+                  }
+                ];
+                ports = [ { containerPort = 9000; name = "s3"; } ];
+                volumeMounts = [
+                  {
+                    name = "data";
+                    mountPath = "/data";
+                  }
+                ];
+                readinessProbe = {
+                  tcpSocket.port = 9000;
+                  initialDelaySeconds = 5;
+                  periodSeconds = 10;
+                };
+                resources = {
+                  requests = {
+                    cpu = "100m";
+                    memory = "256Mi";
+                  };
+                  limits = {
+                    cpu = "1000m";
+                    memory = "1Gi";
+                  };
+                };
+              }
+            ];
+            volumes = [
+              {
+                name = "data";
+                persistentVolumeClaim.claimName = s3-pvc;
+              }
+            ];
+          };
+        };
+      };
+    };
+
+    nextcloud-s3-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = s3-service;
+        namespace = namespace;
+      };
+      spec = {
+        selector.app = s3-service;
+        ports = [
+          {
+            port = 9000;
+            targetPort = 9000;
+            name = "s3";
+          }
+        ];
+      };
+    };
+
     nextcloud-rclone-backup.content = {
       apiVersion = "batch/v1";
       kind = "CronJob";
@@ -138,7 +262,7 @@ in
               {
                 name = "nextcloud-data";
                 persistentVolumeClaim = {
-                  claimName = "nextcloud-nextcloud";
+                  claimName = s3-pvc;
                   readOnly = true;
                 };
               }
@@ -188,15 +312,12 @@ in
                 image = "rclone/rclone:sha-0157a1f";
                 args = [
                   "sync"
-                  "/data/data"
+                  "/data/nextcloud"
                   "crypt:nextcloud"
                   "--config"
                   "/state/rclone.conf"
                   "--cache-dir"
                   "/state/cache"
-                  "--include"
-                  "*/files/**"
-                  "--delete-excluded"
                   "--log-level"
                   "INFO"
                   "--delete-during"
@@ -280,6 +401,21 @@ in
             value = "/tmp/no-client-cert";
           }
         ];
+        objectstore.s3 = {
+          enabled = true;
+          host = "${s3-service}.${namespace}.svc.cluster.local";
+          port = 9000;
+          ssl = false;
+          region = "us-east-1";
+          bucket = "nextcloud";
+          usePathStyle = true;
+          autocreate = true;
+          existingSecret = s3-credentials;
+          secretKeys = {
+            accessKey = "access-key";
+            secretKey = "secret-key";
+          };
+        };
         configs."local-access.config.php" = ''
           <?php
           $CONFIG = array (
@@ -359,8 +495,8 @@ in
 
       persistence = {
         enabled = true;
-        storageClass = "storage";
-        size = "200Gi";
+        storageClass = "local-path";
+        size = "10Gi";
       };
 
       ingress.enabled = false;
