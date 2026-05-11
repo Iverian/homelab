@@ -2,9 +2,9 @@
 let
   namespace = "nextcloud";
   rclone-config = "nextcloud-rclone-config";
-  s3-service = "rclone-s3";
-  s3-pvc = "nextcloud-s3-data";
+  garage-service = "garage";
   s3-credentials = "nextcloud-s3-credentials";
+  garage-endpoint = "http://${garage-service}.${namespace}.svc.cluster.local:3900";
 in
 {
   sops = {
@@ -68,7 +68,6 @@ in
             namespace = namespace;
           };
           stringData = {
-            auth-key = "\"${config.sops.placeholder.nextcloudS3AccessKey},${config.sops.placeholder.nextcloudS3SecretKey}\"";
             access-key = config.sops.placeholder.nextcloudS3AccessKey;
             secret-key = config.sops.placeholder.nextcloudS3SecretKey;
           };
@@ -102,24 +101,6 @@ in
       };
     };
 
-    nextcloud-valkey.content = {
-      apiVersion = "hyperspike.io/v1";
-      kind = "Valkey";
-      metadata = {
-        name = "nextcloud-cache";
-        namespace = namespace;
-      };
-      spec = {
-        nodes = 1;
-        anonymousAuth = true;
-        storage.spec = {
-          accessModes = [ "ReadWriteOnce" ];
-          storageClassName = "local-path";
-          resources.requests.storage = "1Gi";
-        };
-      };
-    };
-
     nextcloud-backend-policy.content = {
       apiVersion = "gateway.envoyproxy.io/v1alpha1";
       kind = "BackendTrafficPolicy";
@@ -139,105 +120,163 @@ in
       };
     };
 
-    nextcloud-s3-pvc.content = {
+    nextcloud-garage-config.content = {
       apiVersion = "v1";
-      kind = "PersistentVolumeClaim";
+      kind = "ConfigMap";
       metadata = {
-        name = s3-pvc;
+        name = "garage-config";
         namespace = namespace;
       };
-      spec = {
-        accessModes = [ "ReadWriteOnce" ];
-        storageClassName = "storage";
-        resources.requests.storage = "200Gi";
-      };
+      data."garage.toml" = ''
+        metadata_dir = "/var/lib/garage/meta"
+        data_dir = "/var/lib/garage/data"
+        db_engine = "lmdb"
+        replication_factor = 1
+
+        rpc_bind_addr = "[::]:3901"
+        rpc_secret = "44dea3b5d2b4302bd096000b6aeafd06dcff38203628089c2b3e529ed6fe5d24"
+
+        [s3_api]
+        s3_region = "us-east-1"
+        api_bind_addr = "[::]:3900"
+
+        [admin]
+        api_bind_addr = "[::]:3903"
+      '';
     };
 
-    nextcloud-s3-deployment.content = {
+    nextcloud-garage.content = {
       apiVersion = "apps/v1";
-      kind = "Deployment";
+      kind = "StatefulSet";
       metadata = {
-        name = s3-service;
+        name = garage-service;
         namespace = namespace;
       };
       spec = {
         replicas = 1;
-        selector.matchLabels.app = s3-service;
+        serviceName = garage-service;
+        selector.matchLabels.app = garage-service;
         template = {
-          metadata.labels.app = s3-service;
+          metadata.labels.app = garage-service;
           spec = {
             containers = [
               {
-                name = "rclone";
-                image = "rclone/rclone:sha-0157a1f";
+                name = "garage";
+                image = "dxflrs/amd64_garage:v2.3.0";
+                command = [ "/garage" ];
                 args = [
-                  "serve"
-                  "s3"
-                  "/data"
-                  "--addr"
-                  ":9000"
-                  "--log-level"
-                  "INFO"
+                  "-c"
+                  "/etc/garage/garage.toml"
+                  "server"
+                  "--single-node"
+                  "--default-access-key"
+                  "--default-bucket"
                 ];
                 env = [
                   {
-                    name = "RCLONE_AUTH_KEY";
+                    name = "GARAGE_DEFAULT_ACCESS_KEY";
                     valueFrom.secretKeyRef = {
                       name = s3-credentials;
-                      key = "auth-key";
+                      key = "access-key";
                     };
                   }
+                  {
+                    name = "GARAGE_DEFAULT_SECRET_KEY";
+                    valueFrom.secretKeyRef = {
+                      name = s3-credentials;
+                      key = "secret-key";
+                    };
+                  }
+                  {
+                    name = "GARAGE_DEFAULT_BUCKET";
+                    value = "nextcloud";
+                  }
                 ];
-                ports = [ { containerPort = 9000; name = "s3"; } ];
+                ports = [
+                  { containerPort = 3900; name = "s3"; }
+                  { containerPort = 3901; name = "rpc"; }
+                  { containerPort = 3903; name = "admin"; }
+                ];
                 volumeMounts = [
                   {
+                    name = "config";
+                    mountPath = "/etc/garage";
+                  }
+                  {
+                    name = "meta";
+                    mountPath = "/var/lib/garage/meta";
+                  }
+                  {
                     name = "data";
-                    mountPath = "/data";
+                    mountPath = "/var/lib/garage/data";
                   }
                 ];
                 readinessProbe = {
-                  tcpSocket.port = 9000;
-                  initialDelaySeconds = 5;
+                  httpGet = {
+                    path = "/health";
+                    port = 3903;
+                  };
+                  initialDelaySeconds = 10;
                   periodSeconds = 10;
                 };
                 resources = {
                   requests = {
                     cpu = "100m";
-                    memory = "256Mi";
+                    memory = "128Mi";
                   };
                   limits = {
-                    cpu = "1000m";
-                    memory = "1Gi";
+                    cpu = "1";
+                    memory = "512Mi";
                   };
                 };
               }
             ];
             volumes = [
               {
-                name = "data";
-                persistentVolumeClaim.claimName = s3-pvc;
+                name = "config";
+                configMap.name = "garage-config";
               }
             ];
           };
         };
+        volumeClaimTemplates = [
+          {
+            metadata = {
+              name = "meta";
+              namespace = namespace;
+            };
+            spec = {
+              accessModes = [ "ReadWriteOnce" ];
+              storageClassName = "local-path";
+              resources.requests.storage = "1Gi";
+            };
+          }
+          {
+            metadata = {
+              name = "data";
+              namespace = namespace;
+            };
+            spec = {
+              accessModes = [ "ReadWriteOnce" ];
+              storageClassName = "storage";
+              resources.requests.storage = "200Gi";
+            };
+          }
+        ];
       };
     };
 
-    nextcloud-s3-service.content = {
+    nextcloud-garage-svc.content = {
       apiVersion = "v1";
       kind = "Service";
       metadata = {
-        name = s3-service;
+        name = garage-service;
         namespace = namespace;
       };
       spec = {
-        selector.app = s3-service;
+        selector.app = garage-service;
         ports = [
-          {
-            port = 9000;
-            targetPort = 9000;
-            name = "s3";
-          }
+          { port = 3900; targetPort = 3900; name = "s3"; }
         ];
       };
     };
@@ -260,13 +299,6 @@ in
             restartPolicy = "OnFailure";
             volumes = [
               {
-                name = "nextcloud-data";
-                persistentVolumeClaim = {
-                  claimName = s3-pvc;
-                  readOnly = true;
-                };
-              }
-              {
                 name = "config-ro";
                 secret.secretName = rclone-config;
               }
@@ -279,11 +311,8 @@ in
               {
                 name = "setup";
                 image = "rancher/mirrored-library-busybox:1.36.1";
-                command = [
-                  "sh"
-                  "-c"
-                ];
-                args = [ "cp /config-ro/rclone.conf /state/rclone.conf && mkdir -p /state/cache" ];
+                command = [ "sh" "-c" ];
+                args = [ "cp /config-ro/rclone.conf /state/rclone.conf" ];
                 volumeMounts = [
                   {
                     name = "config-ro";
@@ -312,22 +341,47 @@ in
                 image = "rclone/rclone:sha-0157a1f";
                 args = [
                   "sync"
-                  "/data/nextcloud"
+                  "ncs3:nextcloud"
                   "crypt:nextcloud"
                   "--config"
                   "/state/rclone.conf"
-                  "--cache-dir"
-                  "/state/cache"
                   "--log-level"
                   "INFO"
                   "--delete-during"
                 ];
-                volumeMounts = [
+                env = [
                   {
-                    name = "nextcloud-data";
-                    mountPath = "/data";
-                    readOnly = true;
+                    name = "RCLONE_CONFIG_NCS3_TYPE";
+                    value = "s3";
                   }
+                  {
+                    name = "RCLONE_CONFIG_NCS3_PROVIDER";
+                    value = "Other";
+                  }
+                  {
+                    name = "RCLONE_CONFIG_NCS3_ENDPOINT";
+                    value = garage-endpoint;
+                  }
+                  {
+                    name = "RCLONE_CONFIG_NCS3_REGION";
+                    value = "us-east-1";
+                  }
+                  {
+                    name = "RCLONE_CONFIG_NCS3_ACCESS_KEY_ID";
+                    valueFrom.secretKeyRef = {
+                      name = s3-credentials;
+                      key = "access-key";
+                    };
+                  }
+                  {
+                    name = "RCLONE_CONFIG_NCS3_SECRET_ACCESS_KEY";
+                    valueFrom.secretKeyRef = {
+                      name = s3-credentials;
+                      key = "secret-key";
+                    };
+                  }
+                ];
+                volumeMounts = [
                   {
                     name = "state";
                     mountPath = "/state";
@@ -401,15 +455,15 @@ in
             value = "/tmp/no-client-cert";
           }
         ];
-        objectstore.s3 = {
+        objectStore.s3 = {
           enabled = true;
-          host = "${s3-service}.${namespace}.svc.cluster.local";
-          port = 9000;
+          host = "${garage-service}.${namespace}.svc.cluster.local";
+          port = 3900;
           ssl = false;
           region = "us-east-1";
           bucket = "nextcloud";
           usePathStyle = true;
-          autocreate = true;
+          autocreate = false;
           existingSecret = s3-credentials;
           secretKeys = {
             accessKey = "access-key";
@@ -485,12 +539,9 @@ in
         };
       };
 
-      redis.enabled = false;
-
-      externalRedis = {
+      redis = {
         enabled = true;
-        host = "nextcloud-cache";
-        port = "6379";
+        architecture = "standalone";
       };
 
       persistence = {
