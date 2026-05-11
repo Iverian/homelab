@@ -133,6 +133,14 @@ in
         db_engine = "lmdb"
         replication_factor = 1
 
+        # 10 MiB blocks reduce chunk count 10x for large Nextcloud files vs 1 MiB default
+        block_size = 10485760
+        # 512 MiB async buffer; keeps uploads from stalling while waiting on HDD I/O
+        block_ram_buffer_max = 536870912
+        # HDD-backed data_dir: cap concurrency to avoid head-thrashing
+        block_max_concurrent_reads = 5
+        block_max_concurrent_writes_per_request = 5
+
         rpc_bind_addr = "[::]:3901"
         rpc_secret = "44dea3b5d2b4302bd096000b6aeafd06dcff38203628089c2b3e529ed6fe5d24"
 
@@ -221,12 +229,12 @@ in
                 };
                 resources = {
                   requests = {
-                    cpu = "100m";
-                    memory = "128Mi";
+                    cpu = "200m";
+                    memory = "512Mi";
                   };
                   limits = {
                     cpu = "1";
-                    memory = "512Mi";
+                    memory = "1500Mi";
                   };
                 };
               }
