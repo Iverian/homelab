@@ -1,11 +1,32 @@
 { config, ... }:
 let
   namespace = "home-assistant";
+  rclone-config = "home-assistant-rclone-config";
   oidc-auth-version = "1.1.0";
   oidc-auth-source = "https://github.com/christiaangoossens/hass-oidc-auth/archive/refs/tags/v${oidc-auth-version}.zip";
   oidc-auth-unpacked = "hass-oidc-auth-${oidc-auth-version}";
 in
 {
+  sops = {
+    secrets = {
+      rcloneConfigB64 = { };
+    };
+    templates.home-assistant-rclone-config = {
+      content = builtins.toJSON {
+        apiVersion = "v1";
+        kind = "Secret";
+        metadata = {
+          name = rclone-config;
+          namespace = namespace;
+        };
+        data = {
+          "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
+        };
+      };
+      path = "/var/lib/rancher/k3s/server/manifests/home-assistant-rclone-config.json";
+    };
+  };
+
   services.k3s.manifests = {
     home-assistant-namespace.content = {
       apiVersion = "v1";
@@ -244,6 +265,118 @@ in
                   limits = {
                     cpu = "2";
                     memory = "2Gi";
+                  };
+                };
+              }
+            ];
+          };
+        };
+      };
+    };
+
+    home-assistant-rclone-backup.content = {
+      apiVersion = "batch/v1";
+      kind = "CronJob";
+      metadata = {
+        name = "rclone-backup";
+        namespace = namespace;
+      };
+      spec = {
+        schedule = "0 5 * * *";
+        concurrencyPolicy = "Forbid";
+        successfulJobsHistoryLimit = 3;
+        failedJobsHistoryLimit = 3;
+        jobTemplate.spec.template = {
+          metadata.annotations."reloader.stakater.com/auto" = "true";
+          spec = {
+            restartPolicy = "OnFailure";
+            volumes = [
+              {
+                name = "home-assistant-config";
+                persistentVolumeClaim = {
+                  claimName = "home-assistant-config";
+                  readOnly = true;
+                };
+              }
+              {
+                name = "config-ro";
+                secret.secretName = rclone-config;
+              }
+              {
+                name = "state";
+                emptyDir = { };
+              }
+            ];
+            initContainers = [
+              {
+                name = "setup";
+                image = "rancher/mirrored-library-busybox:1.36.1";
+                command = [
+                  "sh"
+                  "-c"
+                ];
+                args = [ "cp /config-ro/rclone.conf /state/rclone.conf && mkdir -p /state/cache" ];
+                volumeMounts = [
+                  {
+                    name = "config-ro";
+                    mountPath = "/config-ro";
+                  }
+                  {
+                    name = "state";
+                    mountPath = "/state";
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "50m";
+                    memory = "64Mi";
+                  };
+                  limits = {
+                    cpu = "100m";
+                    memory = "128Mi";
+                  };
+                };
+              }
+            ];
+            containers = [
+              {
+                name = "rclone";
+                image = "rclone/rclone:sha-0157a1f";
+                args = [
+                  "sync"
+                  "/config"
+                  "crypt:home-assistant"
+                  "--config"
+                  "/state/rclone.conf"
+                  "--cache-dir"
+                  "/state/cache"
+                  "--log-level"
+                  "INFO"
+                  "--delete-during"
+                  "--exclude"
+                  "home-assistant.log*"
+                  "--exclude"
+                  ".ha_run.lock"
+                ];
+                volumeMounts = [
+                  {
+                    name = "home-assistant-config";
+                    mountPath = "/config";
+                    readOnly = true;
+                  }
+                  {
+                    name = "state";
+                    mountPath = "/state";
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "100m";
+                    memory = "256Mi";
+                  };
+                  limits = {
+                    cpu = "1000m";
+                    memory = "1Gi";
                   };
                 };
               }
