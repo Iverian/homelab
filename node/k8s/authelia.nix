@@ -256,6 +256,24 @@ in
                 token_endpoint_auth_method = "client_secret_basic";
                 consent_mode = "implicit";
               }
+              {
+                client_id = "homeassistant";
+                client_name = "Home Assistant";
+                public = true;
+                require_pkce = true;
+                pkce_challenge_method = "S256";
+                authorization_policy = "two_factor";
+                redirect_uris = [
+                  "https://home-assistant.iverian.ru/auth/oidc/callback"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "groups"
+                ];
+                id_token_signed_response_alg = "RS256";
+                consent_mode = "implicit";
+              }
             ];
           };
         };

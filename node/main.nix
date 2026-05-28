@@ -26,6 +26,7 @@
     ./k8s/gitea.nix
     ./k8s/couchdb.nix
     ./k8s/media.nix
+    ./k8s/home-assistant.nix
     ./k8s/frpc.nix
     ./k8s/backup.nix
   ];
