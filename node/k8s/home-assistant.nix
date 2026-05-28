@@ -62,6 +62,11 @@ in
         default_config:
 
         homeassistant:
+          name: Home
+          unit_system: metric
+          country: RU
+          currency: RUB
+          time_zone: "Europe/Moscow"
           external_url: "https://home-assistant.iverian.ru"
           internal_url: "https://home-assistant.iverian.ru"
 
