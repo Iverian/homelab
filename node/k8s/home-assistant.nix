@@ -2,6 +2,8 @@
 let
   namespace = "home-assistant";
   rclone-config = "home-assistant-rclone-config";
+  zigbee-device = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0";
+  zha-entry-id = "01KSR5BZHA000000000000000";
   oidc-auth-version = "1.1.0";
   oidc-auth-source = "https://github.com/christiaangoossens/hass-oidc-auth/archive/refs/tags/v${oidc-auth-version}.zip";
   oidc-auth-unpacked = "hass-oidc-auth-${oidc-auth-version}";
@@ -142,6 +144,13 @@ in
                   type = "Directory";
                 };
               }
+              {
+                name = "udev";
+                hostPath = {
+                  path = "/run/udev";
+                  type = "Directory";
+                };
+              }
             ];
             initContainers = [
               {
@@ -154,7 +163,7 @@ in
                 args = [
                   ''
                     set -eu
-                    apk add --no-cache ca-certificates unzip wget
+                    apk add --no-cache ca-certificates jq unzip wget
                     rm -rf /config/custom_components/auth_oidc /tmp/hass-oidc-auth
                     wget -O /tmp/hass-oidc-auth.zip ${oidc-auth-source}
                     unzip -q /tmp/hass-oidc-auth.zip -d /tmp
@@ -177,6 +186,62 @@ in
                       }
                     }
                     EOF
+
+                    if [ ! -f /config/.storage/core.config_entries ]; then
+                      cat > /config/.storage/core.config_entries <<'EOF'
+                    {
+                      "version": 1,
+                      "minor_version": 5,
+                      "key": "core.config_entries",
+                      "data": {
+                        "entries": []
+                      }
+                    }
+                    EOF
+                    fi
+
+                    now="$(date -u '+%Y-%m-%dT%H:%M:%S+00:00')"
+                    tmp="$(mktemp)"
+                    jq \
+                      --arg entry_id ${zha-entry-id} \
+                      --arg now "$now" \
+                      --arg path ${zigbee-device} \
+                      '
+                        def zha_entry($existing):
+                          {
+                            created_at: ($existing.created_at // $now),
+                            data: {
+                              device: {
+                                path: $path,
+                                baudrate: 115200,
+                                flow_control: null
+                              },
+                              radio_type: "znp"
+                            },
+                            disabled_by: null,
+                            discovery_keys: ($existing.discovery_keys // {}),
+                            domain: "zha",
+                            entry_id: ($existing.entry_id // $entry_id),
+                            minor_version: 2,
+                            modified_at: $now,
+                            options: ($existing.options // {}),
+                            pref_disable_new_entities: ($existing.pref_disable_new_entities // false),
+                            pref_disable_polling: ($existing.pref_disable_polling // false),
+                            source: ($existing.source // "user"),
+                            subentries: ($existing.subentries // []),
+                            title: ($existing.title // "ZHA"),
+                            unique_id: ($existing.unique_id // null),
+                            version: 5
+                          };
+
+                        .data.entries =
+                          if any(.data.entries[]?; .domain == "zha") then
+                            [.data.entries[] | if .domain == "zha" then zha_entry(.) else . end]
+                          else
+                            .data.entries + [zha_entry({})]
+                          end
+                      ' /config/.storage/core.config_entries > "$tmp"
+                    mv "$tmp" /config/.storage/core.config_entries
                   ''
                 ];
                 volumeMounts = [
@@ -251,6 +316,11 @@ in
                   {
                     name = "serial-by-id";
                     mountPath = "/dev/serial/by-id";
+                    readOnly = true;
+                  }
+                  {
+                    name = "udev";
+                    mountPath = "/run/udev";
                     readOnly = true;
                   }
                 ];
