@@ -494,6 +494,13 @@ in
             ),
           );
         '';
+        configs."background-jobs.config.php" = ''
+          <?php
+          $CONFIG = array (
+            'maintenance_window_start' => 1,
+            'default_phone_region' => 'RU',
+          );
+        '';
         hooks.before-starting = ''
           # Install only if not yet done (entrypoint may have already handled it)
           if ! php /var/www/html/occ status 2>/dev/null | grep -q "installed: true"; then
@@ -551,6 +558,8 @@ in
         enabled = true;
         architecture = "standalone";
       };
+
+      cronjob.enabled = true;
 
       persistence = {
         enabled = true;
