@@ -203,10 +203,6 @@ in
                     name = "media";
                     mountPath = "/media";
                   }
-                  {
-                    name = "vidsort";
-                    mountPath = "/vidsort";
-                  }
                 ];
                 resources = {
                   requests = {
@@ -315,6 +311,10 @@ in
                   {
                     name = "media";
                     mountPath = "/media";
+                  }
+                  {
+                    name = "vidsort";
+                    mountPath = "/vidsort";
                   }
                 ];
                 ports = [
