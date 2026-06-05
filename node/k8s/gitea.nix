@@ -144,6 +144,98 @@ in
       };
     };
 
+    gitea-registry-httproute.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "HTTPRoute";
+      metadata = {
+        name = "gitea-registry";
+        namespace = namespace;
+      };
+      spec = {
+        parentRefs = [
+          {
+            name = "main";
+            namespace = "envoy-gateway-system";
+          }
+        ];
+        hostnames = [
+          "gitea.iverian.ru"
+        ];
+        rules = [
+          {
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/v2";
+                };
+              }
+            ];
+            backendRefs = [
+              {
+                name = "gitea-http";
+                port = 3000;
+              }
+            ];
+          }
+        ];
+      };
+    };
+
+    gitea-registry-public-deny-filter.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "HTTPRouteFilter";
+      metadata = {
+        name = "gitea-registry-public-deny";
+        namespace = namespace;
+      };
+      spec.directResponse = {
+        statusCode = 404;
+      };
+    };
+
+    gitea-registry-public-deny-httproute.content = {
+      apiVersion = "gateway.networking.k8s.io/v1";
+      kind = "HTTPRoute";
+      metadata = {
+        name = "gitea-registry-public-deny";
+        namespace = namespace;
+      };
+      spec = {
+        parentRefs = [
+          {
+            name = "public";
+            namespace = "envoy-gateway-system";
+          }
+        ];
+        hostnames = [
+          "gitea.iverian.ru"
+        ];
+        rules = [
+          {
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/v2";
+                };
+              }
+            ];
+            filters = [
+              {
+                type = "ExtensionRef";
+                extensionRef = {
+                  group = "gateway.envoyproxy.io";
+                  kind = "HTTPRouteFilter";
+                  name = "gitea-registry-public-deny";
+                };
+              }
+            ];
+          }
+        ];
+      };
+    };
+
     gitea-act-runner.content = {
       apiVersion = "apps/v1";
       kind = "StatefulSet";
@@ -362,10 +454,13 @@ in
             DISABLE_REGISTRATION = "false";
             ALLOW_ONLY_EXTERNAL_REGISTRATION = "true";
             SHOW_REGISTRATION_BUTTON = "false";
-            REQUIRE_SIGNIN_VIEW = "true";
+            REQUIRE_SIGNIN_VIEW = "false";
             DEFAULT_KEEP_EMAIL_PRIVATE = "true";
             ENABLE_PASSKEY_AUTHENTICATION = "false";
             ENABLE_PASSWORD_SIGNIN_FORM = "false";
+          };
+          packages = {
+            ENABLED = "true";
           };
           "service.explore" = {
             DISABLE_USERS_PAGE = "true";
