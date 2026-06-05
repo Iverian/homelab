@@ -12,7 +12,7 @@ let
   other-dir = "/media/other";
   transcode-dir = "/media/.transcode";
   vidsort-dir = "/config/vidsort";
-  vidsort-fifo = "/config/vidsort/fifo";
+  vidsort-fifo = "/vidsort/fifo";
 in
 {
   sops = {
@@ -173,6 +173,10 @@ in
               {
                 name = "media";
                 persistentVolumeClaim.claimName = "media";
+              },
+              {
+                name = "vidsort",
+                emptyDir = {};
               }
             ];
             initContainers = [
@@ -198,6 +202,10 @@ in
                   {
                     name = "media";
                     mountPath = "/media";
+                  },
+                  {
+                    name = "vidsort";
+                    mountPath = "/vidsort";
                   }
                 ];
                 resources = {
@@ -272,6 +280,10 @@ in
                   {
                     name = "media";
                     mountPath = "/media";
+                  }
+                  {
+                    name = "vidsort";
+                    mountPath = "/vidsort";
                   }
                 ];
                 ports = [
