@@ -215,7 +215,7 @@ in
             containers = [
               {
                 name = "vidsort";
-                image = "gitea.iverian.ru/iverian/vidsort:0.1.2";
+                image = "gitea.iverian.ru/iverian/vidsort:0.1.2-1";
                 imagePullPolicy = "Always";
                 envFrom = [
                   {
