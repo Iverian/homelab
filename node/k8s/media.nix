@@ -173,10 +173,10 @@ in
               {
                 name = "media";
                 persistentVolumeClaim.claimName = "media";
-              },
+              }
               {
-                name = "vidsort",
-                emptyDir = {};
+                name = "vidsort";
+                emptyDir = { };
               }
             ];
             initContainers = [
@@ -202,7 +202,7 @@ in
                   {
                     name = "media";
                     mountPath = "/media";
-                  },
+                  }
                   {
                     name = "vidsort";
                     mountPath = "/vidsort";
