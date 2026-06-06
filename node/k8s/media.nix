@@ -188,7 +188,7 @@ in
                   "-c"
                 ];
                 args = [
-                  "set -eux && mkdir -p ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} ${vidsort-dir} && chmod -R 0777 ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-download-dir} ${vidsort-dir} && cp /config-ro/settings.json /config-ro/on-done.sh /config/ && chmod -R 0777 /config"
+                  "set -eux && mkdir -p ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-watch-dir} ${vidsort-dir} && chmod -R 0777 ${movies-dir} ${shows-dir} ${other-dir} ${transcode-dir} ${transmission-download-dir} ${transmission-incomplete-dir} ${transmission-download-dir} ${vidsort-dir} && cp /config-ro/settings.json /config-ro/on-done.sh /config/ && chmod -R 0777 /config && mkfifo ${vidsort-fifo} && chmod 0777 ${vidsort-fifo}"
                 ];
                 volumeMounts = [
                   {
@@ -202,6 +202,10 @@ in
                   {
                     name = "media";
                     mountPath = "/media";
+                  }
+                  {
+                    name = "vidsort";
+                    mountPath = "/vidsort";
                   }
                 ];
                 resources = {
