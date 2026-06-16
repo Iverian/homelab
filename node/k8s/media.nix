@@ -770,7 +770,7 @@ in
           {
             group = "gateway.networking.k8s.io";
             kind = "Gateway";
-            name = "public";
+            name = "external";
             namespace = "envoy-gateway-system";
           }
         ];

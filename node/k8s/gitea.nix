@@ -124,7 +124,7 @@ in
             namespace = "envoy-gateway-system";
           }
           {
-            name = "public";
+            name = "external";
             namespace = "envoy-gateway-system";
           }
         ];
@@ -204,7 +204,7 @@ in
       spec = {
         parentRefs = [
           {
-            name = "public";
+            name = "external";
             namespace = "envoy-gateway-system";
           }
         ];
