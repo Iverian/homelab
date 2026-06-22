@@ -20,7 +20,7 @@ in
         namespace = namespace;
       };
       spec = {
-        addresses = [ "192.168.88.90-192.168.88.100" ];
+        addresses = [ "192.168.90.90-192.168.90.100" ];
       };
     };
     metallb-advertisement.content = {

@@ -32,7 +32,7 @@ in
         addresses = [
           {
             type = "IPAddress";
-            value = "192.168.88.92";
+            value = "192.168.90.92";
           }
         ];
         listeners = [
@@ -90,7 +90,7 @@ in
         addresses = [
           {
             type = "IPAddress";
-            value = "192.168.88.90";
+            value = "192.168.90.90";
           }
         ];
         listeners = [

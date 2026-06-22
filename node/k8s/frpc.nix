@@ -5,8 +5,8 @@ let
   token-secret-name = "frpc-token";
   tls-secret-name = "frpc-tls";
   tls-public-name = "public-tls";
-  ingress = "192.168.88.92:8080";
-  ingress-ip = "192.168.88.92";
+  ingress = "192.168.90.92:8080";
+  ingress-ip = "192.168.90.92";
   ingress-http = "8080";
   ingress-https = "8443";
   subdomains = [

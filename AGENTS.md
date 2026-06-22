@@ -79,7 +79,7 @@ This writes a rendered manifest with plaintext secrets directly into the k3s aut
 
 ### Networking / Ingress
 
-- **MetalLB** allocates IPs `192.168.88.90–100`; the main gateway listens on `.90`
+- **MetalLB** allocates IPs `192.168.90.90–100`; the main gateway listens on `.90`
 - **Envoy Gateway** is the ingress controller (Traefik is explicitly disabled)
   - Gateway `main` in namespace `envoy-gateway-system`; two hostnames: `*.iverian.ru` (public) and `*.home.iverian.ru` (private, TLS terminated)
   - HTTP → HTTPS redirect is handled by an HTTPRoute in the same namespace
