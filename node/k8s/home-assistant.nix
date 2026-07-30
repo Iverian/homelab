@@ -20,12 +20,13 @@ in
         metadata = {
           name = rclone-config;
           namespace = namespace;
+          labels."app.kubernetes.io/name" = "home-assistant-rclone-backup";
         };
         data = {
           "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
         };
       };
-      path = "/var/lib/rancher/k3s/server/manifests/home-assistant-rclone-config.json";
+      path = "/var/lib/rancher/k3s/server/manifests/home-assistant-rclone-secret.yaml";
     };
   };
 
@@ -79,6 +80,10 @@ in
 
         recorder:
           db_url: !env_var HOME_ASSISTANT_DATABASE_URL
+
+        automation: !include automations.yaml
+        script: !include scripts.yaml
+        scene: !include scenes.yaml
 
         auth_oidc:
           client_id: "homeassistant"
@@ -163,13 +168,15 @@ in
                 args = [
                   ''
                     set -eu
-                    apk add --no-cache ca-certificates jq unzip wget
-                    rm -rf /config/custom_components/auth_oidc /tmp/hass-oidc-auth
-                    wget -O /tmp/hass-oidc-auth.zip ${oidc-auth-source}
+                    apk add --no-cache ca-certificates curl jq unzip
+                    rm -rf /tmp/hass-oidc-auth /tmp/hass-oidc-auth.zip /tmp/${oidc-auth-unpacked}
+                    curl --fail --location --retry 5 --retry-all-errors --output /tmp/hass-oidc-auth.zip ${oidc-auth-source}
                     unzip -q /tmp/hass-oidc-auth.zip -d /tmp
                     mkdir -p /config/custom_components
+                    rm -rf /config/custom_components/auth_oidc
                     cp -R /tmp/${oidc-auth-unpacked}/custom_components/auth_oidc /config/custom_components/auth_oidc
                     cp /bootstrap/configuration.yaml /config/configuration.yaml
+                    touch /config/automations.yaml /config/scripts.yaml /config/scenes.yaml
                     mkdir -p /config/.storage
                     cat > /config/.storage/onboarding <<'EOF'
                     {
@@ -432,6 +439,8 @@ in
                   "home-assistant.log*"
                   "--exclude"
                   ".ha_run.lock"
+                  "--exclude"
+                  ".cache/**"
                 ];
                 volumeMounts = [
                   {

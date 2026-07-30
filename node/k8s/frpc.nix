@@ -15,6 +15,8 @@ let
     "jellyfin"
     "nextcloud"
     "sync"
+    "home-assistant"
+    "foundry"
   ];
 in
 {
