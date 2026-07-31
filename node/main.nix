@@ -30,6 +30,7 @@
     ./k8s/foundry.nix
     ./k8s/frpc.nix
     ./k8s/backup.nix
+    ./k8s/rpg-cards.nix
   ];
 
   sops = {
