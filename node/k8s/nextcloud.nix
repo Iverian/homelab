@@ -1,7 +1,6 @@
 { config, ... }:
 let
   namespace = "nextcloud";
-  rclone-config = "nextcloud-rclone-config";
   garage-service = "garage";
   s3-credentials = "nextcloud-s3-credentials";
   garage-endpoint = "http://${garage-service}.${namespace}.svc.cluster.local:3900";
@@ -11,7 +10,6 @@ in
     secrets = {
       nextcloudAdminPassword = { };
       nextcloudOidcClientSecret = { };
-      rcloneConfigB64 = { };
       nextcloudS3AccessKey = { };
       nextcloudS3SecretKey = { };
     };
@@ -44,20 +42,6 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/nextcloud-oidc-secret.json";
-      };
-      nextcloud-rclone-config = {
-        content = builtins.toJSON {
-          apiVersion = "v1";
-          kind = "Secret";
-          metadata = {
-            name = rclone-config;
-            namespace = namespace;
-          };
-          data = {
-            "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
-          };
-        };
-        path = "/var/lib/rancher/k3s/server/manifests/nextcloud-rclone-config.json";
       };
       nextcloud-s3-credentials = {
         content = builtins.toJSON {
@@ -201,9 +185,18 @@ in
                   }
                 ];
                 ports = [
-                  { containerPort = 3900; name = "s3"; }
-                  { containerPort = 3901; name = "rpc"; }
-                  { containerPort = 3903; name = "admin"; }
+                  {
+                    containerPort = 3900;
+                    name = "s3";
+                  }
+                  {
+                    containerPort = 3901;
+                    name = "rpc";
+                  }
+                  {
+                    containerPort = 3903;
+                    name = "admin";
+                  }
                 ];
                 volumeMounts = [
                   {
@@ -284,134 +277,53 @@ in
       spec = {
         selector.app = garage-service;
         ports = [
-          { port = 3900; targetPort = 3900; name = "s3"; }
+          {
+            port = 3900;
+            targetPort = 3900;
+            name = "s3";
+          }
         ];
       };
     };
 
-    nextcloud-rclone-backup.content = {
-      apiVersion = "batch/v1";
-      kind = "CronJob";
-      metadata = {
-        name = "rclone-backup";
-        namespace = namespace;
-      };
-      spec = {
-        schedule = "0 3 * * *";
-        concurrencyPolicy = "Forbid";
-        successfulJobsHistoryLimit = 3;
-        failedJobsHistoryLimit = 3;
-        jobTemplate.spec.template = {
-          metadata.annotations."reloader.stakater.com/auto" = "true";
-          spec = {
-            restartPolicy = "OnFailure";
-            volumes = [
-              {
-                name = "config-ro";
-                secret.secretName = rclone-config;
-              }
-              {
-                name = "state";
-                emptyDir = { };
-              }
-            ];
-            initContainers = [
-              {
-                name = "setup";
-                image = "rancher/mirrored-library-busybox:1.36.1";
-                command = [ "sh" "-c" ];
-                args = [ "cp /config-ro/rclone.conf /state/rclone.conf" ];
-                volumeMounts = [
-                  {
-                    name = "config-ro";
-                    mountPath = "/config-ro";
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "50m";
-                    memory = "64Mi";
-                  };
-                  limits = {
-                    cpu = "100m";
-                    memory = "128Mi";
-                  };
-                };
-              }
-            ];
-            containers = [
-              {
-                name = "rclone";
-                image = "rclone/rclone:sha-0157a1f";
-                args = [
-                  "sync"
-                  "ncs3:nextcloud"
-                  "crypt:nextcloud"
-                  "--config"
-                  "/state/rclone.conf"
-                  "--log-level"
-                  "INFO"
-                  "--delete-during"
-                ];
-                env = [
-                  {
-                    name = "RCLONE_CONFIG_NCS3_TYPE";
-                    value = "s3";
-                  }
-                  {
-                    name = "RCLONE_CONFIG_NCS3_PROVIDER";
-                    value = "Other";
-                  }
-                  {
-                    name = "RCLONE_CONFIG_NCS3_ENDPOINT";
-                    value = garage-endpoint;
-                  }
-                  {
-                    name = "RCLONE_CONFIG_NCS3_REGION";
-                    value = "us-east-1";
-                  }
-                  {
-                    name = "RCLONE_CONFIG_NCS3_ACCESS_KEY_ID";
-                    valueFrom.secretKeyRef = {
-                      name = s3-credentials;
-                      key = "access-key";
-                    };
-                  }
-                  {
-                    name = "RCLONE_CONFIG_NCS3_SECRET_ACCESS_KEY";
-                    valueFrom.secretKeyRef = {
-                      name = s3-credentials;
-                      key = "secret-key";
-                    };
-                  }
-                ];
-                volumeMounts = [
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "100m";
-                    memory = "256Mi";
-                  };
-                  limits = {
-                    cpu = "1000m";
-                    memory = "1Gi";
-                  };
-                };
-              }
-            ];
-          };
-        };
-      };
-    };
+  };
 
+  homelab.rcloneBackups.jobs.nextcloud = {
+    inherit namespace;
+    schedule = "0 3 * * *";
+    source = "ncs3:nextcloud";
+    env = [
+      {
+        name = "RCLONE_CONFIG_NCS3_TYPE";
+        value = "s3";
+      }
+      {
+        name = "RCLONE_CONFIG_NCS3_PROVIDER";
+        value = "Other";
+      }
+      {
+        name = "RCLONE_CONFIG_NCS3_ENDPOINT";
+        value = garage-endpoint;
+      }
+      {
+        name = "RCLONE_CONFIG_NCS3_REGION";
+        value = "us-east-1";
+      }
+      {
+        name = "RCLONE_CONFIG_NCS3_ACCESS_KEY_ID";
+        valueFrom.secretKeyRef = {
+          name = s3-credentials;
+          key = "access-key";
+        };
+      }
+      {
+        name = "RCLONE_CONFIG_NCS3_SECRET_ACCESS_KEY";
+        valueFrom.secretKeyRef = {
+          name = s3-credentials;
+          key = "secret-key";
+        };
+      }
+    ];
   };
 
   services.k3s.autoDeployCharts.nextcloud = {

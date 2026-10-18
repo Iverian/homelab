@@ -1,7 +1,6 @@
 { config, ... }:
 let
   namespace = "couchdb";
-  rclone-config = "couchdb-rclone-config";
 in
 {
   sops = {
@@ -9,7 +8,6 @@ in
       couchdbAdminPassword = { };
       couchdbCookieAuthSecret = { };
       couchdbErlangCookie = { };
-      rcloneConfigB64 = { };
     };
     templates = {
       couchdb-admin = {
@@ -28,20 +26,6 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/couchdb-admin-secret.json";
-      };
-      couchdb-rclone-config = {
-        content = builtins.toJSON {
-          apiVersion = "v1";
-          kind = "Secret";
-          metadata = {
-            name = rclone-config;
-            namespace = namespace;
-          };
-          data = {
-            "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
-          };
-        };
-        path = "/var/lib/rancher/k3s/server/manifests/couchdb-rclone-config.json";
       };
     };
   };
@@ -139,113 +123,28 @@ in
       };
     };
 
-    couchdb-rclone-backup.content = {
-      apiVersion = "batch/v1";
-      kind = "CronJob";
-      metadata = {
-        name = "rclone-backup";
-        namespace = namespace;
-      };
-      spec = {
-        schedule = "0 4 * * *";
-        concurrencyPolicy = "Forbid";
-        successfulJobsHistoryLimit = 3;
-        failedJobsHistoryLimit = 3;
-        jobTemplate.spec.template = {
-          metadata.annotations."reloader.stakater.com/auto" = "true";
-          spec = {
-            restartPolicy = "OnFailure";
-            volumes = [
-              {
-                name = "couchdb-data";
-                persistentVolumeClaim = {
-                  claimName = "database-storage-couchdb-couchdb-0";
-                  readOnly = true;
-                };
-              }
-              {
-                name = "config-ro";
-                secret.secretName = rclone-config;
-              }
-              {
-                name = "state";
-                emptyDir = { };
-              }
-            ];
-            initContainers = [
-              {
-                name = "setup";
-                image = "rancher/mirrored-library-busybox:1.36.1";
-                command = [
-                  "sh"
-                  "-c"
-                ];
-                args = [ "cp /config-ro/rclone.conf /state/rclone.conf && mkdir -p /state/cache" ];
-                volumeMounts = [
-                  {
-                    name = "config-ro";
-                    mountPath = "/config-ro";
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "50m";
-                    memory = "64Mi";
-                  };
-                  limits = {
-                    cpu = "100m";
-                    memory = "128Mi";
-                  };
-                };
-              }
-            ];
-            containers = [
-              {
-                name = "rclone";
-                image = "rclone/rclone:sha-0157a1f";
-                args = [
-                  "sync"
-                  "/data"
-                  "crypt:couchdb"
-                  "--config"
-                  "/state/rclone.conf"
-                  "--cache-dir"
-                  "/state/cache"
-                  "--log-level"
-                  "INFO"
-                  "--delete-during"
-                ];
-                volumeMounts = [
-                  {
-                    name = "couchdb-data";
-                    mountPath = "/data";
-                    readOnly = true;
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "100m";
-                    memory = "256Mi";
-                  };
-                  limits = {
-                    cpu = "1000m";
-                    memory = "1Gi";
-                  };
-                };
-              }
-            ];
-          };
+  };
+
+  homelab.rcloneBackups.jobs.couchdb = {
+    inherit namespace;
+    schedule = "0 4 * * *";
+    source = "/data";
+    volumes = [
+      {
+        name = "couchdb-data";
+        persistentVolumeClaim = {
+          claimName = "database-storage-couchdb-couchdb-0";
+          readOnly = true;
         };
-      };
-    };
+      }
+    ];
+    volumeMounts = [
+      {
+        name = "couchdb-data";
+        mountPath = "/data";
+        readOnly = true;
+      }
+    ];
   };
 
   services.k3s.autoDeployCharts.couchdb = {

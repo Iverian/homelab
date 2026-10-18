@@ -18,7 +18,7 @@ in
         logical_backup_s3_endpoint = "http://rclone-serve.backup.svc.cluster.local";
         logical_backup_s3_access_key_id = "user";
         logical_backup_s3_secret_access_key = "pass";
-        logical_backup_s3_retention_time = "2 weeks";
+        logical_backup_s3_retention_time = "30 days";
       };
     };
   };

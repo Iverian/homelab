@@ -3,7 +3,6 @@ let
   namespace = "foundry";
   secrets = "foundry-secrets";
   version = "14.365.0";
-  rclone-config = "foundry-rclone-config";
 in
 {
   sops = {
@@ -12,7 +11,6 @@ in
       foundryAdminKey = { };
       foundryUsername = { };
       foundryPassword = { };
-      rcloneConfigB64 = { };
     };
     templates = {
       foundry-secrets = {
@@ -31,18 +29,6 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/foundry-secrets.json";
-      };
-      foundry-rclone-config = {
-        content = builtins.toJSON {
-          apiVersion = "v1";
-          kind = "Secret";
-          metadata = {
-            name = rclone-config;
-            namespace = namespace;
-          };
-          data."rclone.conf" = config.sops.placeholder.rcloneConfigB64;
-        };
-        path = "/var/lib/rancher/k3s/server/manifests/foundry-rclone-secret.json";
       };
     };
   };
@@ -126,17 +112,50 @@ in
                       key = "password";
                     };
                   }
-                  { name = "CONTAINER_PRESERVE_CONFIG"; value = "true"; }
-                  { name = "CONTAINER_CACHE"; value = "/data/container_cache"; }
-                  { name = "CONTAINER_CACHE_SIZE"; value = "1"; }
-                  { name = "FOUNDRY_VERSION"; value = "14.365"; }
-                  { name = "FOUNDRY_HOSTNAME"; value = "foundry.iverian.ru"; }
-                  { name = "FOUNDRY_PROXY_SSL"; value = "true"; }
-                  { name = "FOUNDRY_PROXY_PORT"; value = "443"; }
-                  { name = "FOUNDRY_UPNP"; value = "false"; }
-                  { name = "FOUNDRY_COMPRESS_WEBSOCKET"; value = "true"; }
-                  { name = "FOUNDRY_TELEMETRY"; value = "false"; }
-                  { name = "TZ"; value = "Europe/Moscow"; }
+                  {
+                    name = "CONTAINER_PRESERVE_CONFIG";
+                    value = "true";
+                  }
+                  {
+                    name = "CONTAINER_CACHE";
+                    value = "/data/container_cache";
+                  }
+                  {
+                    name = "CONTAINER_CACHE_SIZE";
+                    value = "1";
+                  }
+                  {
+                    name = "FOUNDRY_VERSION";
+                    value = "14.365";
+                  }
+                  {
+                    name = "FOUNDRY_HOSTNAME";
+                    value = "foundry.iverian.ru";
+                  }
+                  {
+                    name = "FOUNDRY_PROXY_SSL";
+                    value = "true";
+                  }
+                  {
+                    name = "FOUNDRY_PROXY_PORT";
+                    value = "443";
+                  }
+                  {
+                    name = "FOUNDRY_UPNP";
+                    value = "false";
+                  }
+                  {
+                    name = "FOUNDRY_COMPRESS_WEBSOCKET";
+                    value = "true";
+                  }
+                  {
+                    name = "FOUNDRY_TELEMETRY";
+                    value = "false";
+                  }
+                  {
+                    name = "TZ";
+                    value = "Europe/Moscow";
+                  }
                 ];
                 ports = [
                   {
@@ -243,113 +262,33 @@ in
       };
     };
 
-    foundry-rclone-backup.content = {
-      apiVersion = "batch/v1";
-      kind = "CronJob";
-      metadata = {
-        name = "rclone-backup";
-        namespace = namespace;
-      };
-      spec = {
-        schedule = "0 6 * * *";
-        concurrencyPolicy = "Forbid";
-        successfulJobsHistoryLimit = 3;
-        failedJobsHistoryLimit = 3;
-        jobTemplate.spec.template = {
-          metadata.annotations."reloader.stakater.com/auto" = "true";
-          spec = {
-            restartPolicy = "OnFailure";
-            volumes = [
-              {
-                name = "foundry-data";
-                persistentVolumeClaim = {
-                  claimName = "foundry-data";
-                  readOnly = true;
-                };
-              }
-              {
-                name = "config-ro";
-                secret.secretName = rclone-config;
-              }
-              {
-                name = "state";
-                emptyDir = { };
-              }
-            ];
-            initContainers = [
-              {
-                name = "setup";
-                image = "rancher/mirrored-library-busybox:1.36.1";
-                command = [ "sh" "-c" ];
-                args = [ "cp /config-ro/rclone.conf /state/rclone.conf && mkdir -p /state/cache" ];
-                volumeMounts = [
-                  {
-                    name = "config-ro";
-                    mountPath = "/config-ro";
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "50m";
-                    memory = "64Mi";
-                  };
-                  limits = {
-                    cpu = "100m";
-                    memory = "128Mi";
-                  };
-                };
-              }
-            ];
-            containers = [
-              {
-                name = "rclone";
-                image = "rclone/rclone:sha-0157a1f";
-                args = [
-                  "sync"
-                  "/data"
-                  "crypt:foundry"
-                  "--config"
-                  "/state/rclone.conf"
-                  "--cache-dir"
-                  "/state/cache"
-                  "--log-level"
-                  "INFO"
-                  "--delete-during"
-                  "--exclude"
-                  "Logs/**"
-                  "--exclude"
-                  "container_cache/**"
-                ];
-                volumeMounts = [
-                  {
-                    name = "foundry-data";
-                    mountPath = "/data";
-                    readOnly = true;
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "100m";
-                    memory = "256Mi";
-                  };
-                  limits = {
-                    cpu = "1000m";
-                    memory = "1Gi";
-                  };
-                };
-              }
-            ];
-          };
+  };
+
+  homelab.rcloneBackups.jobs.foundry = {
+    inherit namespace;
+    schedule = "0 6 * * *";
+    source = "/data";
+    excludes = [
+      "Logs/**"
+      "container_cache/**"
+      "Data/modules/**"
+      "Data/systems/**"
+    ];
+    volumes = [
+      {
+        name = "foundry-data";
+        persistentVolumeClaim = {
+          claimName = "foundry-data";
+          readOnly = true;
         };
-      };
-    };
+      }
+    ];
+    volumeMounts = [
+      {
+        name = "foundry-data";
+        mountPath = "/data";
+        readOnly = true;
+      }
+    ];
   };
 }

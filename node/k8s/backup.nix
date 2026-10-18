@@ -1,31 +1,8 @@
-{ config, ... }:
+{ ... }:
 let
   namespace = "backup";
-  rclone-config = "rclone-config";
 in
 {
-  sops = {
-    secrets = {
-      rcloneConfigB64 = { };
-    };
-    templates = {
-      rclone-config = {
-        content = builtins.toJSON {
-          apiVersion = "v1";
-          kind = "Secret";
-          metadata = {
-            name = rclone-config;
-            namespace = namespace;
-          };
-          data = {
-            "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
-          };
-        };
-        path = "/var/lib/rancher/k3s/server/manifests/rclone-config.json";
-      };
-    };
-  };
-
   services.k3s.manifests = {
     backup-namespace.content = {
       apiVersion = "v1";
@@ -87,10 +64,11 @@ in
           {
             apiVersion = "v1";
             kind = "PersistentVolumeClaim";
-            metadata.name = "rclone-serve-state";
+            metadata.name = "rclone-serve-staging";
             spec = {
               accessModes = [ "ReadWriteOnce" ];
-              resources.requests.storage = "1Gi";
+              storageClassName = "storage";
+              resources.requests.storage = "20Gi";
             };
           }
         ];
@@ -100,41 +78,29 @@ in
             annotations."reloader.stakater.com/auto" = "true";
           };
           spec = {
-            volumes = [
-              {
-                name = "config-ro";
-                secret.secretName = rclone-config;
-              }
-            ];
             initContainers = [
               {
-                name = "mkdir";
+                name = "prepare-staging";
                 image = "rancher/mirrored-library-busybox:1.36.1";
                 command = [
                   "sh"
                   "-c"
                 ];
-                args = [
-                  "set -eux && mkdir -p /state/cache && cp /config-ro/rclone.conf /state/rclone.conf"
-                ];
+                args = [ "mkdir -p /data/postgres" ];
                 volumeMounts = [
                   {
-                    name = "config-ro";
-                    mountPath = "/config-ro";
-                  }
-                  {
-                    name = "rclone-serve-state";
-                    mountPath = "/state";
+                    name = "rclone-serve-staging";
+                    mountPath = "/data";
                   }
                 ];
                 resources = {
                   requests = {
-                    cpu = "50m";
-                    memory = "128Mi";
+                    cpu = "10m";
+                    memory = "16Mi";
                   };
                   limits = {
-                    cpu = "100m";
-                    memory = "512Mi";
+                    cpu = "50m";
+                    memory = "32Mi";
                   };
                 };
               }
@@ -146,15 +112,9 @@ in
                 args = [
                   "serve"
                   "s3"
-                  "crypt:"
-                  "--config"
-                  "/state/rclone.conf"
+                  "/data"
                   "--addr"
                   "0.0.0.0:8080"
-                  "--cache-dir"
-                  "/state/cache"
-                  "--vfs-cache-mode"
-                  "off"
                 ];
                 env = [
                   {
@@ -164,8 +124,8 @@ in
                 ];
                 volumeMounts = [
                   {
-                    name = "rclone-serve-state";
-                    mountPath = "/state";
+                    name = "rclone-serve-staging";
+                    mountPath = "/data";
                   }
                 ];
                 ports = [
@@ -191,5 +151,31 @@ in
         };
       };
     };
+  };
+
+  homelab.rcloneBackups.jobs.postgres = {
+    inherit namespace;
+    schedule = "30 1 * * *";
+    source = "/data/postgres";
+    destination = "postgres";
+    command = "copy";
+    versioned = false;
+    retention = "30d";
+    volumes = [
+      {
+        name = "postgres-staging";
+        persistentVolumeClaim = {
+          claimName = "rclone-serve-staging-rclone-serve-0";
+          readOnly = true;
+        };
+      }
+    ];
+    volumeMounts = [
+      {
+        name = "postgres-staging";
+        mountPath = "/data";
+        readOnly = true;
+      }
+    ];
   };
 }

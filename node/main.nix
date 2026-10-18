@@ -16,12 +16,12 @@
     ./k8s/tailscale-operator.nix
     ./k8s/postgres-operator.nix
     ./k8s/valkey-operator.nix
+    ./k8s/rclone-backups.nix
     ./k8s/nextcloud.nix
     ./k8s/ingress.nix
     ./k8s/reloader.nix
     ./k8s/cert-manager.nix
     ./k8s/authelia.nix
-    ./k8s/prometheus-stack.nix
     ./k8s/intel-nfd.nix
     ./k8s/gitea.nix
     ./k8s/couchdb.nix
@@ -37,6 +37,9 @@
     age.keyFile = "/etc/nixos/secrets/sops.key";
     defaultSopsFile = ../main.sops.yaml;
   };
+
+  homelab.rcloneBackups.yandex.enable = true;
+  homelab.rcloneBackups.mega.enable = true;
 
   zramSwap = {
     enable = false;

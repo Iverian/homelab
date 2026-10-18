@@ -1,7 +1,6 @@
 { config, ... }:
 let
   namespace = "gitea";
-  rclone-config = "gitea-rclone-config";
 in
 {
   sops = {
@@ -13,20 +12,6 @@ in
       giteaInternalToken = { };
     };
     templates = {
-      gitea-rclone-config = {
-        content = builtins.toJSON {
-          apiVersion = "v1";
-          kind = "Secret";
-          metadata = {
-            name = rclone-config;
-            namespace = namespace;
-          };
-          data = {
-            "rclone.conf" = config.sops.placeholder.rcloneConfigB64;
-          };
-        };
-        path = "/var/lib/rancher/k3s/server/manifests/gitea-rclone-config.json";
-      };
       gitea-admin-secret = {
         content = builtins.toJSON {
           apiVersion = "v1";
@@ -305,110 +290,28 @@ in
         ];
       };
     };
-    gitea-rclone-backup.content = {
-      apiVersion = "batch/v1";
-      kind = "CronJob";
-      metadata = {
-        name = "rclone-backup";
-        namespace = namespace;
-      };
-      spec = {
-        schedule = "0 2 * * *";
-        concurrencyPolicy = "Forbid";
-        successfulJobsHistoryLimit = 3;
-        failedJobsHistoryLimit = 3;
-        jobTemplate.spec.template = {
-          spec = {
-            restartPolicy = "OnFailure";
-            volumes = [
-              {
-                name = "config-ro";
-                secret.secretName = rclone-config;
-              }
-              {
-                name = "state";
-                emptyDir = { };
-              }
-              {
-                name = "gitea-data";
-                persistentVolumeClaim = {
-                  claimName = "gitea-shared-storage";
-                  readOnly = true;
-                };
-              }
-            ];
-            initContainers = [
-              {
-                name = "setup";
-                image = "rancher/mirrored-library-busybox:1.36.1";
-                command = [
-                  "sh"
-                  "-c"
-                ];
-                args = [ "cp /config-ro/rclone.conf /state/rclone.conf" ];
-                volumeMounts = [
-                  {
-                    name = "config-ro";
-                    mountPath = "/config-ro";
-                  }
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "50m";
-                    memory = "64Mi";
-                  };
-                  limits = {
-                    cpu = "100m";
-                    memory = "128Mi";
-                  };
-                };
-              }
-            ];
-            containers = [
-              {
-                name = "rclone";
-                image = "rclone/rclone:sha-0157a1f";
-                args = [
-                  "sync"
-                  "/data/git/gitea-repositories"
-                  "crypt:gitea"
-                  "--config"
-                  "/state/rclone.conf"
-                  "--log-level"
-                  "INFO"
-                  "--delete-during"
-                ];
-                volumeMounts = [
-                  {
-                    name = "state";
-                    mountPath = "/state";
-                  }
-                  {
-                    name = "gitea-data";
-                    mountPath = "/data";
-                    readOnly = true;
-                  }
-                ];
-                resources = {
-                  requests = {
-                    cpu = "100m";
-                    memory = "256Mi";
-                  };
-                  limits = {
-                    cpu = "1000m";
-                    memory = "1Gi";
-                  };
-                };
-              }
-            ];
-          };
+  };
+
+  homelab.rcloneBackups.jobs.gitea = {
+    inherit namespace;
+    schedule = "0 2 * * *";
+    source = "/data/git/gitea-repositories";
+    volumes = [
+      {
+        name = "gitea-data";
+        persistentVolumeClaim = {
+          claimName = "gitea-shared-storage";
+          readOnly = true;
         };
-      };
-    };
+      }
+    ];
+    volumeMounts = [
+      {
+        name = "gitea-data";
+        mountPath = "/data";
+        readOnly = true;
+      }
+    ];
   };
 
   services.k3s.autoDeployCharts.gitea = {
