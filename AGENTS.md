@@ -19,6 +19,91 @@ The target node is `iverian@homelab.lan`. Commands use `--build-host` and `--tar
 
 To check the flake without deploying: `nix flake check`
 
+## Verifying changes
+
+Verification is part of every change. Do not treat a successful `just apply` as proof that Kubernetes accepted or reconciled the new configuration.
+
+### Before deployment
+
+1. Inspect `git status --short` and the relevant diff. Preserve unrelated staged and unstaged user changes.
+2. Run `nix flake check` for every Nix change.
+3. Use `just plan` when the scope or activation effects are unclear.
+4. Never print decrypted secrets, Kubernetes Secret data, tokens, or complete rendered secret manifests. Compare secret files using hashes or `cmp` instead.
+
+### Deployment
+
+Apply the configuration with:
+
+```bash
+just apply
+```
+
+Wait for the command to finish and check the complete activation output. A build succeeding while activation or a later k3s reconciliation fails is not a successful deployment.
+
+### Kubernetes verification
+
+Always run `kubectl` locally using the configured `homelab` context. Do not SSH to the node to run `kubectl` there.
+
+Start with broad health checks, then inspect only the affected namespaces and resources:
+
+```bash
+kubectl config current-context
+kubectl get nodes
+kubectl get pods -A
+kubectl get events -A --field-selector type=Warning --sort-by=.lastTimestamp
+kubectl -n <namespace> get deploy,statefulset,cronjob,job,pod
+kubectl -n <namespace> rollout status deployment/<name> --timeout=5m
+kubectl -n <namespace> rollout status statefulset/<name> --timeout=5m
+kubectl -n <namespace> logs <pod> -c <container> --tail=200
+```
+
+Verify the live resource content, not only its existence. Check image tags, container names, arguments, environment references, volumes, PVC names, schedules, and readiness. k3s AddOn reconciliation can be asynchronous, so repeat the live check after a short delay when the generated manifest has changed but the resource is still stale.
+
+For resources managed by the k3s manifest controller, inspect the corresponding AddOn locally:
+
+```bash
+kubectl -n kube-system get addon <manifest-name> -o yaml
+kubectl -n kube-system describe addon <manifest-name>
+```
+
+Use SSH only for host-level evidence unavailable through the Kubernetes API, especially rendered manifests and k3s logs:
+
+```bash
+ssh iverian@homelab.lan 'sudo ls -l /var/lib/rancher/k3s/server/manifests/'
+ssh iverian@homelab.lan 'sudo journalctl -u k3s --since "15 minutes ago" --no-pager'
+```
+
+Do not display rendered manifests that contain secrets. Inspect their metadata, hashes, permissions, or non-secret fields instead.
+
+### Backup verification
+
+Confirm both the producer and uploader sides:
+
+1. Check that logical database backup Jobs complete and that the staging StatefulSet/PVC is healthy.
+2. Check the live backup CronJob specification, including all expected remote containers, source PVCs, exclusions, and retention arguments.
+3. Remove only obsolete test or pre-fix Jobs that are actively blocking a new run through `concurrencyPolicy: Forbid`.
+4. When the requested work authorizes a real backup test, create a Job from the live CronJob rather than assembling a different command:
+
+   ```bash
+   kubectl -n <namespace> create job --from=cronjob/rclone-backup backup-verify-<timestamp>
+   kubectl -n <namespace> wait --for=condition=complete job/backup-verify-<timestamp> --timeout=10m
+   ```
+
+5. Inspect logs and terminated exit codes for every remote container independently. A multi-container Job is successful only when every uploader exits with code 0.
+6. For authentication-only checks, prefer read-only commands such as `rclone lsd <remote>:`. Do not infer that a successful listing proves uploads work; a real write test is needed when end-to-end verification is required and authorized.
+7. Verify exclusions against both transfer logs and remote directory listings. New excludes do not delete data uploaded by older configurations.
+
+### Completion criteria
+
+A change is complete only when:
+
+- local evaluation/checks pass;
+- deployment and activation finish successfully;
+- live Kubernetes resources match the intended configuration;
+- affected workloads become Ready or Jobs complete successfully;
+- relevant logs contain no new errors;
+- any remaining warnings, stale data, or follow-up work are explicitly reported.
+
 ## Architecture
 
 ### Structure
