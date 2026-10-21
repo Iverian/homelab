@@ -334,6 +334,14 @@ in
     targetNamespace = namespace;
     createNamespace = false;
     values = {
+      image = {
+        tag = "33.0.10-apache";
+        # The upstream tag may be rebuilt when its PHP base image receives
+        # security updates. Always resolve it instead of reusing a stale node
+        # cache entry.
+        pullPolicy = "Always";
+      };
+
       nextcloud = {
         host = "nextcloud.iverian.ru";
         existingSecret = {
@@ -413,6 +421,15 @@ in
             'default_phone_region' => 'RU',
           );
         '';
+        phpConfigs."zz-php-security.ini" = ''
+          ; Temporary defence in depth for CVE-2026-109618 and CVE-2026-109619.
+          ; Keep these settings after upgrading PHP to a fixed release.
+          memory_limit = -1
+          session.upload_progress.enabled = Off
+          session.use_only_cookies = On
+          session.use_strict_mode = On
+          expose_php = Off
+        '';
         hooks.before-starting = ''
           # Install only if not yet done (entrypoint may have already handled it)
           if ! php /var/www/html/occ status 2>/dev/null | grep -q "installed: true"; then
@@ -490,10 +507,6 @@ in
         enabled = true;
         hostnames = [ "nextcloud.iverian.ru" ];
         parentRefs = [
-          {
-            name = "external";
-            namespace = "envoy-gateway-system";
-          }
           {
             name = "main";
             namespace = "envoy-gateway-system";

@@ -365,6 +365,12 @@ in
             name = "main";
             namespace = "envoy-gateway-system";
           }
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "Gateway";
+            name = "external";
+            namespace = "envoy-gateway-system";
+          }
         ];
         rules = [
           {
