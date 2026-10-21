@@ -117,6 +117,9 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
+  security.pki.caCertificateBlacklist = [
+    "emSign ECC Root CA - G3"
+  ];
   users.users.iverian = {
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjkkb347RY92RYbf+by2uDrDMTVK9FjWL9GNMaQOnDr"
