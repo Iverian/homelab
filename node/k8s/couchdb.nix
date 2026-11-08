@@ -120,6 +120,7 @@ in
           }
         ];
         timeout.http.requestTimeout = "1h";
+        mergeType = "StrategicMerge";
       };
     };
 

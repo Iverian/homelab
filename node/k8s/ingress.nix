@@ -1,9 +1,11 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
   namespace = "envoy-gateway-system";
   gateway-class = "eg";
 in
 {
+  imports = [ ./trusted-ip.nix ];
+  homelab.trustedIP.enforce = true;
   services.k3s.disable = [ "traefik" ];
   services.k3s.manifests = {
     envoy-gateway-namespace.content = {
@@ -158,15 +160,15 @@ in
       };
       spec = {
         targetRefs = [
-          {
+          ({
             group = "gateway.networking.k8s.io";
             kind = "Gateway";
             name = "external";
-          }
+          } // lib.optionalAttrs config.homelab.trustedIP.enforce { sectionName = "public-secure"; })
         ];
         rateLimit = {
           type = "Global";
-          global.rules = [
+          global.rules = if config.homelab.trustedIP.enforce then import ./trusted-ip-rules.nix else [
             {
               clientSelectors = [
                 {

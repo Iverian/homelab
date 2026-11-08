@@ -180,6 +180,13 @@
 
   services.irqbalance.enable = true;
 
+  # Keep host access available independently of the Kubernetes operator.
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+    extraSetFlags = [ "--accept-dns=false" ];
+  };
+
   services.openssh = {
     enable = true;
     settings = {

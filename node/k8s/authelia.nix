@@ -93,6 +93,10 @@ in
         };
       };
       configMap = {
+        server.endpoints.authz.trusted-ip = {
+          implementation = "ForwardAuth";
+          authn_strategies = [ { name = "CookieSession"; } ];
+        };
         storage = {
           encryption_key = {
             secret_name = "authelia-data";
@@ -136,7 +140,14 @@ in
           enable_passkey_login = true;
           selection_criteria.user_verification = "required";
         };
-        access_control.default_policy = "two_factor";
+        access_control = {
+          default_policy = "two_factor";
+          rules = [ {
+            domain = "auth.iverian.ru";
+            resources = [ "^/_trusted-ip-check$" ];
+            policy = "two_factor";
+          } ];
+        };
         regulation = {
           max_retries = 5;
           find_time = "2m";

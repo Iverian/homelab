@@ -748,6 +748,16 @@ in
         ];
       };
     };
+    jellyfin-backend-policy.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "BackendTrafficPolicy";
+      metadata = { name = "jellyfin-streaming"; inherit namespace; };
+      spec = {
+        targetRefs = [ { group = "gateway.networking.k8s.io"; kind = "HTTPRoute"; name = "jellyfin"; } ];
+        mergeType = "StrategicMerge";
+        timeout.http.requestTimeout = "0s";
+      };
+    };
     jellyfin-httproute.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "HTTPRoute";
