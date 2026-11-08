@@ -32,21 +32,4 @@ in
     targetNamespace = namespace;
     createNamespace = true;
   };
-  services.k3s.manifests = {
-    tailscale-subnet-router.content = {
-      apiVersion = "tailscale.com/v1alpha1";
-      kind = "Connector";
-      metadata = {
-        name = "subnet-router";
-        namespace = namespace;
-      };
-      spec = {
-        replicas = 1;
-        exitNode = true;
-        subnetRouter = {
-          advertiseRoutes = [ "192.168.90.128/25" ];
-        };
-      };
-    };
-  };
 }
