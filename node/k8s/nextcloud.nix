@@ -1,9 +1,225 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   namespace = "nextcloud";
   garage-service = "garage";
   s3-credentials = "nextcloud-s3-credentials";
   garage-endpoint = "http://${garage-service}.${namespace}.svc.cluster.local:3900";
+  nextcloudChart = {
+    name = "nextcloud";
+    repo = "https://nextcloud.github.io/helm/";
+    version = "9.0.6";
+    hash = "sha256-pBnD+LiznV1ckj0ljYcDxBtSZCf6HoqUV6p41E6lEh4=";
+    targetNamespace = namespace;
+    createNamespace = false;
+    values = {
+      image = {
+        tag = "33.0.10-apache";
+        # The upstream tag may be rebuilt when its PHP base image receives
+        # security updates. Always resolve it instead of reusing a stale node
+        # cache entry.
+        pullPolicy = "Always";
+      };
+
+      nextcloud = {
+        host = "nextcloud.iverian.ru";
+        existingSecret = {
+          enabled = true;
+          secretName = "nextcloud-admin";
+          usernameKey = "username";
+          passwordKey = "password";
+        };
+        extraEnv = [
+          {
+            name = "NEXTCLOUD_OIDC_SECRET";
+            valueFrom.secretKeyRef = {
+              name = "nextcloud-oidc";
+              key = "clientSecret";
+            };
+          }
+          {
+            name = "OVERWRITEPROTOCOL";
+            value = "https";
+          }
+          {
+            name = "OVERWRITEHOST";
+            value = "nextcloud.iverian.ru";
+          }
+          {
+            name = "OVERWRITECLIURL";
+            value = "https://nextcloud.iverian.ru";
+          }
+          {
+            name = "TRUSTED_PROXIES";
+            value = "10.42.0.0/16";
+          }
+          {
+            name = "PGSSLCERT";
+            value = "/tmp/no-client-cert";
+          }
+          {
+            name = "PGSSLKEY";
+            value = "/tmp/no-client-cert";
+          }
+        ];
+        objectStore.s3 = {
+          enabled = true;
+          host = "${garage-service}.${namespace}.svc.cluster.local";
+          port = 3900;
+          ssl = false;
+          region = "us-east-1";
+          bucket = "nextcloud";
+          usePathStyle = true;
+          autocreate = false;
+          existingSecret = s3-credentials;
+          secretKeys = {
+            accessKey = "access-key";
+            secretKey = "secret-key";
+          };
+        };
+        configs."local-access.config.php" = ''
+          <?php
+          $CONFIG = array (
+            'allow_local_remote_servers' => true,
+          );
+        '';
+        configs."trusted-domains.config.php" = ''
+          <?php
+          $CONFIG = array (
+            'trusted_domains' =>
+            array (
+              0 => 'nextcloud.iverian.ru',
+              1 => 'localhost',
+            ),
+          );
+        '';
+        configs."background-jobs.config.php" = ''
+          <?php
+          $CONFIG = array (
+            'maintenance_window_start' => 1,
+            'default_phone_region' => 'RU',
+          );
+        '';
+        phpConfigs."zz-php-security.ini" = ''
+          ; Temporary defence in depth for CVE-2026-109618 and CVE-2026-109619.
+          ; Keep these settings after upgrading PHP to a fixed release.
+          memory_limit = -1
+          session.upload_progress.enabled = Off
+          session.use_only_cookies = On
+          session.use_strict_mode = On
+          expose_php = Off
+        '';
+        hooks.before-starting = ''
+          # Install only if not yet done (entrypoint may have already handled it)
+          if ! php /var/www/html/occ status 2>/dev/null | grep -q "installed: true"; then
+            echo "==> Waiting for PostgreSQL..."
+            until php /var/www/html/occ status 2>/dev/null | grep -q "installed:"; do
+              sleep 5
+            done
+            echo "==> Installing Nextcloud..."
+            php /var/www/html/occ maintenance:install \
+              --database=pgsql \
+              --database-host=nextcloud-db \
+              --database-name=nextcloud \
+              --database-user=postgres \
+              --database-pass="''${POSTGRES_PASSWORD}" \
+              --admin-user="''${NEXTCLOUD_ADMIN_USER}" \
+              --admin-pass="''${NEXTCLOUD_ADMIN_PASSWORD}"
+          fi
+
+          # Always configure OIDC (idempotent — runs on every start)
+          php /var/www/html/occ app:install user_oidc || true
+          php /var/www/html/occ app:enable user_oidc || true
+          php /var/www/html/occ user_oidc:provider authelia \
+            --clientid=nextcloud \
+            --clientsecret="''${NEXTCLOUD_OIDC_SECRET}" \
+            --discoveryuri=https://auth.iverian.ru/.well-known/openid-configuration \
+            --unique-uid=0 \
+            --mapping-groups=groups || true
+          php /var/www/html/occ config:app:set user_oidc allow_multiple_user_backends --value=0 || true
+
+          # Disable unused features (reduces attack surface)
+          php /var/www/html/occ app:disable federation || true
+          php /var/www/html/occ app:disable sharebymail || true
+          php /var/www/html/occ app:enable notes || true
+          php /var/www/html/occ config:system:set lost_password_link --value=disabled || true
+        '';
+      };
+
+      internalDatabase.enabled = false;
+
+      externalDatabase = {
+        enabled = true;
+        type = "postgresql";
+        host = "nextcloud-db";
+        user = "postgres";
+        database = "nextcloud";
+        existingSecret = {
+          enabled = true;
+          secretName = "postgres-nextcloud-db";
+          usernameKey = "username";
+          passwordKey = "password";
+        };
+      };
+
+      redis = {
+        enabled = true;
+        architecture = "standalone";
+      };
+
+      cronjob.enabled = true;
+
+      persistence = {
+        enabled = true;
+        storageClass = "local-path";
+        size = "10Gi";
+      };
+
+      ingress.enabled = false;
+
+      # Kubelet probes hit the pod IP which is not in trusted_domains.
+      # Disable httpGet probes; the container manages its own lifecycle.
+      livenessProbe.enabled = false;
+      readinessProbe.enabled = false;
+
+      httpRoute = {
+        enabled = true;
+        hostnames = [ "nextcloud.iverian.ru" ];
+        parentRefs = [
+          {
+            name = "external";
+            namespace = "envoy-gateway-system";
+          }
+          {
+            name = "main";
+            namespace = "envoy-gateway-system";
+          }
+        ];
+        rules = [
+          {
+            matches = [
+              {
+                path = {
+                  type = "PathPrefix";
+                  value = "/";
+                };
+              }
+            ];
+            filters = [
+              {
+                type = "ResponseHeaderModifier";
+                responseHeaderModifier.add = [
+                  {
+                    name = "Strict-Transport-Security";
+                    value = "max-age=31536000; includeSubDomains; preload";
+                  }
+                ];
+              }
+            ];
+          }
+        ];
+      };
+    };
+  };
 in
 {
   sops = {
@@ -327,220 +543,21 @@ in
     ];
   };
 
-  services.k3s.autoDeployCharts.nextcloud = {
-    name = "nextcloud";
-    repo = "https://nextcloud.github.io/helm/";
-    version = "9.0.6";
-    hash = "sha256-pBnD+LiznV1ckj0ljYcDxBtSZCf6HoqUV6p41E6lEh4=";
-    targetNamespace = namespace;
-    createNamespace = false;
-    values = {
-      image = {
-        tag = "33.0.10-apache";
-        # The upstream tag may be rebuilt when its PHP base image receives
-        # security updates. Always resolve it instead of reusing a stale node
-        # cache entry.
-        pullPolicy = "Always";
+  services.k3s.autoDeployCharts.nextcloud = nextcloudChart;
+
+  # Preserve JSON escapes in Helm values: the YAML serializer in NixOS 26.05
+  # corrupts some wrapped newline escapes in embedded JSON strings.
+  services.k3s.manifests.nextcloud.source = pkgs.writeText "nextcloud-helmchart.json" (
+    builtins.toJSON {
+      apiVersion = "helm.cattle.io/v1";
+      kind = "HelmChart";
+      metadata = { name = "nextcloud"; namespace = "kube-system"; };
+      spec = {
+        chart = "https://%{KUBERNETES_API}%/static/charts/nextcloud.tgz";
+        targetNamespace = namespace;
+        createNamespace = false;
+        valuesContent = builtins.toJSON nextcloudChart.values;
       };
-
-      nextcloud = {
-        host = "nextcloud.iverian.ru";
-        existingSecret = {
-          enabled = true;
-          secretName = "nextcloud-admin";
-          usernameKey = "username";
-          passwordKey = "password";
-        };
-        extraEnv = [
-          {
-            name = "NEXTCLOUD_OIDC_SECRET";
-            valueFrom.secretKeyRef = {
-              name = "nextcloud-oidc";
-              key = "clientSecret";
-            };
-          }
-          {
-            name = "OVERWRITEPROTOCOL";
-            value = "https";
-          }
-          {
-            name = "OVERWRITEHOST";
-            value = "nextcloud.iverian.ru";
-          }
-          {
-            name = "OVERWRITECLIURL";
-            value = "https://nextcloud.iverian.ru";
-          }
-          {
-            name = "TRUSTED_PROXIES";
-            value = "10.42.0.0/16";
-          }
-          {
-            name = "PGSSLCERT";
-            value = "/tmp/no-client-cert";
-          }
-          {
-            name = "PGSSLKEY";
-            value = "/tmp/no-client-cert";
-          }
-        ];
-        objectStore.s3 = {
-          enabled = true;
-          host = "${garage-service}.${namespace}.svc.cluster.local";
-          port = 3900;
-          ssl = false;
-          region = "us-east-1";
-          bucket = "nextcloud";
-          usePathStyle = true;
-          autocreate = false;
-          existingSecret = s3-credentials;
-          secretKeys = {
-            accessKey = "access-key";
-            secretKey = "secret-key";
-          };
-        };
-        configs."local-access.config.php" = ''
-          <?php
-          $CONFIG = array (
-            'allow_local_remote_servers' => true,
-          );
-        '';
-        configs."trusted-domains.config.php" = ''
-          <?php
-          $CONFIG = array (
-            'trusted_domains' =>
-            array (
-              0 => 'nextcloud.iverian.ru',
-              1 => 'localhost',
-            ),
-          );
-        '';
-        configs."background-jobs.config.php" = ''
-          <?php
-          $CONFIG = array (
-            'maintenance_window_start' => 1,
-            'default_phone_region' => 'RU',
-          );
-        '';
-        phpConfigs."zz-php-security.ini" = ''
-          ; Temporary defence in depth for CVE-2026-109618 and CVE-2026-109619.
-          ; Keep these settings after upgrading PHP to a fixed release.
-          memory_limit = -1
-          session.upload_progress.enabled = Off
-          session.use_only_cookies = On
-          session.use_strict_mode = On
-          expose_php = Off
-        '';
-        hooks.before-starting = ''
-          # Install only if not yet done (entrypoint may have already handled it)
-          if ! php /var/www/html/occ status 2>/dev/null | grep -q "installed: true"; then
-            echo "==> Waiting for PostgreSQL..."
-            until php /var/www/html/occ status 2>/dev/null | grep -q "installed:"; do
-              sleep 5
-            done
-            echo "==> Installing Nextcloud..."
-            php /var/www/html/occ maintenance:install \
-              --database=pgsql \
-              --database-host=nextcloud-db \
-              --database-name=nextcloud \
-              --database-user=postgres \
-              --database-pass="''${POSTGRES_PASSWORD}" \
-              --admin-user="''${NEXTCLOUD_ADMIN_USER}" \
-              --admin-pass="''${NEXTCLOUD_ADMIN_PASSWORD}"
-          fi
-
-          # Always configure OIDC (idempotent — runs on every start)
-          php /var/www/html/occ app:install user_oidc || true
-          php /var/www/html/occ app:enable user_oidc || true
-          php /var/www/html/occ user_oidc:provider authelia \
-            --clientid=nextcloud \
-            --clientsecret="''${NEXTCLOUD_OIDC_SECRET}" \
-            --discoveryuri=https://auth.iverian.ru/.well-known/openid-configuration \
-            --unique-uid=0 \
-            --mapping-groups=groups || true
-          php /var/www/html/occ config:app:set user_oidc allow_multiple_user_backends --value=0 || true
-
-          # Disable unused features (reduces attack surface)
-          php /var/www/html/occ app:disable federation || true
-          php /var/www/html/occ app:disable sharebymail || true
-          php /var/www/html/occ app:enable notes || true
-          php /var/www/html/occ config:system:set lost_password_link --value=disabled || true
-        '';
-      };
-
-      internalDatabase.enabled = false;
-
-      externalDatabase = {
-        enabled = true;
-        type = "postgresql";
-        host = "nextcloud-db";
-        user = "postgres";
-        database = "nextcloud";
-        existingSecret = {
-          enabled = true;
-          secretName = "postgres-nextcloud-db";
-          usernameKey = "username";
-          passwordKey = "password";
-        };
-      };
-
-      redis = {
-        enabled = true;
-        architecture = "standalone";
-      };
-
-      cronjob.enabled = true;
-
-      persistence = {
-        enabled = true;
-        storageClass = "local-path";
-        size = "10Gi";
-      };
-
-      ingress.enabled = false;
-
-      # Kubelet probes hit the pod IP which is not in trusted_domains.
-      # Disable httpGet probes; the container manages its own lifecycle.
-      livenessProbe.enabled = false;
-      readinessProbe.enabled = false;
-
-      httpRoute = {
-        enabled = true;
-        hostnames = [ "nextcloud.iverian.ru" ];
-        parentRefs = [
-          {
-            name = "external";
-            namespace = "envoy-gateway-system";
-          }
-          {
-            name = "main";
-            namespace = "envoy-gateway-system";
-          }
-        ];
-        rules = [
-          {
-            matches = [
-              {
-                path = {
-                  type = "PathPrefix";
-                  value = "/";
-                };
-              }
-            ];
-            filters = [
-              {
-                type = "ResponseHeaderModifier";
-                responseHeaderModifier.add = [
-                  {
-                    name = "Strict-Transport-Security";
-                    value = "max-age=31536000; includeSubDomains; preload";
-                  }
-                ];
-              }
-            ];
-          }
-        ];
-      };
-    };
-  };
+    }
+  );
 }

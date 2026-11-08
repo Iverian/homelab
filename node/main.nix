@@ -54,7 +54,7 @@
 
   boot.supportedFilesystems = [ "zfs" ];
   boot.initrd.kernelModules = [ "usb_storage" ];
-  boot.kernelPackages = pkgs.linuxPackages_hardened;
+  boot.kernelPackages = pkgs.linuxPackages;
   boot.kernelModules = [ "tcp_bbr" ];
   boot.kernelParams = [
     "fsck.mode=force"
@@ -100,6 +100,7 @@
     hostName = "homelab";
     firewall.enable = false;
     networkmanager.enable = true;
+    networkmanager.unmanaged = [ "interface-name:enp0s20f0u3" ];
   };
 
   time.timeZone = "Europe/Moscow";
@@ -117,9 +118,7 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
-  security.pki.caCertificateBlacklist = [
-    "emSign ECC Root CA - G3"
-  ];
+  # emSign ECC Root CA - G3 is already absent from the current CA bundle.
   users.users.iverian = {
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjkkb347RY92RYbf+by2uDrDMTVK9FjWL9GNMaQOnDr"
