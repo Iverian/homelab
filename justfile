@@ -3,6 +3,10 @@ default_node := "homelab"
 help:
   @just --list
 
+# Apply Debian external host hardening; retain public SSH until Tailscale is verified.
+external-apply STAGE="--services-only":
+  python3 script/external-apply.py {{ STAGE }}
+
 # Update host dependencies
 update:
   nix flake update

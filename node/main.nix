@@ -183,7 +183,11 @@
   services.tailscale = {
     enable = true;
     openFirewall = true;
-    extraSetFlags = [ "--accept-dns=false" ];
+    useRoutingFeatures = "server";
+    extraSetFlags = [
+      "--accept-dns=false"
+      "--advertise-exit-node"
+    ];
   };
 
   services.openssh = {

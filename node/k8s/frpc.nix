@@ -91,6 +91,14 @@ in
 
           ${lib.concatMapStringsSep "\n" (item: ''
             [[proxies]]
+            name = "${item}-http"
+            type = "http"
+            subdomain = "${item}"
+            transport.proxyProtocolVersion = "v2"
+            localIP = "${ingress-ip}"
+            localPort = 8080
+
+            [[proxies]]
             name = "${item}-https"
             type = "https"
             subdomain = "${item}"

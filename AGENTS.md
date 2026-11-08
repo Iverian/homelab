@@ -2,6 +2,10 @@
 
 This file provides guidance to agents when working with code in this repository.
 
+## IP addresses
+
+Do not write literal IP addresses into files tracked by Git or intended to be committed, including configuration, scripts, documentation, and examples. Use DNS names instead. If a setting requires an IP address, obtain it at runtime or from configuration outside Git; do not hardcode it in the repository.
+
 ## Commands
 
 All workflows go through `just` (see [justfile](justfile)):

@@ -1,0 +1,28 @@
+# Use the default wildcard listener.
+bindPort = 7000
+vhostHTTPPort = 80
+vhostHTTPSPort = 443
+vhostHTTPTimeout = 15
+subDomainHost = "iverian.ru"
+# Defense in depth; the NewProxy policy rejects all TCP/UDP proxies.
+allowPorts = [{ single = 65535 }]
+maxPortsPerClient = 14
+userConnTimeout = 10
+detailedErrorsToClient = false
+transport.maxPoolCount = 5
+transport.tls.force = true
+transport.tls.certFile = "/etc/frp/secret/server-cert.pem"
+transport.tls.keyFile = "/etc/frp/secret/server-key.pem"
+transport.tls.trustedCaFile = "/etc/frp/secret/ca.pem"
+auth.method = "token"
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "/etc/frp/secret/token"
+log.to = "console"
+log.level = "info"
+log.disablePrintColor = true
+
+[[httpPlugins]]
+name = "proxy-policy"
+addr = "localhost:9001"
+path = "/handler"
+ops = ["NewProxy"]

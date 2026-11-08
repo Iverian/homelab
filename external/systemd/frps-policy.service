@@ -1,0 +1,29 @@
+[Unit]
+Description=FRP proxy registration allowlist
+Before=frps.service
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/libexec/frps-policy.py
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictAddressFamilies=AF_INET
+IPAddressDeny=any
+IPAddressAllow=localhost
+CapabilityBoundingSet=
+MemoryMax=64M
+TasksMax=8
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target
