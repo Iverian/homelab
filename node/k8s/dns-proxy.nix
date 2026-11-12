@@ -74,7 +74,7 @@ let
 
     [anonymized_dns]
     routes = [
-      { server_name = '*', via = ['*'] }
+      { server_name = '*', via = ['odohrelay-numa', 'odohrelay-crypto-sx'] }
     ]
     skip_incompatible = false
   '';
