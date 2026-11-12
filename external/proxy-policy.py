@@ -4,7 +4,7 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlsplit
 
-SUBDOMAINS = frozenset(('auth', 'gitea', 'jellyfin', 'nextcloud', 'sync', 'home-assistant', 'foundry'))
+SUBDOMAINS = frozenset(('auth', 'gitea', 'jellyfin', 'nextcloud', 'sync', 'home-assistant', 'foundry', 'rpg-cards'))
 
 
 def allowed(c):

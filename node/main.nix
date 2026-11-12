@@ -12,6 +12,7 @@
     # Kubernetes services
     ./k8s/storage.nix
     ./k8s/metallb.nix
+    ./k8s/dns-proxy.nix
     ./k8s/samba-operator.nix
     ./k8s/tailscale-operator.nix
     ./k8s/postgres-operator.nix

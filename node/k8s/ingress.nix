@@ -6,7 +6,10 @@ in
 {
   imports = [ ./trusted-ip.nix ];
   homelab.trustedIP.enforce = true;
-  services.k3s.disable = [ "traefik" ];
+  services.k3s.disable = [
+    "traefik"
+    "servicelb"
+  ];
   services.k3s.manifests = {
     envoy-gateway-namespace.content = {
       apiVersion = "v1";
@@ -160,30 +163,37 @@ in
       };
       spec = {
         targetRefs = [
-          ({
-            group = "gateway.networking.k8s.io";
-            kind = "Gateway";
-            name = "external";
-          } // lib.optionalAttrs config.homelab.trustedIP.enforce { sectionName = "public-secure"; })
+          (
+            {
+              group = "gateway.networking.k8s.io";
+              kind = "Gateway";
+              name = "external";
+            }
+            // lib.optionalAttrs config.homelab.trustedIP.enforce { sectionName = "public-secure"; }
+          )
         ];
         rateLimit = {
           type = "Global";
-          global.rules = if config.homelab.trustedIP.enforce then import ./trusted-ip-rules.nix else [
-            {
-              clientSelectors = [
+          global.rules =
+            if config.homelab.trustedIP.enforce then
+              import ./trusted-ip-rules.nix
+            else
+              [
                 {
-                  sourceCIDR = {
-                    type = "Distinct";
-                    value = "0.0.0.0/0";
+                  clientSelectors = [
+                    {
+                      sourceCIDR = {
+                        type = "Distinct";
+                        value = "0.0.0.0/0";
+                      };
+                    }
+                  ];
+                  limit = {
+                    requests = 100;
+                    unit = "Minute";
                   };
                 }
               ];
-              limit = {
-                requests = 100;
-                unit = "Minute";
-              };
-            }
-          ];
         };
       };
     };

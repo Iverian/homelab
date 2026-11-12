@@ -14,6 +14,7 @@ let
     "sync"
     "home-assistant"
     "foundry"
+    "rpg-cards"
   ];
 in
 {

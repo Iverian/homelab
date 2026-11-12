@@ -93,9 +93,21 @@ in
         };
       };
       configMap = {
-        server.endpoints.authz.trusted-ip = {
-          implementation = "ForwardAuth";
-          authn_strategies = [ { name = "CookieSession"; } ];
+        server.endpoints.authz = {
+          trusted-ip = {
+            implementation = "ForwardAuth";
+            authn_strategies = [ { name = "CookieSession"; } ];
+          };
+          ext-authz = {
+            implementation = "ExtAuthz";
+            authn_strategies = [
+              {
+                name = "HeaderAuthorization";
+                schemes = [ "Basic" ];
+              }
+              { name = "CookieSession"; }
+            ];
+          };
         };
         storage = {
           encryption_key = {
@@ -129,8 +141,8 @@ in
           };
           cookies = [
             {
-              domain = "auth.iverian.ru";
-              authelia_url = "https://auth.iverian.ru";
+              domain = "iverian.ru";
+              subdomain = "auth";
               inactivity = "30m";
               expiration = "8h";
             }
@@ -142,11 +154,13 @@ in
         };
         access_control = {
           default_policy = "two_factor";
-          rules = [ {
-            domain = "auth.iverian.ru";
-            resources = [ "^/_trusted-ip-check$" ];
-            policy = "two_factor";
-          } ];
+          rules = [
+            {
+              domain = "auth.iverian.ru";
+              resources = [ "^/_trusted-ip-check$" ];
+              policy = "two_factor";
+            }
+          ];
         };
         regulation = {
           max_retries = 5;
