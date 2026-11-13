@@ -430,7 +430,7 @@ in
         namespace = namespace;
       };
       spec = {
-        hostnames = [ "transmission.home.iverian.ru" ];
+        hostnames = [ "transmission.iverian.ru" ];
         parentRefs = [
           {
             group = "gateway.networking.k8s.io";
@@ -653,7 +653,7 @@ in
                 env = [
                   {
                     name = "JELLYFIN_PublishedServerUrl";
-                    value = "https://jellyfin.home.iverian.ru";
+                    value = "https://jellyfin.iverian.ru";
                   }
                   {
                     name = "JELLYFIN_DATA_DIR";
@@ -766,10 +766,7 @@ in
         namespace = namespace;
       };
       spec = {
-        hostnames = [
-          "jellyfin.home.iverian.ru"
-          "jellyfin.iverian.ru"
-        ];
+        hostnames = [ "jellyfin.iverian.ru" ];
         parentRefs = [
           {
             group = "gateway.networking.k8s.io";

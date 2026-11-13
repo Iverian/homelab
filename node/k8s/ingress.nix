@@ -30,7 +30,6 @@ in
       metadata = {
         name = "external";
         namespace = namespace;
-        annotations."cert-manager.io/cluster-issuer" = "letsencrypt";
       };
       spec = {
         gatewayClassName = gateway-class;
@@ -88,7 +87,6 @@ in
       metadata = {
         name = "main";
         namespace = namespace;
-        annotations."cert-manager.io/cluster-issuer" = "letsencrypt";
       };
       spec = {
         gatewayClassName = gateway-class;
@@ -100,14 +98,12 @@ in
         ];
         listeners = [
           {
-            name = "public";
-            hostname = "*.iverian.ru";
+            name = "http";
             port = 80;
             protocol = "HTTP";
           }
           {
-            name = "public-secure";
-            hostname = "*.iverian.ru";
+            name = "https";
             port = 443;
             protocol = "HTTPS";
             allowedRoutes.namespaces.from = "All";
@@ -116,24 +112,23 @@ in
               certificateRefs = [ { name = "eg-public-tls"; } ];
             };
           }
-          {
-            name = "private";
-            hostname = "*.home.iverian.ru";
-            port = 80;
-            protocol = "HTTP";
-          }
-          {
-            name = "private-secure";
-            hostname = "*.home.iverian.ru";
-            port = 443;
-            protocol = "HTTPS";
-            allowedRoutes.namespaces.from = "All";
-            tls = {
-              mode = "Terminate";
-              certificateRefs = [ { name = "eg-private-tls"; } ];
-            };
-          }
         ];
+      };
+    };
+    envoy-gateway-public-certificate.content = {
+      apiVersion = "cert-manager.io/v1";
+      kind = "Certificate";
+      metadata = {
+        name = "eg-public-tls";
+        namespace = namespace;
+      };
+      spec = {
+        secretName = "eg-public-tls";
+        dnsNames = [ "*.iverian.ru" ];
+        issuerRef = {
+          name = "letsencrypt";
+          kind = "ClusterIssuer";
+        };
       };
     };
     envoy-gateway-ratelimit-valkey.content = {
@@ -215,12 +210,7 @@ in
           {
             name = "main";
             namespace = namespace;
-            sectionName = "public";
-          }
-          {
-            name = "main";
-            namespace = namespace;
-            sectionName = "private";
+            sectionName = "http";
           }
         ];
         rules = [

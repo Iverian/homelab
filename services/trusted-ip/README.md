@@ -24,14 +24,19 @@ overall response timeout. The internal `main` Gateway has no external rate limit
 ## Build and deploy
 
 - `just trusted-ip-test`: build the pinned dependency image and run unit/gRPC tests.
-- `just trusted-ip-image`: also import the image into the single node's containerd.
+- `just trusted-ip-image`: also import this image into the single node's containerd.
+- `just service-images`: build and import every `services/*/manifest.json`.
+- `just service-image services/trusted-ip/manifest.json`: build and import one image.
 - `nix flake check`, `just plan`, `just apply`: normal deployment; apply imports
   the image before switching the NixOS configuration.
 - `just trusted-ip-integration`: create temporary external routes and a synthetic
   backend, test IPv4/IPv6 limits, spoofing, TTL, a 20-second response and classifier
   failure, then remove the resources and benchmark-address trust records.
 
-The image tag hashes Dockerfile and requirements; application code is mounted
+Each image has a minimal manifest containing its repository name and the files
+that contribute to its tag. Dockerfile is always included automatically; build,
+run and upload settings are command-line options of `script/service_images.py`.
+The trusted-IP image tag hashes Dockerfile and requirements; application code is mounted
 from a ConfigMap with a rollout checksum. Python packages come from pinned wheels;
 no application/protobuf compilation or external image registry is required.
 The image must be imported on every schedulable node if this becomes a multi-node

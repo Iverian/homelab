@@ -270,6 +270,29 @@ in
                 id_token_signed_response_alg = "RS256";
                 consent_mode = "implicit";
               }
+              {
+                client_id = "homepage";
+                client_name = "Homepage";
+                client_secret = "$pbkdf2-sha512$310000$.Wl2EImJ4js57qnzyQ26Jw$I9GEZj1WU4CYiDkh.P8MzjKXI5K4R4ebOUZT/fX5bVgDOq1dbp8n4UF65bjIm9AGqdW3LuYMzIQFac60L7xR6g";
+                public = false;
+                require_pkce = false;
+                authorization_policy = "two_factor";
+                redirect_uris = [
+                  "https://home.iverian.ru/api/auth/callback/homepage-oidc"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "email"
+                  "groups"
+                ];
+                grant_types = [ "authorization_code" ];
+                response_types = [ "code" ];
+                access_token_signed_response_alg = "none";
+                userinfo_signed_response_alg = "none";
+                token_endpoint_auth_method = "client_secret_basic";
+                consent_mode = "implicit";
+              }
             ];
           };
         };

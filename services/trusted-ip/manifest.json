@@ -1,0 +1,6 @@
+{
+  "image": "localhost/homelab/trusted-ip",
+  "hashFiles": [
+    "requirements.txt"
+  ]
+}
