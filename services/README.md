@@ -33,7 +33,7 @@ just service-images homelab --no-upload
 Build one image:
 
 ```bash
-just service-image services/converse/manifest.json
+just service-image services/homepage/manifest.json
 ```
 
 The generic script also accepts `--platform`, `--dockerfile`, repeated

@@ -865,7 +865,13 @@ in
         name = "external";
         namespace = namespace;
       };
-      spec.network.publish = "external";
+      spec = {
+        network.publish = "external";
+        customGlobalConfig = {
+          useUnsafeCustomConfig = true;
+          configs."dns hostname" = "share.lan";
+        };
+      };
     };
     media-share.content = {
       apiVersion = "samba-operator.samba.org/v1alpha1";

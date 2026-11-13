@@ -231,6 +231,29 @@ in
                 consent_mode = "implicit";
               }
               {
+                client_id = "grafana";
+                client_secret = "$pbkdf2-sha512$310000$glwqEtxfkikIqilXQtbV5w$mXIDhHzYc48iuLVjg4pR.239W1fO42gFXWsaWijmF/Joq7dHpOwAv6pF3/hjZKoWxy8dFkyq/yUZ2XO4pYnNdA";
+                public = false;
+                require_pkce = true;
+                pkce_challenge_method = "S256";
+                authorization_policy = "two_factor";
+                redirect_uris = [
+                  "https://grafana.iverian.ru/login/generic_oauth"
+                ];
+                scopes = [
+                  "openid"
+                  "profile"
+                  "email"
+                  "groups"
+                ];
+                grant_types = [ "authorization_code" ];
+                response_types = [ "code" ];
+                access_token_signed_response_alg = "none";
+                userinfo_signed_response_alg = "none";
+                token_endpoint_auth_method = "client_secret_basic";
+                consent_mode = "implicit";
+              }
+              {
                 client_id = "gitea";
                 client_secret = "$pbkdf2-sha512$310000$FTwibf/9uyjN6SUph5xRXg$BrIbOjQi1V8SrXQUOuMVfaBY64zOV.pi04DoDE8GDbpuAKPvvYf7ra9Gww9vaAJddTDTBmLUnd7LKzWY59GkWA";
                 public = false;

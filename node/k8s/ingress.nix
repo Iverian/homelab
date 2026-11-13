@@ -6,11 +6,7 @@ in
 {
   imports = [ ./trusted-ip.nix ];
   homelab.trustedIP.enforce = true;
-  services.k3s.disable = [
-    "traefik"
-    "servicelb"
-  ];
-  services.k3s.manifests = {
+  services.k3s.manifests = rec {
     envoy-gateway-namespace.content = {
       apiVersion = "v1";
       kind = "Namespace";
@@ -24,6 +20,21 @@ in
       metadata.name = gateway-class;
       spec.controllerName = "gateway.envoyproxy.io/gatewayclass-controller";
     };
+    envoy-proxy-external.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "EnvoyProxy";
+      metadata = {
+        name = "external";
+        namespace = namespace;
+      };
+      spec.provider = {
+        type = "Kubernetes";
+        kubernetes.envoyService = {
+          name = "envoy-external";
+          type = "ClusterIP";
+        };
+      };
+    };
     envoy-gateway-external.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
@@ -33,12 +44,11 @@ in
       };
       spec = {
         gatewayClassName = gateway-class;
-        addresses = [
-          {
-            type = "IPAddress";
-            value = "192.168.90.92";
-          }
-        ];
+        infrastructure.parametersRef = {
+          group = "gateway.envoyproxy.io";
+          kind = "EnvoyProxy";
+          name = "external";
+        };
         listeners = [
           {
             name = "public";
@@ -81,6 +91,21 @@ in
         };
       };
     };
+    envoy-proxy-main.content = {
+      apiVersion = "gateway.envoyproxy.io/v1alpha1";
+      kind = "EnvoyProxy";
+      metadata = {
+        name = "main";
+        namespace = namespace;
+      };
+      spec.provider = {
+        type = "Kubernetes";
+        kubernetes.envoyService = {
+          loadBalancerIP = (builtins.head envoy-gateway-main.content.spec.addresses).value;
+          annotations."metallb.io/address-pool" = "main";
+        };
+      };
+    };
     envoy-gateway-main.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "Gateway";
@@ -90,6 +115,11 @@ in
       };
       spec = {
         gatewayClassName = gateway-class;
+        infrastructure.parametersRef = {
+          group = "gateway.envoyproxy.io";
+          kind = "EnvoyProxy";
+          name = "main";
+        };
         addresses = [
           {
             type = "IPAddress";

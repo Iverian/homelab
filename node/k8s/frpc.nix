@@ -4,7 +4,7 @@ let
   config-name = "frpc-config";
   token-secret-name = "frpc-token";
   tls-secret-name = "frpc-tls";
-  ingress-ip = "192.168.90.92";
+  ingress-hostname = "envoy-external.envoy-gateway-system.svc.cluster.local";
   ingress-https = "8443";
   subdomains = [
     "auth"
@@ -96,7 +96,7 @@ in
             type = "http"
             subdomain = "${item}"
             transport.proxyProtocolVersion = "v2"
-            localIP = "${ingress-ip}"
+            localIP = "${ingress-hostname}"
             localPort = 8080
 
             [[proxies]]
@@ -104,7 +104,7 @@ in
             type = "https"
             subdomain = "${item}"
             transport.proxyProtocolVersion = "v2"
-            localIP = "${ingress-ip}"
+            localIP = "${ingress-hostname}"
             localPort = ${ingress-https}
           '') subdomains}
         '';

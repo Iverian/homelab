@@ -12,30 +12,11 @@ let
     )
   ));
   homepageImage = "${homepageImageManifest.image}:${homepageImageHash}";
-  converseServicePath = ../../services/converse;
-  converseImageManifest = builtins.fromJSON (builtins.readFile (converseServicePath + "/manifest.json"));
-  converseImageHash = builtins.substring 0 20 (builtins.hashString "sha256" (
-    builtins.concatStringsSep "" (
-      map
-        (file: builtins.readFile (converseServicePath + "/${file}"))
-        ([ "Dockerfile" ] ++ converseImageManifest.hashFiles)
-    )
-  ));
-  converseImage = "${converseImageManifest.image}:${converseImageHash}";
-  chatPath = config.sops.placeholder.chatPath;
-  chatManifestNames = [
-    "converse-config"
-    "converse-deployment"
-    "home-converse-route"
-    "home-prosody-route"
-  ];
 in
 {
   sops.secrets = {
-    chatPath = { };
     homepageAuthSecret = { };
     homepageOidcClientSecret = { };
-    prosodyAdminPassword = { };
   };
 
   sops.templates.home-secrets = {
@@ -51,20 +32,9 @@ in
         homepage-auth-secret = config.sops.placeholder.homepageAuthSecret;
         homepage-nextcloud-password = config.sops.placeholder.nextcloudAdminPassword;
         homepage-oidc-client-secret = config.sops.placeholder.homepageOidcClientSecret;
-        prosody-admin-password = config.sops.placeholder.prosodyAdminPassword;
       };
     };
     path = "/var/lib/rancher/k3s/server/manifests/home-secrets.json";
-    restartUnits = [ "k3s.service" ];
-  };
-
-  sops.templates.home-chat-manifests = {
-    content = builtins.toJSON {
-      apiVersion = "v1";
-      kind = "List";
-      items = map (name: config.services.k3s.manifests.${name}.content) chatManifestNames;
-    };
-    path = "/var/lib/rancher/k3s/server/manifests/home-chat.json";
     restartUnits = [ "k3s.service" ];
   };
 
@@ -92,18 +62,6 @@ in
         {
           apiGroups = [ "" ];
           resources = [
-            "nodes"
-            "pods"
-          ];
-          verbs = [
-            "get"
-            "list"
-          ];
-        }
-        {
-          apiGroups = [ "metrics.k8s.io" ];
-          resources = [
-            "nodes"
             "pods"
           ];
           verbs = [
@@ -257,6 +215,12 @@ in
                   siteMonitor = "http://authelia.authelia.svc.cluster.local";
                 };
               }
+              {
+                Grafana = {
+                  href = "https://grafana.iverian.ru";
+                  description = "Мониторинг и дашборды";
+                };
+              }
             ];
           }
         ];
@@ -290,28 +254,11 @@ in
             };
             "Инфраструктура" = {
               style = "row";
-              columns = 1;
+              columns = 2;
             };
           };
         };
         "widgets.yaml" = builtins.toJSON [
-          {
-            kubernetes = {
-              cluster = {
-                show = true;
-                cpu = true;
-                memory = true;
-                showLabel = true;
-                label = "Кластер";
-              };
-              nodes = {
-                show = true;
-                cpu = true;
-                memory = true;
-                showLabel = true;
-              };
-            };
-          }
           {
             datetime = {
               text_size = "xl";
@@ -515,449 +462,6 @@ in
       };
     };
 
-    prosody-config.content = {
-      apiVersion = "v1";
-      kind = "ConfigMap";
-      metadata = {
-        name = "prosody-config";
-        namespace = namespace;
-      };
-      data."prosody.cfg.lua" = ''
-        admins = { "iverian@${hostname}" }
-
-        authentication = "internal_hashed"
-        allow_registration = false
-
-        c2s_ports = {}
-        s2s_ports = {}
-        http_ports = { 5280 }
-        https_ports = {}
-        http_interfaces = { "*" }
-        consider_websocket_secure = true
-
-        modules_enabled = {
-          "disco";
-          "roster";
-          "saslauth";
-          "tls";
-          "blocklist";
-          "bookmarks";
-          "carbons";
-          "pep";
-          "private";
-          "vcard4";
-          "vcard_legacy";
-          "limits";
-          "ping";
-          "smacks";
-          "time";
-          "uptime";
-          "version";
-          "websocket";
-          "offline";
-        }
-
-        modules_disabled = {
-          "admin_shell";
-          "bosh";
-          "http_file_share";
-          "mam";
-          "register";
-          "s2s";
-        }
-
-        storage = "internal"
-        archive_expires_after = "1d"
-        default_archive_policy = false
-        log = { warn = "*console" }
-
-        VirtualHost "${hostname}"
-          cross_domain_websocket = { "https://${hostname}" }
-
-        Component "rooms.${hostname}" "muc"
-          name = "Private rooms"
-          restrict_room_creation = "local"
-          muc_room_default_public = false
-          muc_room_default_public_jids = false
-          muc_room_default_members_only = true
-          modules_disabled = { "muc_mam" }
-      '';
-    };
-
-    prosody-pvc.content = {
-      apiVersion = "v1";
-      kind = "PersistentVolumeClaim";
-      metadata = {
-        name = "prosody-data";
-        namespace = namespace;
-      };
-      spec = {
-        accessModes = [ "ReadWriteOnce" ];
-        storageClassName = "local-path";
-        resources.requests.storage = "1Gi";
-      };
-    };
-
-    prosody-deployment.content = {
-      apiVersion = "apps/v1";
-      kind = "Deployment";
-      metadata = {
-        name = "prosody";
-        namespace = namespace;
-        labels.app = "prosody";
-        annotations = {
-          "configmap.reloader.stakater.com/reload" = "prosody-config";
-          "secret.reloader.stakater.com/reload" = "home-secrets";
-        };
-      };
-      spec = {
-        replicas = 1;
-        strategy.type = "Recreate";
-        selector.matchLabels.app = "prosody";
-        template = {
-          metadata.labels.app = "prosody";
-          spec = {
-            initContainers = [
-              {
-                name = "prepare-data-directory";
-                image = "prosodyim/prosody:13.0";
-                imagePullPolicy = "IfNotPresent";
-                command = [
-                  "/bin/sh"
-                  "-c"
-                ];
-                args = [ "chown -R 100:102 /var/lib/prosody" ];
-                securityContext = {
-                  runAsUser = 0;
-                  runAsGroup = 0;
-                  allowPrivilegeEscalation = false;
-                  capabilities = {
-                    drop = [ "ALL" ];
-                    add = [ "CHOWN" ];
-                  };
-                };
-                volumeMounts = [
-                  {
-                    name = "data";
-                    mountPath = "/var/lib/prosody";
-                  }
-                ];
-              }
-            ];
-            containers = [
-              {
-                name = "prosody";
-                image = "prosodyim/prosody:13.0";
-                imagePullPolicy = "IfNotPresent";
-                env = [
-                  {
-                    name = "LOCAL";
-                    value = "iverian";
-                  }
-                  {
-                    name = "DOMAIN";
-                    value = hostname;
-                  }
-                  {
-                    name = "PASSWORD";
-                    valueFrom.secretKeyRef = {
-                      name = "home-secrets";
-                      key = "prosody-admin-password";
-                    };
-                  }
-                ];
-                ports = [
-                  {
-                    name = "websocket";
-                    containerPort = 5280;
-                    protocol = "TCP";
-                  }
-                ];
-                readinessProbe = {
-                  tcpSocket.port = "websocket";
-                  initialDelaySeconds = 5;
-                };
-                livenessProbe = {
-                  tcpSocket.port = "websocket";
-                  initialDelaySeconds = 15;
-                };
-                resources = {
-                  requests = {
-                    cpu = "25m";
-                    memory = "64Mi";
-                  };
-                  limits.memory = "256Mi";
-                };
-                volumeMounts = [
-                  {
-                    name = "config";
-                    mountPath = "/etc/prosody/prosody.cfg.lua";
-                    subPath = "prosody.cfg.lua";
-                    readOnly = true;
-                  }
-                  {
-                    name = "data";
-                    mountPath = "/var/lib/prosody";
-                  }
-                ];
-              }
-            ];
-            volumes = [
-              {
-                name = "config";
-                configMap.name = "prosody-config";
-              }
-              {
-                name = "data";
-                persistentVolumeClaim.claimName = "prosody-data";
-              }
-            ];
-          };
-        };
-      };
-    };
-
-    prosody-service.content = {
-      apiVersion = "v1";
-      kind = "Service";
-      metadata = {
-        name = "prosody";
-        namespace = namespace;
-      };
-      spec = {
-        selector.app = "prosody";
-        ports = [
-          {
-            name = "websocket";
-            port = 5280;
-            targetPort = "websocket";
-            protocol = "TCP";
-          }
-        ];
-      };
-    };
-
-    converse-config.content = {
-      apiVersion = "v1";
-      kind = "ConfigMap";
-      metadata = {
-        name = "converse-config";
-        namespace = namespace;
-      };
-      data = {
-        "index.html" = ''
-          <!doctype html>
-          <html lang="ru">
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-              <meta name="theme-color" content="#111827">
-              <title>Workspace</title>
-              <link rel="manifest" href="${chatPath}/manifest.webmanifest">
-              <link rel="icon" href="${chatPath}/icon.svg" type="image/svg+xml">
-              <link rel="stylesheet" href="${chatPath}/dist/converse.css">
-            </head>
-            <body class="converse-fullscreen">
-              <noscript>Для работы требуется JavaScript.</noscript>
-              <script type="module" src="${chatPath}/dist/converse.js"></script>
-              <script type="module" src="${chatPath}/config.js"></script>
-            </body>
-          </html>
-        '';
-        "config.js" = ''
-          converse.initialize({
-            assets_path: '${chatPath}/dist',
-            authentication: 'login',
-            websocket_url: 'wss://${hostname}${chatPath}/socket',
-            discover_connection_methods: false,
-            locked_domain: '${hostname}',
-            muc_domain: 'rooms.${hostname}',
-            locked_muc_domain: 'hidden',
-            allow_registration: false,
-            message_archiving: 'never',
-            omemo_default: true,
-            view_mode: 'fullscreen',
-            i18n: 'ru',
-            auto_reconnect: true,
-            persistent_store: 'IndexedDB',
-            loglevel: 'warn'
-          });
-
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('${chatPath}/service-worker.js', { scope: '${chatPath}/' });
-          }
-        '';
-        "manifest.webmanifest" = builtins.toJSON {
-          name = "Workspace";
-          short_name = "Workspace";
-          start_url = "${chatPath}/";
-          scope = "${chatPath}/";
-          display = "standalone";
-          background_color = "#111827";
-          theme_color = "#111827";
-          icons = [
-            {
-              src = "${chatPath}/icon.svg";
-              sizes = "any";
-              type = "image/svg+xml";
-              purpose = "any maskable";
-            }
-          ];
-        };
-        "service-worker.js" = ''
-          self.addEventListener('install', () => self.skipWaiting());
-          self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
-          self.addEventListener('fetch', () => {});
-        '';
-        "icon.svg" = ''
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <rect width="512" height="512" rx="112" fill="#111827"/>
-            <path d="M128 152h256v48H128zm0 80h256v48H128zm0 80h160v48H128z" fill="#d1d5db"/>
-          </svg>
-        '';
-        "nginx.conf" = ''
-          server {
-            listen 8080;
-            server_name _;
-            root /www;
-
-            add_header X-Content-Type-Options "nosniff" always;
-            add_header Referrer-Policy "no-referrer" always;
-            add_header X-Frame-Options "DENY" always;
-            add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-            add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' wss://${hostname}; media-src 'self' blob: https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" always;
-
-            location = /healthz {
-              access_log off;
-              return 200 "ok\n";
-            }
-
-            location = ${chatPath} {
-              return 308 ${chatPath}/;
-            }
-
-            location ${chatPath}/dist/ {
-              alias /opt/converse/dist/;
-            }
-
-            location ${chatPath}/ {
-              try_files $uri $uri/ ${chatPath}/index.html;
-            }
-          }
-        '';
-      };
-    };
-    converse-config.enable = false;
-
-    converse-deployment.content = {
-      apiVersion = "apps/v1";
-      kind = "Deployment";
-      metadata = {
-        name = "converse";
-        namespace = namespace;
-        labels.app = "converse";
-        annotations."configmap.reloader.stakater.com/reload" = "converse-config";
-      };
-      spec = {
-        replicas = 1;
-        selector.matchLabels.app = "converse";
-        template = {
-          metadata.labels.app = "converse";
-          spec = {
-            containers = [
-              {
-                name = "nginx";
-                image = converseImage;
-                imagePullPolicy = "Never";
-                ports = [
-                  {
-                    name = "http";
-                    containerPort = 8080;
-                    protocol = "TCP";
-                  }
-                ];
-                readinessProbe.httpGet = {
-                  path = "${chatPath}/";
-                  port = "http";
-                };
-                livenessProbe.httpGet = {
-                  path = "${chatPath}/";
-                  port = "http";
-                };
-                resources = {
-                  requests = {
-                    cpu = "10m";
-                    memory = "32Mi";
-                  };
-                  limits.memory = "128Mi";
-                };
-                volumeMounts = [
-                  {
-                    name = "public-config";
-                    mountPath = "/www${chatPath}";
-                    readOnly = true;
-                  }
-                  {
-                    name = "nginx-config";
-                    mountPath = "/etc/nginx/conf.d/default.conf";
-                    subPath = "nginx.conf";
-                    readOnly = true;
-                  }
-                ];
-              }
-            ];
-            volumes = [
-              {
-                name = "public-config";
-                configMap = {
-                  name = "converse-config";
-                  items = map
-                    (key: {
-                      inherit key;
-                      path = key;
-                    })
-                    [ "index.html" "config.js" "manifest.webmanifest" "service-worker.js" "icon.svg" ];
-                };
-              }
-              {
-                name = "nginx-config";
-                configMap = {
-                  name = "converse-config";
-                  items = [
-                    {
-                      key = "nginx.conf";
-                      path = "nginx.conf";
-                    }
-                  ];
-                };
-              }
-            ];
-          };
-        };
-      };
-    };
-    converse-deployment.enable = false;
-
-    converse-service.content = {
-      apiVersion = "v1";
-      kind = "Service";
-      metadata = {
-        name = "converse";
-        namespace = namespace;
-      };
-      spec = {
-        selector.app = "converse";
-        ports = [
-          {
-            name = "http";
-            port = 8080;
-            targetPort = "http";
-            protocol = "TCP";
-          }
-        ];
-      };
-    };
-
     home-homepage-route.content = {
       apiVersion = "gateway.networking.k8s.io/v1";
       kind = "HTTPRoute";
@@ -985,96 +489,6 @@ in
             backendRefs = [ { name = "homepage"; port = 3000; } ];
           }
         ];
-      };
-    };
-
-    home-converse-route.content = {
-      apiVersion = "gateway.networking.k8s.io/v1";
-      kind = "HTTPRoute";
-      metadata = {
-        name = "home-converse";
-        namespace = namespace;
-      };
-      spec = {
-        hostnames = [ hostname ];
-        parentRefs = [
-          {
-            name = "main";
-            namespace = "envoy-gateway-system";
-            sectionName = "https";
-          }
-          {
-            name = "external";
-            namespace = "envoy-gateway-system";
-            sectionName = "public-secure";
-          }
-        ];
-        rules = [
-          {
-            matches = [ { path = { type = "PathPrefix"; value = chatPath; }; } ];
-            backendRefs = [ { name = "converse"; port = 8080; } ];
-          }
-        ];
-      };
-    };
-    home-converse-route.enable = false;
-
-    home-prosody-route.content = {
-      apiVersion = "gateway.networking.k8s.io/v1";
-      kind = "HTTPRoute";
-      metadata = {
-        name = "home-prosody";
-        namespace = namespace;
-      };
-      spec = {
-        hostnames = [ hostname ];
-        parentRefs = [
-          {
-            name = "main";
-            namespace = "envoy-gateway-system";
-            sectionName = "https";
-          }
-          {
-            name = "external";
-            namespace = "envoy-gateway-system";
-            sectionName = "public-secure";
-          }
-        ];
-        rules = [
-          {
-            matches = [ { path = { type = "Exact"; value = "${chatPath}/socket"; }; } ];
-            filters = [
-              {
-                type = "URLRewrite";
-                urlRewrite.path = {
-                  type = "ReplaceFullPath";
-                  replaceFullPath = "/xmpp-websocket";
-                };
-              }
-            ];
-            backendRefs = [ { name = "prosody"; port = 5280; } ];
-          }
-        ];
-      };
-    };
-    home-prosody-route.enable = false;
-
-    home-prosody-timeout.content = {
-      apiVersion = "gateway.envoyproxy.io/v1alpha1";
-      kind = "BackendTrafficPolicy";
-      metadata = {
-        name = "home-prosody-timeout";
-        namespace = namespace;
-      };
-      spec = {
-        targetRefs = [
-          {
-            group = "gateway.networking.k8s.io";
-            kind = "HTTPRoute";
-            name = "home-prosody";
-          }
-        ];
-        timeout.http.requestTimeout = "0s";
       };
     };
 

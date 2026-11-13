@@ -32,6 +32,7 @@
     ./k8s/frpc.nix
     ./k8s/backup.nix
     ./k8s/rpg-cards.nix
+    ./k8s/monitoring.nix
     ./k8s/home.nix
   ];
 
@@ -219,6 +220,10 @@
   services.k3s = {
     enable = true;
     role = "server";
+    disable = [
+      "traefik"
+      "servicelb"
+    ];
   };
 
   services.xserver.videoDrivers = [ "i915" ];

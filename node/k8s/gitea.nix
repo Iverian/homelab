@@ -333,6 +333,12 @@ in
       valkey-cluster.enabled = false;
       valkey.enabled = true;
 
+      service.http.annotations = {
+        "prometheus.io/scrape" = "true";
+        "prometheus.io/path" = "/metrics";
+        "prometheus.io/port" = "3000";
+      };
+
       gitea = {
         admin.existingSecret = "gitea-admin";
 
@@ -364,6 +370,11 @@ in
           };
           packages = {
             ENABLED = "true";
+          };
+          metrics = {
+            ENABLED = "true";
+            ENABLED_ISSUE_BY_LABEL = "true";
+            ENABLED_ISSUE_BY_REPOSITORY = "true";
           };
           "service.explore" = {
             DISABLE_USERS_PAGE = "true";
