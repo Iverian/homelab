@@ -1,0 +1,6 @@
+{
+  "image": "localhost/homelab/dns-blocklist-updater",
+  "hashFiles": [
+    "update.py"
+  ]
+}

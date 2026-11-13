@@ -3,6 +3,20 @@ let
   namespace = "dns-proxy";
   name = "dns-proxy";
   labels.app = name;
+  updaterPath = ../../services/dns-blocklist-updater;
+  updaterManifest = builtins.fromJSON (builtins.readFile (updaterPath + "/manifest.json"));
+  updaterHash = builtins.substring 0 20 (
+    builtins.hashString "sha256" (
+      builtins.concatStringsSep "" (
+        map (file: builtins.readFile (updaterPath + "/${file}")) (
+          [ "Dockerfile" ] ++ updaterManifest.hashFiles
+        )
+      )
+    )
+  );
+  updaterImage = "${updaterManifest.image}:${updaterHash}";
+  blocklistUrl = "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/light-onlydomains.txt";
+  blocklistFile = "/var/lib/dnscrypt-proxy/blocked-names.txt";
   resolverListKey = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
   config = ''
     listen_addresses = [':5353']
@@ -25,7 +39,14 @@ let
     lb_strategy = 'wp2'
     lb_estimator = true
 
-    cache = false
+    cache = true
+    cache_size = 4096
+    cache_min_ttl = 60
+    cache_max_ttl = 86400
+    cache_neg_min_ttl = 60
+    cache_neg_max_ttl = 600
+
+    enable_hot_reload = true
 
     bootstrap_resolvers = []
     ignore_system_dns = false
@@ -38,6 +59,9 @@ let
     log_level = 2
     use_syslog = false
     log_files_max_size = 0
+
+    [blocked_names]
+    blocked_names_file = '${blocklistFile}'
 
     [sources.public-resolvers]
     urls = [
@@ -127,6 +151,50 @@ in
               fsGroup = 65532;
               seccompProfile.type = "RuntimeDefault";
             };
+            initContainers = [
+              {
+                name = "blocklist-bootstrap";
+                image = updaterImage;
+                imagePullPolicy = "Never";
+                command = [ "/bin/sh" ];
+                args = [
+                  "-c"
+                  ''
+                    if ! python /app/update.py --url "$1" --output "$2"; then
+                      if [ ! -f "$2" ]; then
+                        echo "Initial blocklist download failed; starting with an empty blocklist" >&2
+                        : > "$2"
+                      fi
+                    fi
+                  ''
+                  "blocklist-bootstrap"
+                  blocklistUrl
+                  blocklistFile
+                ];
+                resources = {
+                  requests = {
+                    cpu = "10m";
+                    memory = "16Mi";
+                  };
+                  limits.memory = "64Mi";
+                };
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  readOnlyRootFilesystem = true;
+                  capabilities.drop = [ "ALL" ];
+                };
+                volumeMounts = [
+                  {
+                    name = "resolver-lists";
+                    mountPath = "/var/lib/dnscrypt-proxy";
+                  }
+                  {
+                    name = "tmp";
+                    mountPath = "/tmp";
+                  }
+                ];
+              }
+            ];
             containers = [
               {
                 inherit name;
@@ -234,6 +302,82 @@ in
             protocol = "TCP";
           }
         ];
+      };
+    };
+
+    dns-proxy-blocklist-update.content = {
+      apiVersion = "batch/v1";
+      kind = "CronJob";
+      metadata = {
+        name = "dns-blocklist-update";
+        inherit namespace;
+      };
+      spec = {
+        schedule = "17 3 * * *";
+        concurrencyPolicy = "Forbid";
+        startingDeadlineSeconds = 7200;
+        successfulJobsHistoryLimit = 3;
+        failedJobsHistoryLimit = 3;
+        jobTemplate.spec = {
+          backoffLimit = 3;
+          activeDeadlineSeconds = 600;
+          template.spec = {
+            restartPolicy = "OnFailure";
+            automountServiceAccountToken = false;
+            securityContext = {
+              runAsNonRoot = true;
+              runAsUser = 65532;
+              runAsGroup = 65532;
+              fsGroup = 65532;
+              seccompProfile.type = "RuntimeDefault";
+            };
+            containers = [
+              {
+                name = "update";
+                image = updaterImage;
+                imagePullPolicy = "Never";
+                args = [
+                  "--url"
+                  blocklistUrl
+                  "--output"
+                  blocklistFile
+                ];
+                resources = {
+                  requests = {
+                    cpu = "10m";
+                    memory = "16Mi";
+                  };
+                  limits.memory = "64Mi";
+                };
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  readOnlyRootFilesystem = true;
+                  capabilities.drop = [ "ALL" ];
+                };
+                volumeMounts = [
+                  {
+                    name = "resolver-lists";
+                    mountPath = "/var/lib/dnscrypt-proxy";
+                  }
+                  {
+                    name = "tmp";
+                    mountPath = "/tmp";
+                  }
+                ];
+              }
+            ];
+            volumes = [
+              {
+                name = "resolver-lists";
+                persistentVolumeClaim.claimName = name;
+              }
+              {
+                name = "tmp";
+                emptyDir = { };
+              }
+            ];
+          };
+        };
       };
     };
   };
