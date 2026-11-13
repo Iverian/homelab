@@ -22,6 +22,8 @@ let
     listen_addresses = [':5353']
     max_clients = 250
 
+    server_names = ['odoh-cloudflare', 'odoh-crypto-sx']
+
     ipv4_servers = true
     ipv6_servers = false
     dnscrypt_servers = false
@@ -98,7 +100,7 @@ let
 
     [anonymized_dns]
     routes = [
-      { server_name = '*', via = ['odohrelay-numa', 'odohrelay-crypto-sx'] }
+      { server_name = '*', via = ['odohrelay-crypto-sx'] }
     ]
     skip_incompatible = false
   '';
@@ -244,7 +246,8 @@ in
                 volumeMounts = [
                   {
                     name = "config";
-                    mountPath = "/etc/dnscrypt-proxy";
+                    mountPath = "/etc/dnscrypt-proxy/dnscrypt-proxy.toml";
+                    subPath = "dnscrypt-proxy.toml";
                     readOnly = true;
                   }
                   {

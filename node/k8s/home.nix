@@ -15,9 +15,7 @@ let
 in
 {
   sops.secrets = {
-    homepageAuthSecret = { };
     homepageJellyfinApiKey = { };
-    homepageOidcClientSecret = { };
   };
 
   sops.templates.home-secrets = {
@@ -30,10 +28,8 @@ in
       };
       type = "Opaque";
       stringData = {
-        homepage-auth-secret = config.sops.placeholder.homepageAuthSecret;
         homepage-jellyfin-api-key = config.sops.placeholder.homepageJellyfinApiKey;
         homepage-nextcloud-password = config.sops.placeholder.nextcloudAdminPassword;
-        homepage-oidc-client-secret = config.sops.placeholder.homepageOidcClientSecret;
       };
     };
     path = "/var/lib/rancher/k3s/server/manifests/home-secrets.json";
@@ -229,6 +225,18 @@ in
                   description = "Мониторинг и дашборды";
                 };
               }
+              {
+                "Роутер" = {
+                  href = "http://router.lan";
+                  description = "Управление домашней сетью";
+                };
+              }
+              {
+                "KVM сервера" = {
+                  href = "http://homelab-kvm.lan";
+                  description = "Удалённое управление сервером";
+                };
+              }
             ];
           }
         ];
@@ -262,7 +270,7 @@ in
             };
             "Инфраструктура" = {
               style = "row";
-              columns = 2;
+              columns = 3;
             };
           };
         };
@@ -322,48 +330,6 @@ in
                   {
                     name = "HOMEPAGE_ALLOWED_HOSTS";
                     value = hostname;
-                  }
-                  {
-                    name = "HOMEPAGE_AUTH_ENABLED";
-                    value = "true";
-                  }
-                  {
-                    name = "HOMEPAGE_AUTH_SECRET";
-                    valueFrom.secretKeyRef = {
-                      name = "home-secrets";
-                      key = "homepage-auth-secret";
-                    };
-                  }
-                  {
-                    name = "HOMEPAGE_EXTERNAL_URL";
-                    value = "https://${hostname}";
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_ISSUER";
-                    value = "https://auth.iverian.ru";
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_CLIENT_ID";
-                    value = "homepage";
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_CLIENT_SECRET";
-                    valueFrom.secretKeyRef = {
-                      name = "home-secrets";
-                      key = "homepage-oidc-client-secret";
-                    };
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_NAME";
-                    value = "Authelia";
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_SCOPE";
-                    value = "openid email profile groups";
-                  }
-                  {
-                    name = "HOMEPAGE_OIDC_AUTO_LOGIN";
-                    value = "true";
                   }
                   {
                     name = "HOMEPAGE_VAR_JELLYFIN_API_KEY";
@@ -492,11 +458,6 @@ in
             name = "main";
             namespace = "envoy-gateway-system";
             sectionName = "https";
-          }
-          {
-            name = "external";
-            namespace = "envoy-gateway-system";
-            sectionName = "public-secure";
           }
         ];
         rules = [
