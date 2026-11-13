@@ -16,6 +16,7 @@ in
 {
   sops.secrets = {
     homepageAuthSecret = { };
+    homepageJellyfinApiKey = { };
     homepageOidcClientSecret = { };
   };
 
@@ -30,6 +31,7 @@ in
       type = "Opaque";
       stringData = {
         homepage-auth-secret = config.sops.placeholder.homepageAuthSecret;
+        homepage-jellyfin-api-key = config.sops.placeholder.homepageJellyfinApiKey;
         homepage-nextcloud-password = config.sops.placeholder.nextcloudAdminPassword;
         homepage-oidc-client-secret = config.sops.placeholder.homepageOidcClientSecret;
       };
@@ -157,12 +159,27 @@ in
             "Медиа" = [
               {
                 Jellyfin = {
-                  # The native widget requires an API key created by Jellyfin.
                   href = "https://jellyfin.iverian.ru";
                   description = "Фильмы и сериалы";
                   namespace = "media";
                   podSelector = "app=jellyfin";
                   siteMonitor = "http://jellyfin.media.svc.cluster.local";
+                  widget = {
+                    type = "jellyfin";
+                    url = "http://jellyfin.media.svc.cluster.local";
+                    key = "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}";
+                    # Jellyfin 12 requires native endpoints and MediaBrowser authorization.
+                    version = 2;
+                    enableBlocks = true;
+                    enableNowPlaying = true;
+                    enableUser = true;
+                    showEpisodeNumber = true;
+                    fields = [
+                      "movies"
+                      "series"
+                      "episodes"
+                    ];
+                  };
                 };
               }
               {
@@ -206,15 +223,6 @@ in
           }
           {
             "Инфраструктура" = [
-              {
-                Authelia = {
-                  href = "https://auth.iverian.ru";
-                  description = "Единый вход и двухфакторная аутентификация";
-                  namespace = "authelia";
-                  podSelector = "app.kubernetes.io/instance=authelia";
-                  siteMonitor = "http://authelia.authelia.svc.cluster.local";
-                };
-              }
               {
                 Grafana = {
                   href = "https://grafana.iverian.ru";
@@ -282,6 +290,7 @@ in
         labels.app = "homepage";
         annotations = {
           "configmap.reloader.stakater.com/reload" = "homepage-config";
+          "homelab.iverian.ru/config-revision" = "jellyfin-widget-v2";
           "secret.reloader.stakater.com/reload" = "home-secrets";
         };
       };
@@ -355,6 +364,13 @@ in
                   {
                     name = "HOMEPAGE_OIDC_AUTO_LOGIN";
                     value = "true";
+                  }
+                  {
+                    name = "HOMEPAGE_VAR_JELLYFIN_API_KEY";
+                    valueFrom.secretKeyRef = {
+                      name = "home-secrets";
+                      key = "homepage-jellyfin-api-key";
+                    };
                   }
                   {
                     name = "HOMEPAGE_VAR_NEXTCLOUD_PASSWORD";
