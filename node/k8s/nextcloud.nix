@@ -551,7 +551,10 @@ in
     builtins.toJSON {
       apiVersion = "helm.cattle.io/v1";
       kind = "HelmChart";
-      metadata = { name = "nextcloud"; namespace = "kube-system"; };
+      metadata = {
+        name = "nextcloud";
+        namespace = "kube-system";
+      };
       spec = {
         chart = "https://%{KUBERNETES_API}%/static/charts/nextcloud.tgz";
         targetNamespace = namespace;

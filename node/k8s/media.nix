@@ -20,6 +20,7 @@ in
       tvdbApiKey = { };
       shareUsers = { };
       jellyfinOidcClientSecret = { };
+      homepageJellyfinApiKey = { };
     };
     templates = {
       vidsort-secret = {
@@ -49,6 +50,19 @@ in
           };
         };
         path = "/var/lib/rancher/k3s/server/manifests/media-share-users.json";
+      };
+      jellyfin-exporter-secret = {
+        content = builtins.toJSON {
+          apiVersion = "v1";
+          kind = "Secret";
+          metadata = {
+            name = "jellyfin-exporter";
+            namespace = namespace;
+          };
+          stringData.JELLYFIN_TOKEN = config.sops.placeholder.homepageJellyfinApiKey;
+        };
+        path = "/var/lib/rancher/k3s/server/manifests/media-jellyfin-exporter-secret.json";
+        restartUnits = [ "k3s.service" ];
       };
     };
   };
@@ -588,7 +602,13 @@ in
           }
         ];
         template = {
-          metadata.labels.app = "jellyfin";
+          metadata = {
+            labels.app = "jellyfin";
+            annotations = {
+              "prometheus.io/scrape" = "true";
+              "prometheus.io/port" = "9594";
+            };
+          };
           spec = {
             volumes = [
               {
@@ -723,6 +743,45 @@ in
                   };
                 };
               }
+              {
+                name = "jellyfin-exporter";
+                image = "rebelcore/jellyfin-exporter:v1.5.2";
+                imagePullPolicy = "IfNotPresent";
+                env = [
+                  {
+                    name = "JELLYFIN_ADDRESS";
+                    value = "http://localhost:8096";
+                  }
+                  {
+                    name = "JELLYFIN_TOKEN";
+                    valueFrom.secretKeyRef = {
+                      name = "jellyfin-exporter";
+                      key = "JELLYFIN_TOKEN";
+                    };
+                  }
+                ];
+                ports = [
+                  {
+                    name = "metrics";
+                    containerPort = 9594;
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "10m";
+                    memory = "32Mi";
+                  };
+                  limits = {
+                    cpu = "100m";
+                    memory = "128Mi";
+                  };
+                };
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  readOnlyRootFilesystem = true;
+                  capabilities.drop = [ "ALL" ];
+                };
+              }
             ];
           };
         };
@@ -751,9 +810,18 @@ in
     jellyfin-backend-policy.content = {
       apiVersion = "gateway.envoyproxy.io/v1alpha1";
       kind = "BackendTrafficPolicy";
-      metadata = { name = "jellyfin-streaming"; inherit namespace; };
+      metadata = {
+        name = "jellyfin-streaming";
+        inherit namespace;
+      };
       spec = {
-        targetRefs = [ { group = "gateway.networking.k8s.io"; kind = "HTTPRoute"; name = "jellyfin"; } ];
+        targetRefs = [
+          {
+            group = "gateway.networking.k8s.io";
+            kind = "HTTPRoute";
+            name = "jellyfin";
+          }
+        ];
         mergeType = "StrategicMerge";
         timeout.http.requestTimeout = "0s";
       };

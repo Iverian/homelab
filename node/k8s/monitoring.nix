@@ -3,6 +3,33 @@ let
   namespace = "monitoring";
   grafanaHostname = "grafana.iverian.ru";
   grafanaOAuthSecret = "grafana-oauth";
+  postgresTargets = [
+    {
+      target = "authelia-db.authelia.svc.cluster.local:5432/postgres";
+      namespace = "authelia";
+      pod = "authelia-db-0";
+    }
+    {
+      target = "gitea-db.gitea.svc.cluster.local:5432/postgres";
+      namespace = "gitea";
+      pod = "gitea-db-0";
+    }
+    {
+      target = "home-assistant-db.home-assistant.svc.cluster.local:5432/postgres";
+      namespace = "home-assistant";
+      pod = "home-assistant-db-0";
+    }
+    {
+      target = "grafana-db.monitoring.svc.cluster.local:5432/postgres";
+      namespace = "monitoring";
+      pod = "grafana-db-0";
+    }
+    {
+      target = "nextcloud-db.nextcloud.svc.cluster.local:5432/postgres";
+      namespace = "nextcloud";
+      pod = "nextcloud-db-0";
+    }
+  ];
 
   vmagentConfig = builtins.toJSON {
     global = {
@@ -26,6 +53,31 @@ let
       {
         job_name = "node-exporter";
         static_configs = [ { targets = [ "node-exporter:9100" ]; } ];
+      }
+      {
+        job_name = "postgresql";
+        metrics_path = "/probe";
+        params.auth_module = [ "postgres" ];
+        static_configs = map (target: {
+          targets = [ target.target ];
+          labels = {
+            inherit (target) namespace pod;
+          };
+        }) postgresTargets;
+        relabel_configs = [
+          {
+            source_labels = [ "__address__" ];
+            target_label = "__param_target";
+          }
+          {
+            source_labels = [ "__param_target" ];
+            target_label = "instance";
+          }
+          {
+            target_label = "__address__";
+            replacement = "postgres-exporter:9187";
+          }
+        ];
       }
       {
         job_name = "kubernetes-apiservers";
@@ -278,6 +330,23 @@ let
       url = "https://grafana.com/api/dashboards/17802/revisions/3/download";
       hash = "sha256-qZTa0R7JpVsGALw9mlRK5Y5WcII+B5u5qqjJOlwe9CE=";
     };
+    postgresql = pkgs.fetchurl {
+      url = "https://grafana.com/api/dashboards/9628/revisions/8/download";
+      hash = "sha256-UhusNAZbyt7fJV/DhFUK4FKOmnTpG0R15YO2r+nDnMc=";
+    };
+    jellyfin = pkgs.fetchurl {
+      url = "https://raw.githubusercontent.com/rebelcore/jellyfin_grafana/master/dashboards/jellyfin.json";
+      hash = "sha256-mmZGGOxEPe8cd+9QtBNcBNRkI52Q3+VJg+7AmRiR8bc=";
+    };
+    home-assistant = ./dashboards/home-assistant.json;
+    zfs = pkgs.fetchurl {
+      url = "https://grafana.com/api/dashboards/7968/revisions/1/download";
+      hash = "sha256-iMxi+8N4PQCfLQ2Zn2czQKtbgoayNq7ZqDWinjh3vMo=";
+    };
+    dnscrypt = pkgs.fetchurl {
+      url = "https://grafana.com/api/dashboards/13600/revisions/1/download";
+      hash = "sha256-c1OwyyzcuZtFKlKpFQiHopWRtVL+ZFMzWs8v1x5+Vbk=";
+    };
   };
 
   dashboardBase64 =
@@ -285,6 +354,12 @@ let
     builtins.readFile (
       pkgs.runCommand "grafana-dashboard-${name}-base64" { } ''
         sed -E 's/\$\{DS_[A-Z0-9_-]+\}/victoriametrics/g' ${dashboard} \
+          ${
+            if name == "postgresql" then
+              "| sed -E 's/kubernetes_namespace/namespace/g; s/release/pod/g'"
+            else
+              ""
+          } \
           | base64 --wrap=0 > "$out"
       ''
     );
@@ -334,6 +409,112 @@ in
         preparedDatabases.grafana = { };
         postgresql.version = "17";
         enableLogicalBackup = true;
+      };
+    };
+
+    monitoring-postgres-exporter-deployment.content = {
+      apiVersion = "apps/v1";
+      kind = "Deployment";
+      metadata = {
+        name = "postgres-exporter";
+        inherit namespace;
+      };
+      spec = {
+        replicas = 1;
+        selector.matchLabels.app = "postgres-exporter";
+        template = {
+          metadata = {
+            labels.app = "postgres-exporter";
+            annotations."secret.reloader.stakater.com/reload" = "postgres-exporter";
+          };
+          spec = {
+            automountServiceAccountToken = false;
+            securityContext = {
+              runAsNonRoot = true;
+              runAsUser = 65532;
+              runAsGroup = 65532;
+              fsGroup = 65532;
+              seccompProfile.type = "RuntimeDefault";
+            };
+            containers = [
+              {
+                name = "postgres-exporter";
+                image = "ghcr.io/prometheus-community/postgres-exporter:v0.20.1";
+                args = [ "--config.file=/etc/postgres-exporter/postgres_exporter.yml" ];
+                ports = [
+                  {
+                    name = "http";
+                    containerPort = 9187;
+                  }
+                ];
+                readinessProbe = {
+                  httpGet = {
+                    path = "/";
+                    port = "http";
+                  };
+                  initialDelaySeconds = 2;
+                  periodSeconds = 10;
+                };
+                livenessProbe = {
+                  httpGet = {
+                    path = "/";
+                    port = "http";
+                  };
+                  initialDelaySeconds = 10;
+                  periodSeconds = 20;
+                };
+                resources = {
+                  requests = {
+                    cpu = "20m";
+                    memory = "32Mi";
+                  };
+                  limits = {
+                    cpu = "200m";
+                    memory = "128Mi";
+                  };
+                };
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  readOnlyRootFilesystem = true;
+                  capabilities.drop = [ "ALL" ];
+                };
+                volumeMounts = [
+                  {
+                    name = "config";
+                    mountPath = "/etc/postgres-exporter/postgres_exporter.yml";
+                    subPath = "postgres_exporter.yml";
+                    readOnly = true;
+                  }
+                ];
+              }
+            ];
+            volumes = [
+              {
+                name = "config";
+                secret.secretName = "postgres-exporter";
+              }
+            ];
+          };
+        };
+      };
+    };
+
+    monitoring-postgres-exporter-service.content = {
+      apiVersion = "v1";
+      kind = "Service";
+      metadata = {
+        name = "postgres-exporter";
+        inherit namespace;
+      };
+      spec = {
+        selector.app = "postgres-exporter";
+        ports = [
+          {
+            name = "http";
+            port = 9187;
+            targetPort = "http";
+          }
+        ];
       };
     };
 
@@ -1053,6 +1234,22 @@ in
       binaryData."gitea.json" = dashboardBase64 "gitea" dashboards.gitea;
     };
 
+    monitoring-grafana-dashboard-services.content = {
+      apiVersion = "v1";
+      kind = "ConfigMap";
+      metadata = {
+        name = "grafana-dashboard-services";
+        namespace = namespace;
+      };
+      binaryData = {
+        "postgresql.json" = dashboardBase64 "postgresql" dashboards.postgresql;
+        "jellyfin.json" = dashboardBase64 "jellyfin" dashboards.jellyfin;
+        "home-assistant.json" = dashboardBase64 "home-assistant" dashboards.home-assistant;
+        "zfs.json" = dashboardBase64 "zfs" dashboards.zfs;
+        "dnscrypt.json" = dashboardBase64 "dnscrypt" dashboards.dnscrypt;
+      };
+    };
+
     monitoring-grafana-deployment.content = {
       apiVersion = "apps/v1";
       kind = "Deployment";
@@ -1068,7 +1265,7 @@ in
             labels.app = "grafana";
             annotations = {
               "configmap.reloader.stakater.com/reload" =
-                "grafana-config,grafana-dashboard-node-exporter,grafana-dashboard-kubernetes,grafana-dashboard-victoria-metrics,grafana-dashboard-vmagent,grafana-dashboard-envoy-gateway,grafana-dashboard-envoy,grafana-dashboard-gitea";
+                "grafana-config,grafana-dashboard-node-exporter,grafana-dashboard-kubernetes,grafana-dashboard-victoria-metrics,grafana-dashboard-vmagent,grafana-dashboard-envoy-gateway,grafana-dashboard-envoy,grafana-dashboard-gitea,grafana-dashboard-services";
               "secret.reloader.stakater.com/reload" = grafanaOAuthSecret;
             };
           };
@@ -1281,6 +1478,36 @@ in
                     readOnly = true;
                   }
                   {
+                    name = "dashboard-services";
+                    mountPath = "/etc/grafana/dashboards/postgresql.json";
+                    subPath = "postgresql.json";
+                    readOnly = true;
+                  }
+                  {
+                    name = "dashboard-services";
+                    mountPath = "/etc/grafana/dashboards/jellyfin.json";
+                    subPath = "jellyfin.json";
+                    readOnly = true;
+                  }
+                  {
+                    name = "dashboard-services";
+                    mountPath = "/etc/grafana/dashboards/home-assistant.json";
+                    subPath = "home-assistant.json";
+                    readOnly = true;
+                  }
+                  {
+                    name = "dashboard-services";
+                    mountPath = "/etc/grafana/dashboards/zfs.json";
+                    subPath = "zfs.json";
+                    readOnly = true;
+                  }
+                  {
+                    name = "dashboard-services";
+                    mountPath = "/etc/grafana/dashboards/dnscrypt.json";
+                    subPath = "dnscrypt.json";
+                    readOnly = true;
+                  }
+                  {
                     name = "data";
                     mountPath = "/var/lib/grafana";
                   }
@@ -1323,6 +1550,10 @@ in
               {
                 name = "dashboard-gitea";
                 configMap.name = "grafana-dashboard-gitea";
+              }
+              {
+                name = "dashboard-services";
+                configMap.name = "grafana-dashboard-services";
               }
               {
                 name = "data";

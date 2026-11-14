@@ -17,6 +17,7 @@ let
   updaterImage = "${updaterManifest.image}:${updaterHash}";
   blocklistUrl = "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/light-onlydomains.txt";
   blocklistFile = "/var/lib/dnscrypt-proxy/blocked-names.txt";
+  queryLogFile = "${blocklistFile}.query.log";
   resolverListKey = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
   config = ''
     listen_addresses = [':5353']
@@ -61,6 +62,11 @@ let
     log_level = 2
     use_syslog = false
     log_files_max_size = 0
+
+    [query_log]
+    file = '${queryLogFile}'
+    format = 'ltsv'
+    ignored_qtypes = ['DNSCRYPT-SIGNED']
 
     [blocked_names]
     blocked_names_file = '${blocklistFile}'
@@ -120,6 +126,28 @@ in
       data."dnscrypt-proxy.toml" = config;
     };
 
+    dns-proxy-mtail.content = {
+      apiVersion = "v1";
+      kind = "ConfigMap";
+      metadata = {
+        name = "dns-proxy-mtail";
+        inherit namespace;
+      };
+      data."dnscrypt.mtail" = ''
+        counter queries_total
+        counter queries by host, type, return, cached, server
+        histogram queries_duration_ms buckets 1, 2, 4, 8, 16, 32, 64, 128, 256 by return, server, type
+
+        /^time:[0-9]+[[:space:]]+host:(?P<host>[^[:space:]]+)[[:space:]]+message:(?P<message>[^[:space:]]+)[[:space:]]+type:(?P<type>[^[:space:]]+)[[:space:]]+return:(?P<return>[^[:space:]]+)[[:space:]]+cached:(?P<cached>[0-1])[[:space:]]+duration:(?P<duration>[0-9]+)[[:space:]]+server:(?P<server>[^[:space:]]+)$/ {
+          queries_total++
+          queries[$host][$type][$return][$cached][$server]++
+          $cached == 0 {
+            queries_duration_ms[$return][$server][$type] = $duration
+          }
+        }
+      '';
+    };
+
     dns-proxy-cache.content = {
       apiVersion = "v1";
       kind = "PersistentVolumeClaim";
@@ -142,7 +170,12 @@ in
         template = {
           metadata = {
             inherit labels;
-            annotations."checksum/config" = builtins.hashString "sha256" config;
+            annotations = {
+              "checksum/config" = builtins.hashString "sha256" config;
+              "configmap.reloader.stakater.com/reload" = "dns-proxy,dns-proxy-mtail";
+              "prometheus.io/scrape" = "true";
+              "prometheus.io/port" = "3903";
+            };
           };
           spec = {
             automountServiceAccountToken = false;
@@ -168,10 +201,12 @@ in
                         : > "$2"
                       fi
                     fi
+                    touch "$3"
                   ''
                   "blocklist-bootstrap"
                   blocklistUrl
                   blocklistFile
+                  queryLogFile
                 ];
                 resources = {
                   requests = {
@@ -260,6 +295,53 @@ in
                   }
                 ];
               }
+              {
+                name = "mtail";
+                image = "ghcr.io/google/mtail:3.0.8@sha256:00ccb287115314f8fcbf002de0bfa991d8d76d192fff6e4422b7c69e8793087e";
+                args = [
+                  "--progs=/etc/mtail"
+                  "--logs=${queryLogFile}"
+                  "--address=0.0.0.0"
+                  "--port=3903"
+                ];
+                ports = [
+                  {
+                    name = "metrics";
+                    containerPort = 3903;
+                  }
+                ];
+                resources = {
+                  requests = {
+                    cpu = "10m";
+                    memory = "16Mi";
+                  };
+                  limits = {
+                    cpu = "100m";
+                    memory = "64Mi";
+                  };
+                };
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  readOnlyRootFilesystem = true;
+                  capabilities.drop = [ "ALL" ];
+                };
+                volumeMounts = [
+                  {
+                    name = "resolver-lists";
+                    mountPath = "/var/lib/dnscrypt-proxy";
+                    readOnly = true;
+                  }
+                  {
+                    name = "mtail";
+                    mountPath = "/etc/mtail";
+                    readOnly = true;
+                  }
+                  {
+                    name = "tmp";
+                    mountPath = "/tmp";
+                  }
+                ];
+              }
             ];
             volumes = [
               {
@@ -273,6 +355,10 @@ in
               {
                 name = "tmp";
                 emptyDir = { };
+              }
+              {
+                name = "mtail";
+                configMap.name = "dns-proxy-mtail";
               }
             ];
           };

@@ -54,6 +54,10 @@ in
         recorder:
           db_url: !env_var HOME_ASSISTANT_DATABASE_URL
 
+        prometheus:
+          namespace: homeassistant
+          requires_auth: false
+
         automation: !include automations.yaml
         script: !include scripts.yaml
         scene: !include scenes.yaml
@@ -335,6 +339,12 @@ in
       metadata = {
         name = "home-assistant";
         namespace = namespace;
+        labels.app = "home-assistant";
+        annotations = {
+          "prometheus.io/scrape" = "true";
+          "prometheus.io/port" = "8123";
+          "prometheus.io/path" = "/api/prometheus";
+        };
       };
       spec = {
         selector.app = "home-assistant";
